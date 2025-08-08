@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#6366f1">
+    <title>MADLAB - Panel de Proyecto</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --bg-light: #ffffff;
+            --bg-dark: #111827;
+            --text-light: #1f2937;
+            --text-dark: #f9fafb;
+            --card-light: #f3f4f6;
+            --card-dark: #1f2937;
+            --border-light: #e5e7eb;
+            --border-dark: #374151;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg: var(--bg-light);
+            --text: var(--text-light);
+            --card: var(--card-light);
+            --border: var(--border-light);
+        }
+
+        [data-theme="dark"] {
+            --bg: var(--bg-dark);
+            --text: var(--text-dark);
+            --card: var(--card-dark);
+            --border: var(--border-dark);
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            transition: var(--transition);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 2rem 20px;
+        }
+
+        /* Header */
+        header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 3px var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px; /* Touch-friendly minimum height */
+            touch-action: manipulation; /* Prevent double-tap zoom */
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .theme-switcher {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--card);
+            padding: 0.25rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .theme-btn {
+            padding: 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            border-radius: calc(var(--radius) - 4px);
+            transition: var(--transition);
+        }
+
+        .theme-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 3rem 0;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            margin-bottom: 2rem;
+            border-radius: var(--radius);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            transform: scaleY(0);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Filters */
+        .filters {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            min-height: 44px; /* Touch-friendly minimum height */
+            touch-action: manipulation;
+        }
+
+        /* Touch-friendly interactive elements */
+        button, a, .phase-header, .task-card {
+            -webkit-tap-highlight-color: rgba(99, 102, 241, 0.1);
+            touch-action: manipulation;
+        }
+
+        /* Phase Sections */
+        .phase {
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .phase:nth-child(1) { animation-delay: 0.1s; }
+        .phase:nth-child(2) { animation-delay: 0.2s; }
+        .phase:nth-child(3) { animation-delay: 0.3s; }
+        .phase:nth-child(4) { animation-delay: 0.4s; }
+        .phase:nth-child(5) { animation-delay: 0.5s; }
+
+        .phase-header {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+
+        .phase-header:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .phase-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .phase-toggle {
+            font-size: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .phase-header.collapsed .phase-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .phase-content {
+            display: grid;
+            gap: 1rem;
+            transition: var(--transition);
+            max-height: 2000px;
+            overflow: hidden;
+        }
+
+        .phase-content.collapsed {
+            max-height: 0;
+            margin-bottom: 0;
+        }
+
+        /* Task Cards */
+        .task-card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .task-id {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        .task-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .task-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .assignee {
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .difficulty {
+            display: flex;
+            gap: 2px;
+        }
+
+        .difficulty-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .difficulty-dot.filled {
+            background: var(--accent);
+        }
+
+        .dependencies {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--danger);
+            font-style: italic;
+        }
+
+        /* Team Summary */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .team-card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .team-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .team-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .team-stats {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px 2rem 15px;
+            }
+            
+            .hero {
+                padding: 2rem 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .hero h1 {
+                font-size: 1.75rem;
+                line-height: 1.2;
+            }
+            
+            .hero p {
+                font-size: 0.95rem;
+            }
+            
+            .phase-title {
+                font-size: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+            
+            .stat-card {
+                padding: 0.75rem;
+            }
+            
+            .stat-value {
+                font-size: 1.3rem;
+            }
+            
+            .stat-label {
+                font-size: 0.8rem;
+            }
+            
+            .header-content {
+                justify-content: space-between;
+                padding: 0.75rem 0;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .controls {
+                gap: 0.5rem;
+            }
+            
+            .btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .theme-btn {
+                padding: 0.4rem;
+                font-size: 0.9rem;
+            }
+            
+            .task-card {
+                padding: 1rem;
+            }
+            
+            .task-name {
+                font-size: 1rem;
+            }
+            
+            .task-meta {
+                font-size: 0.8rem;
+                gap: 0.5rem;
+            }
+            
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+            
+            .team-card {
+                padding: 1rem;
+            }
+            
+            .team-name {
+                font-size: 1rem;
+            }
+            
+            .filters {
+                padding: 1rem;
+            }
+            
+            .filter-group {
+                gap: 0.5rem;
+            }
+            
+            .search-box {
+                font-size: 0.9rem;
+                padding: 0.6rem 0.8rem;
+            }
+            
+            select {
+                font-size: 0.9rem;
+                padding: 0.6rem 0.8rem;
+            }
+            
+            h3 {
+                font-size: 1.1rem !important;
+            }
+            
+            /* Touch-friendly enhancements */
+            .phase-header {
+                padding: 1.2rem 1rem;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .task-card, .stat-card, .team-card {
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Better mobile scrolling */
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Prevent horizontal scroll */
+            * {
+                max-width: 100vw;
+            }
+            
+            .hide-mobile {
+                display: none !important;
+            }
+        }
+        
+        /* Show tool info on larger screens */
+        @media (min-width: 769px) {
+            .hide-mobile {
+                display: inline-block !important;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body data-theme="auto">
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">MADLAB</div>
+                <div class="controls">
+                    <span style="font-size: 0.8rem; opacity: 0.7; display: none;" class="hide-mobile">LeanTime • WhatsApp • Canva</span>
+                    <button class="btn btn-secondary" onclick="toggleLang()">
+                        <span id="langToggle">English</span>
+                    </button>
+                    <div class="theme-switcher">
+                        <button class="theme-btn active" onclick="setTheme('auto')" title="Auto">🌓</button>
+                        <button class="theme-btn" onclick="setTheme('light')" title="Light">☀️</button>
+                        <button class="theme-btn" onclick="setTheme('dark')" title="Dark">🌙</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="hero">
+            <h1 id="heroTitle">Lista de Tareas del Proyecto MADLAB</h1>
+            <p id="heroSubtitle">Proyecto Colaborativo: MADFAM × La Ciencia Del Juego</p>
+            <p id="heroStartDate" style="margin-top: 1rem; font-size: 1rem; opacity: 0.9;">🚀 Inicio: Lunes 11 de Agosto, 2025</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">109</div>
+                <div class="stat-label" data-es="Tareas Totales" data-en="Total Tasks">Tareas Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">81</div>
+                <div class="stat-label" data-es="Días de Proyecto" data-en="Project Days">Días de Proyecto</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">524.5</div>
+                <div class="stat-label" data-es="Horas Estimadas" data-en="Estimated Hours">Horas Estimadas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">5</div>
+                <div class="stat-label" data-es="Miembros del Equipo" data-en="Team Members">Miembros del Equipo</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <input type="text" class="search-box" id="searchBox" placeholder="Buscar tareas..." onkeyup="filterTasks()">
+                <select id="teamFilter" onchange="filterTasks()">
+                    <option value="">Todos los Miembros</option>
+                    <option value="Aldo">Aldo</option>
+                    <option value="Nuri">Nuri</option>
+                    <option value="Luis">Luis</option>
+                    <option value="Silvia">Silvia</option>
+                    <option value="Caro">Caro</option>
+                </select>
+                <select id="difficultyFilter" onchange="filterTasks()">
+                    <option value="">Toda Dificultad</option>
+                    <option value="1">Nivel 1</option>
+                    <option value="2">Nivel 2</option>
+                    <option value="3">Nivel 3</option>
+                    <option value="4">Nivel 4</option>
+                    <option value="5">Nivel 5</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="phasesContainer" style="padding-bottom: 2rem;"></div>
+
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+        <h2 style="text-align: center; color: var(--primary); margin-bottom: 2rem;">
+            <span data-es="Resumen del Equipo" data-en="Team Summary">Resumen del Equipo</span>
+        </h2>
+
+        <div class="team-grid" id="teamSummary">
+            <div class="team-card">
+                <div class="team-name">Aldo</div>
+                <div class="team-stats">24 tareas • 116.5 horas</div>
+            </div>
+            <div class="team-card">
+                <div class="team-name">Nuri</div>
+                <div class="team-stats">19 tareas • 86.5 horas</div>
+            </div>
+            <div class="team-card">
+                <div class="team-name">Luis</div>
+                <div class="team-stats">20 tareas • 102 horas</div>
+            </div>
+            <div class="team-card">
+                <div class="team-name">Silvia</div>
+                <div class="team-stats">23 tareas • 115.5 horas</div>
+            </div>
+            <div class="team-card">
+                <div class="team-name">Caro</div>
+                <div class="team-stats">22 tareas • 102 horas</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language data
+        const translations = {
+            es: {
+                heroTitle: "Lista de Tareas del Proyecto MADLAB",
+                heroSubtitle: "Proyecto Colaborativo: MADFAM × La Ciencia Del Juego",
+                startDate: "🚀 Inicio: Lunes 11 de Agosto, 2025",
+                searchPlaceholder: "Buscar tareas...",
+                allMembers: "Todos los Miembros",
+                allDifficulty: "Toda Dificultad",
+                level: "Nivel",
+                tasks: "tareas",
+                hours: "horas",
+                assignedTo: "Asignado a",
+                duration: "Duración",
+                difficulty: "Dificultad",
+                dependencies: "Dependencias",
+                none: "Ninguna",
+                teamSummary: "Resumen del Equipo",
+                phases: {
+                    1: "Fase 1: Fundación (11 Ago - 5 Sep, 2025)",
+                    2: "Fase 2: Desarrollo de Contenido (6-25 Sep, 2025)",
+                    3: "Fase 3: Preparación del Piloto (26 Sep - 5 Oct, 2025)",
+                    4: "Fase 4: Piloto e Iteración (6-20 Oct, 2025)",
+                    5: "Fase 5: Listos para el Lanzamiento (21-31 Oct, 2025)"
+                }
+            },
+            en: {
+                heroTitle: "MADLAB Project Task List",
+                heroSubtitle: "Collaborative Project: MADFAM × La Ciencia Del Juego",
+                startDate: "🚀 Start: Monday, August 11, 2025",
+                searchPlaceholder: "Search tasks...",
+                allMembers: "All Members",
+                allDifficulty: "All Difficulty",
+                level: "Level",
+                tasks: "tasks",
+                hours: "hours",
+                assignedTo: "Assigned to",
+                duration: "Duration",
+                difficulty: "Difficulty",
+                dependencies: "Dependencies",
+                none: "None",
+                teamSummary: "Team Summary",
+                phases: {
+                    1: "Phase 1: Foundation (Aug 11 - Sep 5, 2025)",
+                    2: "Phase 2: Content Development (Sept 6-25, 2025)",
+                    3: "Phase 3: Pilot Preparation (Sept 26 - Oct 5, 2025)",
+                    4: "Phase 4: Pilot & Iteration (Oct 6-20, 2025)",
+                    5: "Phase 5: Launch Ready (Oct 21-31, 2025)"
+                }
+            }
+        };
+
+        let currentLang = 'es';
+
+        // Tasks data
+        const tasksData = {
+            1: {
+                title: {
+                    es: "Fase 1: Fundación (11 Ago - 5 Sep, 2025)",
+                    en: "Phase 1: Foundation (Aug 11 - Sep 5, 2025)"
+                },
+                sections: [
+                    {
+                        title: {
+                            es: "1.1 Configuración de Infraestructura del Proyecto",
+                            en: "1.1 Project Infrastructure Setup"
+                        },
+                        tasks: [
+                            {
+                                id: "1.1.1",
+                                name: {
+                                    es: "Configurar LeanTime (equipo completo) y AnyType (C-Suite)",
+                                    en: "Set up LeanTime (full team) and AnyType (C-Suite)"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "2.0",
+                                difficulty: 2,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.1.2",
+                                name: {
+                                    es: "Crear Google Drive compartido y espacio de Canva con estructura",
+                                    en: "Create shared Google Drive and Canva workspace with structure"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "1.0",
+                                difficulty: 1,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.1.3",
+                                name: {
+                                    es: "Configurar grupo de WhatsApp para comunicación del equipo",
+                                    en: "Set up WhatsApp group for team communication"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "1.5",
+                                difficulty: 2,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.1.4",
+                                name: {
+                                    es: "Diseñar plantillas de recolección de datos para BI",
+                                    en: "Design data collection templates for BI"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "1.1.1"
+                            },
+                            {
+                                id: "1.1.5",
+                                name: {
+                                    es: "Crear documento de protocolos de colaboración del equipo",
+                                    en: "Create team collaboration protocols document"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "1.1.3"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "1.2 Investigación y Análisis de Mercado",
+                            en: "1.2 Market Research & Analysis"
+                        },
+                        tasks: [
+                            {
+                                id: "1.2.1",
+                                name: {
+                                    es: "Investigar ofertas de competidores en EdTech México",
+                                    en: "Research competitor offerings in EdTech Mexico"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "8.0",
+                                difficulty: 3,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.2.2",
+                                name: {
+                                    es: "Analizar modelos de precios para programas escolares",
+                                    en: "Analyze pricing models for school programs"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "1.2.1"
+                            },
+                            {
+                                id: "1.2.3",
+                                name: {
+                                    es: "Identificar las 50 mejores escuelas objetivo en la región",
+                                    en: "Identify top 50 target schools in region"
+                                },
+                                assignedTo: "Caro",
+                                duration: "6.0",
+                                difficulty: 2,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.2.4",
+                                name: {
+                                    es: "Mapear procesos de toma de decisiones escolares",
+                                    en: "Map school decision-making processes"
+                                },
+                                assignedTo: "Caro",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "1.2.3"
+                            },
+                            {
+                                id: "1.2.5",
+                                name: {
+                                    es: "Investigar oportunidades de subvenciones y patrocinadores",
+                                    en: "Research grant opportunities and sponsors"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "7.0",
+                                difficulty: 4,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "1.3 Desarrollo del Marco Educativo",
+                            en: "1.3 Educational Framework Development"
+                        },
+                        tasks: [
+                            {
+                                id: "1.3.1",
+                                name: {
+                                    es: "Mapear estándares curriculares de la SEP para grados objetivo",
+                                    en: "Map SEP curriculum standards for target grades"
+                                },
+                                assignedTo: "Caro",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.3.2",
+                                name: {
+                                    es: "Investigar rutas de certificación CONOCER",
+                                    en: "Research CONOCER certification pathways"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "8.0",
+                                difficulty: 4,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.3.3",
+                                name: {
+                                    es: "Definir objetivos de aprendizaje por enfoque ODS",
+                                    en: "Define learning objectives per SDG focus"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "1.3.1"
+                            },
+                            {
+                                id: "1.3.4",
+                                name: {
+                                    es: "Crear marco de metodología de evaluación",
+                                    en: "Create assessment methodology framework"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "5.0",
+                                difficulty: 4,
+                                dependencies: "1.3.3"
+                            },
+                            {
+                                id: "1.3.5",
+                                name: {
+                                    es: "Diseñar herramientas de evaluación pre/post",
+                                    en: "Design pre/post evaluation tools"
+                                },
+                                assignedTo: "Luis",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "1.3.4"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "1.4 Requisitos Técnicos y Planificación Presupuestaria",
+                            en: "1.4 Technical Requirements & Budget Planning"
+                        },
+                        tasks: [
+                            {
+                                id: "1.4.1",
+                                name: {
+                                    es: "Listar todo el equipo técnico necesario",
+                                    en: "List all technical equipment needed"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.4.2",
+                                name: {
+                                    es: "Investigar proveedores de equipos y costos",
+                                    en: "Research equipment suppliers and costs"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "4.0",
+                                difficulty: 2,
+                                dependencies: "1.4.1"
+                            },
+                            {
+                                id: "1.4.3",
+                                name: {
+                                    es: "Crear escenarios de presupuesto modular",
+                                    en: "Create modular budget scenarios"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "1.4.2"
+                            },
+                            {
+                                id: "1.4.4",
+                                name: {
+                                    es: "Diseñar estructura de precios para escuelas",
+                                    en: "Design pricing structure for schools"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "4.0",
+                                difficulty: 4,
+                                dependencies: "1.4.3"
+                            },
+                            {
+                                id: "1.4.5",
+                                name: {
+                                    es: "Calcular análisis de punto de equilibrio",
+                                    en: "Calculate break-even analysis"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "3.0",
+                                difficulty: 3,
+                                dependencies: "1.4.4"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "1.5 Activos Iniciales de Marca y Marketing",
+                            en: "1.5 Initial Brand & Marketing Assets"
+                        },
+                        tasks: [
+                            {
+                                id: "1.5.1",
+                                name: {
+                                    es: "Desarrollar guía de identidad de marca MADLAB",
+                                    en: "Develop MADLAB brand identity guide"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "8.0",
+                                difficulty: 3,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.5.2",
+                                name: {
+                                    es: "Crear logo y activos visuales",
+                                    en: "Create logo and visual assets"
+                                },
+                                assignedTo: "Caro",
+                                duration: "8.0",
+                                difficulty: 3,
+                                dependencies: "1.5.1"
+                            },
+                            {
+                                id: "1.5.3",
+                                name: {
+                                    es: "Escribir elevator pitch y propuesta de valor",
+                                    en: "Write elevator pitch and value proposition"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "1.5.4",
+                                name: {
+                                    es: "Diseñar plantilla de presentación",
+                                    en: "Design presentation template"
+                                },
+                                assignedTo: "Caro",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "1.5.2"
+                            },
+                            {
+                                id: "1.5.5",
+                                name: {
+                                    es: "Crear one-pager para escuelas",
+                                    en: "Create one-pager for schools"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "1.5.3"
+                            }
+                        ]
+                    }
+                ]
+            },
+            2: {
+                title: {
+                    es: "Fase 2: Desarrollo de Contenido (6-25 Sep, 2025)",
+                    en: "Phase 2: Content Development (Sept 6-25, 2025)"
+                },
+                sections: [
+                    {
+                        title: {
+                            es: "2.1 Diseño Curricular - Módulo de Agua Limpia",
+                            en: "2.1 Curriculum Design - Clean Water Module"
+                        },
+                        tasks: [
+                            {
+                                id: "2.1.1",
+                                name: {
+                                    es: "Investigar experimentos de purificación de agua",
+                                    en: "Research water purification experiments"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "1.3.3"
+                            },
+                            {
+                                id: "2.1.2",
+                                name: {
+                                    es: "Diseñar actividad gamificada del ciclo del agua",
+                                    en: "Design gamified water cycle activity"
+                                },
+                                assignedTo: "Luis",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "2.1.1"
+                            },
+                            {
+                                id: "2.1.3",
+                                name: {
+                                    es: "Crear especificaciones del kit de prueba de agua",
+                                    en: "Create water testing kit specifications"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "2.1.1"
+                            },
+                            {
+                                id: "2.1.4",
+                                name: {
+                                    es: "Desarrollar diapositivas de presentación - agua",
+                                    en: "Develop presentation slides - water"
+                                },
+                                assignedTo: "Caro",
+                                duration: "5.0",
+                                difficulty: 2,
+                                dependencies: "2.1.2"
+                            },
+                            {
+                                id: "2.1.5",
+                                name: {
+                                    es: "Crear cuaderno de trabajo del estudiante - agua",
+                                    en: "Create student workbook - water"
+                                },
+                                assignedTo: "Caro",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "2.1.4"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "2.2 Diseño Curricular - Módulo de Energía Limpia",
+                            en: "2.2 Curriculum Design - Clean Energy Module"
+                        },
+                        tasks: [
+                            {
+                                id: "2.2.1",
+                                name: {
+                                    es: "Diseñar demostración de panel solar",
+                                    en: "Design solar panel demonstration"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "1.3.3"
+                            },
+                            {
+                                id: "2.2.2",
+                                name: {
+                                    es: "Crear juego de conservación de energía",
+                                    en: "Create energy conservation game"
+                                },
+                                assignedTo: "Luis",
+                                duration: "6.0",
+                                difficulty: 4,
+                                dependencies: "2.2.1"
+                            },
+                            {
+                                id: "2.2.3",
+                                name: {
+                                    es: "Construir prototipo de mini turbina eólica",
+                                    en: "Build mini wind turbine prototype"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "8.0",
+                                difficulty: 4,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "2.2.4",
+                                name: {
+                                    es: "Desarrollar diapositivas de presentación - energía",
+                                    en: "Develop presentation slides - energy"
+                                },
+                                assignedTo: "Caro",
+                                duration: "5.0",
+                                difficulty: 2,
+                                dependencies: "2.2.2"
+                            },
+                            {
+                                id: "2.2.5",
+                                name: {
+                                    es: "Crear cuaderno de trabajo del estudiante - energía",
+                                    en: "Create student workbook - energy"
+                                },
+                                assignedTo: "Caro",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "2.2.4"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "2.3 Diseño Curricular - Módulo de Reciclaje",
+                            en: "2.3 Curriculum Design - Recycling Module"
+                        },
+                        tasks: [
+                            {
+                                id: "2.3.1",
+                                name: {
+                                    es: "Diseñar mecánicas del juego de clasificación",
+                                    en: "Design sorting game mechanics"
+                                },
+                                assignedTo: "Luis",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "1.3.3"
+                            },
+                            {
+                                id: "2.3.2",
+                                name: {
+                                    es: "Crear actividades de manualidades con reciclaje",
+                                    en: "Create upcycling craft activities"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "4.0",
+                                difficulty: 2,
+                                dependencies: "2.3.1"
+                            },
+                            {
+                                id: "2.3.3",
+                                name: {
+                                    es: "Desarrollar visuales del proceso de reciclaje",
+                                    en: "Develop recycling process visuals"
+                                },
+                                assignedTo: "Caro",
+                                duration: "4.0",
+                                difficulty: 2,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "2.3.4",
+                                name: {
+                                    es: "Crear diapositivas de presentación - reciclaje",
+                                    en: "Create presentation slides - recycling"
+                                },
+                                assignedTo: "Caro",
+                                duration: "5.0",
+                                difficulty: 2,
+                                dependencies: "2.3.2"
+                            },
+                            {
+                                id: "2.3.5",
+                                name: {
+                                    es: "Crear cuaderno de trabajo del estudiante - reciclaje",
+                                    en: "Create student workbook - recycling"
+                                },
+                                assignedTo: "Caro",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "2.3.4"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "2.4 Integración Tecnológica",
+                            en: "2.4 Technology Integration"
+                        },
+                        tasks: [
+                            {
+                                id: "2.4.1",
+                                name: {
+                                    es: "Programar demostraciones interactivas",
+                                    en: "Program interactive demonstrations"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "10.0",
+                                difficulty: 4,
+                                dependencies: "2.1.1, 2.2.1, 2.3.1"
+                            },
+                            {
+                                id: "2.4.2",
+                                name: {
+                                    es: "Crear bucles visuales de fondo",
+                                    en: "Create background visual loops"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "2.4.1"
+                            },
+                            {
+                                id: "2.4.3",
+                                name: {
+                                    es: "Configurar sistema de recolección de datos",
+                                    en: "Set up data collection system"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "2.4.4",
+                                name: {
+                                    es: "Probar todos los componentes tecnológicos juntos",
+                                    en: "Test all tech components together"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "2.4.1, 2.4.2, 2.4.3"
+                            },
+                            {
+                                id: "2.4.5",
+                                name: {
+                                    es: "Crear guía de solución de problemas",
+                                    en: "Create troubleshooting guide"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "2.4.4"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "2.5 Materiales de Capacitación para Facilitadores",
+                            en: "2.5 Facilitator Training Materials"
+                        },
+                        tasks: [
+                            {
+                                id: "2.5.1",
+                                name: {
+                                    es: "Escribir guía del facilitador",
+                                    en: "Write facilitator guide"
+                                },
+                                assignedTo: "Luis",
+                                duration: "8.0",
+                                difficulty: 3,
+                                dependencies: "2.1.5, 2.2.5, 2.3.5"
+                            },
+                            {
+                                id: "2.5.2",
+                                name: {
+                                    es: "Crear diagramas de tiempo y flujo",
+                                    en: "Create timing and flow charts"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "4.0",
+                                difficulty: 2,
+                                dependencies: "2.5.1"
+                            },
+                            {
+                                id: "2.5.3",
+                                name: {
+                                    es: "Diseñar protocolos de emergencia",
+                                    en: "Design emergency protocols"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "3.0",
+                                difficulty: 3,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "2.5.4",
+                                name: {
+                                    es: "Grabar videos de capacitación",
+                                    en: "Record training videos"
+                                },
+                                assignedTo: "Luis",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "2.5.1, 2.5.2"
+                            },
+                            {
+                                id: "2.5.5",
+                                name: {
+                                    es: "Crear rúbricas de evaluación",
+                                    en: "Create evaluation rubrics"
+                                },
+                                assignedTo: "Caro",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "1.3.5"
+                            }
+                        ]
+                    }
+                ]
+            },
+            3: {
+                title: {
+                    es: "Fase 3: Preparación del Piloto (26 Sep - 5 Oct, 2025)",
+                    en: "Phase 3: Pilot Preparation (Sept 26 - Oct 5, 2025)"
+                },
+                sections: [
+                    {
+                        title: {
+                            es: "3.1 Ventas y Alcance",
+                            en: "3.1 Sales & Outreach"
+                        },
+                        tasks: [
+                            {
+                                id: "3.1.1",
+                                name: {
+                                    es: "Finalizar presentación de ventas",
+                                    en: "Finalize sales deck"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "1.5.5, 2.5.1"
+                            },
+                            {
+                                id: "3.1.2",
+                                name: {
+                                    es: "Crear plantillas de correo electrónico de alcance",
+                                    en: "Create email outreach templates"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "3.1.1"
+                            },
+                            {
+                                id: "3.1.3",
+                                name: {
+                                    es: "Calentar 10 contactos escolares",
+                                    en: "Warm up 10 school contacts"
+                                },
+                                assignedTo: "Caro",
+                                duration: "8.0",
+                                difficulty: 3,
+                                dependencies: "3.1.2"
+                            },
+                            {
+                                id: "3.1.4",
+                                name: {
+                                    es: "Programar reuniones con escuelas piloto",
+                                    en: "Schedule pilot school meetings"
+                                },
+                                assignedTo: "Caro",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "3.1.3"
+                            },
+                            {
+                                id: "3.1.5",
+                                name: {
+                                    es: "Asegurar compromiso de escuela piloto",
+                                    en: "Secure pilot school commitment"
+                                },
+                                assignedTo: "Caro",
+                                duration: "5.0",
+                                difficulty: 4,
+                                dependencies: "3.1.4"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "3.2 Preparación de Materiales",
+                            en: "3.2 Material Preparation"
+                        },
+                        tasks: [
+                            {
+                                id: "3.2.1",
+                                name: {
+                                    es: "Imprimir todos los materiales para estudiantes",
+                                    en: "Print all student materials"
+                                },
+                                assignedTo: "Caro",
+                                duration: "4.0",
+                                difficulty: 1,
+                                dependencies: "2.1.5, 2.2.5, 2.3.5"
+                            },
+                            {
+                                id: "3.2.2",
+                                name: {
+                                    es: "Comprar/alquilar equipos para piloto",
+                                    en: "Purchase/rent equipment for pilot"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "1.4.2"
+                            },
+                            {
+                                id: "3.2.3",
+                                name: {
+                                    es: "Preparar kits de materiales",
+                                    en: "Prepare material kits"
+                                },
+                                assignedTo: "Luis",
+                                duration: "4.0",
+                                difficulty: 2,
+                                dependencies: "3.2.1, 3.2.2"
+                            },
+                            {
+                                id: "3.2.4",
+                                name: {
+                                    es: "Probar todo el equipo",
+                                    en: "Test all equipment"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "3.2.2"
+                            },
+                            {
+                                id: "3.2.5",
+                                name: {
+                                    es: "Crear materiales de respaldo",
+                                    en: "Create backup materials"
+                                },
+                                assignedTo: "Luis",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "3.2.3"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "3.3 Capacitación del Equipo",
+                            en: "3.3 Team Training"
+                        },
+                        tasks: [
+                            {
+                                id: "3.3.1",
+                                name: {
+                                    es: "Realizar ensayo completo del equipo",
+                                    en: "Conduct full team rehearsal"
+                                },
+                                assignedTo: "Luis",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "2.5.4, 3.2.3"
+                            },
+                            {
+                                id: "3.3.2",
+                                name: {
+                                    es: "Practicar escenarios de solución de problemas",
+                                    en: "Practice troubleshooting scenarios"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "3.0",
+                                difficulty: 3,
+                                dependencies: "3.3.1"
+                            },
+                            {
+                                id: "3.3.3",
+                                name: {
+                                    es: "Hacer role-play de situaciones difíciles",
+                                    en: "Role-play difficult situations"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "3.0",
+                                difficulty: 3,
+                                dependencies: "3.3.1"
+                            },
+                            {
+                                id: "3.3.4",
+                                name: {
+                                    es: "Revisar y refinar el tiempo",
+                                    en: "Review and refine timing"
+                                },
+                                assignedTo: "Luis",
+                                duration: "2.0",
+                                difficulty: 2,
+                                dependencies: "3.3.1"
+                            },
+                            {
+                                id: "3.3.5",
+                                name: {
+                                    es: "Lista de verificación de preparaciones finales",
+                                    en: "Final preparations checklist"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "1.5",
+                                difficulty: 1,
+                                dependencies: "3.3.4"
+                            }
+                        ]
+                    }
+                ]
+            },
+            4: {
+                title: {
+                    es: "Fase 4: Piloto e Iteración (6-20 Oct, 2025)",
+                    en: "Phase 4: Pilot & Iteration (Oct 6-20, 2025)"
+                },
+                sections: [
+                    {
+                        title: {
+                            es: "4.1 Ejecución del Piloto",
+                            en: "4.1 Pilot Execution"
+                        },
+                        tasks: [
+                            {
+                                id: "4.1.1",
+                                name: {
+                                    es: "Configurar lugar del piloto",
+                                    en: "Set up pilot venue"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "2.0",
+                                difficulty: 2,
+                                dependencies: "3.2.4"
+                            },
+                            {
+                                id: "4.1.2",
+                                name: {
+                                    es: "Realizar evento piloto",
+                                    en: "Conduct pilot event"
+                                },
+                                assignedTo: "Luis",
+                                duration: "3.0",
+                                difficulty: 4,
+                                dependencies: "4.1.1"
+                            },
+                            {
+                                id: "4.1.3",
+                                name: {
+                                    es: "Recopilar retroalimentación en tiempo real",
+                                    en: "Collect real-time feedback"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "3.0",
+                                difficulty: 3,
+                                dependencies: "4.1.2"
+                            },
+                            {
+                                id: "4.1.4",
+                                name: {
+                                    es: "Documentar piloto con fotos/video",
+                                    en: "Document pilot with photos/video"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "4.1.2"
+                            },
+                            {
+                                id: "4.1.5",
+                                name: {
+                                    es: "Informe con escuela piloto",
+                                    en: "Debrief with pilot school"
+                                },
+                                assignedTo: "Caro",
+                                duration: "2.0",
+                                difficulty: 3,
+                                dependencies: "4.1.2"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "4.2 Análisis e Iteración",
+                            en: "4.2 Analysis & Iteration"
+                        },
+                        tasks: [
+                            {
+                                id: "4.2.1",
+                                name: {
+                                    es: "Analizar datos y retroalimentación del piloto",
+                                    en: "Analyze pilot data and feedback"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "4.1.3, 4.1.5"
+                            },
+                            {
+                                id: "4.2.2",
+                                name: {
+                                    es: "Reunión retrospectiva del equipo",
+                                    en: "Team retrospective meeting"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "4.2.1"
+                            },
+                            {
+                                id: "4.2.3",
+                                name: {
+                                    es: "Identificar las 5 mejoras principales",
+                                    en: "Identify top 5 improvements"
+                                },
+                                assignedTo: "Luis",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "4.2.2"
+                            },
+                            {
+                                id: "4.2.4",
+                                name: {
+                                    es: "Actualizar materiales basados en retroalimentación",
+                                    en: "Update materials based on feedback"
+                                },
+                                assignedTo: "Caro",
+                                duration: "8.0",
+                                difficulty: 3,
+                                dependencies: "4.2.3"
+                            },
+                            {
+                                id: "4.2.5",
+                                name: {
+                                    es: "Refinar guía del facilitador",
+                                    en: "Refine facilitator guide"
+                                },
+                                assignedTo: "Luis",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "4.2.3"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "4.3 Creación de Contenido de Marketing",
+                            en: "4.3 Marketing Content Creation"
+                        },
+                        tasks: [
+                            {
+                                id: "4.3.1",
+                                name: {
+                                    es: "Editar video del piloto para marketing",
+                                    en: "Edit pilot video for marketing"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "8.0",
+                                difficulty: 3,
+                                dependencies: "4.1.4"
+                            },
+                            {
+                                id: "4.3.2",
+                                name: {
+                                    es: "Crear gráficos de testimonios",
+                                    en: "Create testimonial graphics"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "4.0",
+                                difficulty: 2,
+                                dependencies: "4.1.5"
+                            },
+                            {
+                                id: "4.3.3",
+                                name: {
+                                    es: "Escribir caso de estudio del piloto",
+                                    en: "Write case study from pilot"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "4.2.1"
+                            },
+                            {
+                                id: "4.3.4",
+                                name: {
+                                    es: "Diseñar campaña de redes sociales",
+                                    en: "Design social media campaign"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "4.3.1, 4.3.2"
+                            },
+                            {
+                                id: "4.3.5",
+                                name: {
+                                    es: "Crear plantillas de WhatsApp Business para ventas",
+                                    en: "Create WhatsApp Business templates for sales"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "4.3.4"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "4.4 Refinamiento de Operaciones",
+                            en: "4.4 Operations Refinement"
+                        },
+                        tasks: [
+                            {
+                                id: "4.4.1",
+                                name: {
+                                    es: "Optimizar proceso de configuración de equipos",
+                                    en: "Optimize equipment setup process"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "4.2.3"
+                            },
+                            {
+                                id: "4.4.2",
+                                name: {
+                                    es: "Crear lista de verificación de logística",
+                                    en: "Create logistics checklist"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "2.0",
+                                difficulty: 2,
+                                dependencies: "4.4.1"
+                            },
+                            {
+                                id: "4.4.3",
+                                name: {
+                                    es: "Diseñar sistema de reserva/pago",
+                                    en: "Design booking/payment system"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "6.0",
+                                difficulty: 4,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "4.4.4",
+                                name: {
+                                    es: "Configurar CRM para escuelas",
+                                    en: "Set up CRM for schools"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "4.4.3"
+                            },
+                            {
+                                id: "4.4.5",
+                                name: {
+                                    es: "Crear sistema de encuesta post-evento",
+                                    en: "Create post-event survey system"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            }
+                        ]
+                    }
+                ]
+            },
+            5: {
+                title: {
+                    es: "Fase 5: Listos para el Lanzamiento (21-31 Oct, 2025)",
+                    en: "Phase 5: Launch Ready (Oct 21-31, 2025)"
+                },
+                sections: [
+                    {
+                        title: {
+                            es: "5.1 Preparaciones Finales",
+                            en: "5.1 Final Preparations"
+                        },
+                        tasks: [
+                            {
+                                id: "5.1.1",
+                                name: {
+                                    es: "Finalizar todos los materiales",
+                                    en: "Finalize all materials"
+                                },
+                                assignedTo: "Caro",
+                                duration: "6.0",
+                                difficulty: 2,
+                                dependencies: "4.2.4"
+                            },
+                            {
+                                id: "5.1.2",
+                                name: {
+                                    es: "Imprimir materiales para el primer mes",
+                                    en: "Print materials for first month"
+                                },
+                                assignedTo: "Caro",
+                                duration: "5.0",
+                                difficulty: 2,
+                                dependencies: "5.1.1"
+                            },
+                            {
+                                id: "5.1.3",
+                                name: {
+                                    es: "Control de calidad de todo el equipo",
+                                    en: "Quality check all equipment"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "5.1.4",
+                                name: {
+                                    es: "Sesión final de entrenamiento del equipo",
+                                    en: "Final team training session"
+                                },
+                                assignedTo: "Luis",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "4.2.5"
+                            },
+                            {
+                                id: "5.1.5",
+                                name: {
+                                    es: "Crear protocolos de emergencia",
+                                    en: "Create emergency protocols"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "3.0",
+                                difficulty: 3,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "5.2 Impulso de Ventas",
+                            en: "5.2 Sales Push"
+                        },
+                        tasks: [
+                            {
+                                id: "5.2.1",
+                                name: {
+                                    es: "Lanzar alcance a 30 escuelas",
+                                    en: "Launch outreach to 30 schools"
+                                },
+                                assignedTo: "Caro",
+                                duration: "10.0",
+                                difficulty: 4,
+                                dependencies: "4.3.3"
+                            },
+                            {
+                                id: "5.2.2",
+                                name: {
+                                    es: "Dar seguimiento a todos los prospectos",
+                                    en: "Follow up on all leads"
+                                },
+                                assignedTo: "Caro",
+                                duration: "8.0",
+                                difficulty: 3,
+                                dependencies: "5.2.1"
+                            },
+                            {
+                                id: "5.2.3",
+                                name: {
+                                    es: "Cerrar primeras 5 reservas",
+                                    en: "Close first 5 bookings"
+                                },
+                                assignedTo: "Caro",
+                                duration: "8.0",
+                                difficulty: 5,
+                                dependencies: "5.2.2"
+                            },
+                            {
+                                id: "5.2.4",
+                                name: {
+                                    es: "Procesar depósitos y contratos",
+                                    en: "Process deposits and contracts"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "5.2.3"
+                            },
+                            {
+                                id: "5.2.5",
+                                name: {
+                                    es: "Programar eventos de noviembre",
+                                    en: "Schedule November events"
+                                },
+                                assignedTo: "Caro",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "5.2.4"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "5.3 Lanzamiento de Marketing",
+                            en: "5.3 Marketing Launch"
+                        },
+                        tasks: [
+                            {
+                                id: "5.3.1",
+                                name: {
+                                    es: "Lanzar campaña de redes sociales",
+                                    en: "Launch social media campaign"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "4.0",
+                                difficulty: 3,
+                                dependencies: "4.3.4"
+                            },
+                            {
+                                id: "5.3.2",
+                                name: {
+                                    es: "Enviar comunicado de prensa a medios",
+                                    en: "Send press release to media"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "3.0",
+                                difficulty: 3,
+                                dependencies: "4.3.3"
+                            },
+                            {
+                                id: "5.3.3",
+                                name: {
+                                    es: "Activar marketing por WhatsApp",
+                                    en: "Activate WhatsApp marketing"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "2.0",
+                                difficulty: 2,
+                                dependencies: "4.3.5"
+                            },
+                            {
+                                id: "5.3.4",
+                                name: {
+                                    es: "Lanzar programa de referidos",
+                                    en: "Launch referral program"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "5.3.5",
+                                name: {
+                                    es: "Configurar campaña de Google Ads",
+                                    en: "Set up Google Ads campaign"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "6.0",
+                                difficulty: 4,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "5.4 Sistemas y Documentación",
+                            en: "5.4 Systems & Documentation"
+                        },
+                        tasks: [
+                            {
+                                id: "5.4.1",
+                                name: {
+                                    es: "Documentar todos los procesos",
+                                    en: "Document all processes"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "8.0",
+                                difficulty: 3,
+                                dependencies: "All previous"
+                            },
+                            {
+                                id: "5.4.2",
+                                name: {
+                                    es: "Crear manual de operaciones",
+                                    en: "Create operations manual"
+                                },
+                                assignedTo: "Luis",
+                                duration: "6.0",
+                                difficulty: 3,
+                                dependencies: "5.4.1"
+                            },
+                            {
+                                id: "5.4.3",
+                                name: {
+                                    es: "Configurar tableros de datos",
+                                    en: "Set up data dashboards"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "6.0",
+                                difficulty: 4,
+                                dependencies: "4.4.5"
+                            },
+                            {
+                                id: "5.4.4",
+                                name: {
+                                    es: "Crear sistema de seguimiento financiero",
+                                    en: "Create financial tracking system"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "5.0",
+                                difficulty: 3,
+                                dependencies: "5.4.3"
+                            },
+                            {
+                                id: "5.4.5",
+                                name: {
+                                    es: "Verificación final de sistemas",
+                                    en: "Final systems check"
+                                },
+                                assignedTo: "Aldo",
+                                duration: "3.0",
+                                difficulty: 3,
+                                dependencies: "All previous"
+                            }
+                        ]
+                    },
+                    {
+                        title: {
+                            es: "5.5 Evento de Lanzamiento",
+                            en: "5.5 Launch Event"
+                        },
+                        tasks: [
+                            {
+                                id: "5.5.1",
+                                name: {
+                                    es: "Preparar materiales del día de lanzamiento",
+                                    en: "Prepare launch day materials"
+                                },
+                                assignedTo: "Luis",
+                                duration: "3.0",
+                                difficulty: 2,
+                                dependencies: "5.1.2"
+                            },
+                            {
+                                id: "5.5.2",
+                                name: {
+                                    es: "Reunión informativa y motivación del equipo",
+                                    en: "Team briefing and motivation"
+                                },
+                                assignedTo: "Nuri",
+                                duration: "1.0",
+                                difficulty: 2,
+                                dependencies: {es: "Ninguna", en: "None"}
+                            },
+                            {
+                                id: "5.5.3",
+                                name: {
+                                    es: "Ejecutar primer evento oficial",
+                                    en: "Execute first official event"
+                                },
+                                assignedTo: "Luis",
+                                duration: "3.0",
+                                difficulty: 5,
+                                dependencies: "5.5.1, 5.5.2"
+                            },
+                            {
+                                id: "5.5.4",
+                                name: {
+                                    es: "Documentar éxito del lanzamiento",
+                                    en: "Document launch success"
+                                },
+                                assignedTo: "Silvia",
+                                duration: "2.0",
+                                difficulty: 2,
+                                dependencies: "5.5.3"
+                            },
+                            {
+                                id: "5.5.5",
+                                name: {
+                                    es: "Celebrar y hacer informe",
+                                    en: "Celebrate and debrief"
+                                },
+                                assignedTo: "All",
+                                duration: "2.0",
+                                difficulty: 1,
+                                dependencies: "5.5.3"
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Theme management
+        function detectSystemTheme() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            }
+            return 'light';
+        }
+
+        function setTheme(theme) {
+            const body = document.body;
+            const themeBtns = document.querySelectorAll('.theme-btn');
+            
+            themeBtns.forEach(btn => btn.classList.remove('active'));
+            
+            if (theme === 'auto') {
+                body.setAttribute('data-theme', detectSystemTheme());
+                themeBtns[0].classList.add('active');
+            } else {
+                body.setAttribute('data-theme', theme);
+                if (theme === 'light') themeBtns[1].classList.add('active');
+                if (theme === 'dark') themeBtns[2].classList.add('active');
+            }
+            
+            localStorage.setItem('theme', theme);
+        }
+
+        // Language toggle
+        function toggleLang() {
+            currentLang = currentLang === 'es' ? 'en' : 'es';
+            document.getElementById('langToggle').textContent = currentLang === 'es' ? 'English' : 'Español';
+            updateLanguage();
+            renderPhases();
+        }
+
+        function updateLanguage() {
+            const t = translations[currentLang];
+            document.getElementById('heroTitle').textContent = t.heroTitle;
+            document.getElementById('heroSubtitle').textContent = t.heroSubtitle;
+            document.getElementById('heroStartDate').textContent = t.startDate;
+            document.getElementById('searchBox').placeholder = t.searchPlaceholder;
+            
+            // Update filter options
+            document.querySelector('#teamFilter option[value=""]').textContent = t.allMembers;
+            document.querySelector('#difficultyFilter option[value=""]').textContent = t.allDifficulty;
+            
+            // Update difficulty filter options
+            for (let i = 1; i <= 5; i++) {
+                document.querySelector(`#difficultyFilter option[value="${i}"]`).textContent = `${t.level} ${i}`;
+            }
+            
+            // Update stat labels
+            document.querySelectorAll('.stat-label').forEach(label => {
+                const esText = label.getAttribute('data-es');
+                const enText = label.getAttribute('data-en');
+                label.textContent = currentLang === 'es' ? esText : enText;
+            });
+            
+            // Update team stats
+            const teamStats = document.querySelectorAll('.team-stats');
+            teamStats.forEach(stat => {
+                const text = stat.textContent;
+                if (currentLang === 'es') {
+                    stat.textContent = text.replace('tasks', 'tareas').replace('hours', 'horas');
+                } else {
+                    stat.textContent = text.replace('tareas', 'tasks').replace('horas', 'hours');
+                }
+            });
+        }
+
+        // Render phases
+        function renderPhases() {
+            const container = document.getElementById('phasesContainer');
+            container.innerHTML = '';
+            
+            Object.keys(tasksData).forEach(phaseNum => {
+                const phase = tasksData[phaseNum];
+                const phaseDiv = document.createElement('div');
+                phaseDiv.className = 'phase';
+                phaseDiv.setAttribute('data-phase', phaseNum);
+                
+                const phaseHeader = document.createElement('div');
+                phaseHeader.className = 'phase-header';
+                phaseHeader.onclick = () => togglePhase(phaseNum);
+                phaseHeader.innerHTML = `
+                    <div class="phase-title">${phase.title[currentLang]}</div>
+                    <div class="phase-toggle">▼</div>
+                `;
+                
+                const phaseContent = document.createElement('div');
+                phaseContent.className = 'phase-content';
+                phaseContent.id = `phase-${phaseNum}-content`;
+                
+                phase.sections.forEach(section => {
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.innerHTML = `<h3 style="margin: 1rem 0; color: var(--primary);">${section.title[currentLang]}</h3>`;
+                    
+                    section.tasks.forEach(task => {
+                        const taskCard = createTaskCard(task);
+                        sectionDiv.appendChild(taskCard);
+                    });
+                    
+                    phaseContent.appendChild(sectionDiv);
+                });
+                
+                phaseDiv.appendChild(phaseHeader);
+                phaseDiv.appendChild(phaseContent);
+                container.appendChild(phaseDiv);
+            });
+        }
+
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.setAttribute('data-assignee', task.assignedTo);
+            card.setAttribute('data-difficulty', task.difficulty);
+            card.setAttribute('data-task-name', typeof task.name === 'object' ? task.name[currentLang].toLowerCase() : task.name.toLowerCase());
+            
+            const taskName = typeof task.name === 'object' ? task.name[currentLang] : task.name;
+            const deps = typeof task.dependencies === 'object' ? task.dependencies[currentLang] : task.dependencies;
+            
+            card.innerHTML = `
+                <div class="task-header">
+                    <div>
+                        <div class="task-id">${task.id}</div>
+                        <div class="task-name">${taskName}</div>
+                    </div>
+                </div>
+                <div class="task-meta">
+                    <span class="assignee">${translations[currentLang].assignedTo}: ${task.assignedTo}</span>
+                    <span>${translations[currentLang].duration}: ${task.duration} ${translations[currentLang].hours}</span>
+                    <span>${translations[currentLang].difficulty}: ${renderDifficulty(task.difficulty)}</span>
+                </div>
+                ${deps !== translations[currentLang].none ? `<div class="dependencies">${translations[currentLang].dependencies}: ${deps}</div>` : ''}
+            `;
+            
+            return card;
+        }
+
+        function renderDifficulty(level) {
+            let dots = '';
+            for (let i = 1; i <= 5; i++) {
+                dots += `<span class="difficulty-dot ${i <= level ? 'filled' : ''}"></span>`;
+            }
+            return `<span class="difficulty">${dots}</span>`;
+        }
+
+        function togglePhase(phaseNum) {
+            const header = document.querySelector(`[data-phase="${phaseNum}"] .phase-header`);
+            const content = document.getElementById(`phase-${phaseNum}-content`);
+            
+            header.classList.toggle('collapsed');
+            content.classList.toggle('collapsed');
+        }
+
+        // Filter functionality
+        function filterTasks() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const teamFilter = document.getElementById('teamFilter').value;
+            const difficultyFilter = document.getElementById('difficultyFilter').value;
+            
+            const taskCards = document.querySelectorAll('.task-card');
+            
+            taskCards.forEach(card => {
+                const taskName = card.getAttribute('data-task-name');
+                const assignee = card.getAttribute('data-assignee');
+                const difficulty = card.getAttribute('data-difficulty');
+                
+                const matchesSearch = taskName.includes(searchTerm);
+                const matchesTeam = !teamFilter || assignee === teamFilter;
+                const matchesDifficulty = !difficultyFilter || difficulty === difficultyFilter;
+                
+                if (matchesSearch && matchesTeam && matchesDifficulty) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial theme
+            const savedTheme = localStorage.getItem('theme') || 'auto';
+            setTheme(savedTheme);
+            
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                if (localStorage.getItem('theme') === 'auto') {
+                    setTheme('auto');
+                }
+            });
+            
+            // Initial render
+            updateLanguage();
+            renderPhases();
+        });
+    </script>
+</body>
+</html>
