@@ -299,6 +299,27 @@
         button, a, .phase-header, .task-card {
             -webkit-tap-highlight-color: rgba(99, 102, 241, 0.1);
             touch-action: manipulation;
+            min-height: 48px; /* Enhanced touch target size */
+        }
+
+        /* Enhanced touch targets for mobile */
+        @media (max-width: 768px) {
+            button, .btn, select, .search-box {
+                min-height: 52px !important;
+                padding: 0.75rem 1rem !important;
+                font-size: 16px !important; /* Prevent zoom on iOS */
+            }
+            
+            .phase-header {
+                min-height: 60px;
+                padding: 1.5rem 1.25rem;
+            }
+            
+            .task-card {
+                min-height: 80px;
+                padding: 1.25rem;
+                margin-bottom: 1rem;
+            }
         }
 
         /* Phase Sections */
@@ -380,11 +401,29 @@
             transition: var(--transition);
             position: relative;
             overflow: hidden;
+            min-height: 44px; /* Touch-friendly minimum */
+            cursor: pointer;
         }
 
         .task-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .task-card:active {
+            transform: translateY(0);
+            transition: transform 0.1s ease;
+        }
+
+        /* Phase indicator stripe */
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--phase-color, var(--primary));
         }
 
         .task-header {
@@ -395,6 +434,18 @@
             gap: 1rem;
         }
 
+        .task-main-info {
+            flex: 1;
+            min-width: 0; /* Allow text truncation */
+        }
+
+        .task-visual-indicators {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
         .task-id {
             font-size: 0.85rem;
             font-weight: 600;
@@ -402,6 +453,8 @@
             background: rgba(99, 102, 241, 0.1);
             padding: 0.25rem 0.5rem;
             border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 0.25rem;
         }
 
         .task-name {
@@ -409,6 +462,40 @@
             font-weight: 600;
             margin-bottom: 0.5rem;
             line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        /* Assignee Badge */
+        .assignee-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            background: var(--assignee-color, var(--secondary));
+            flex-shrink: 0;
+        }
+
+        /* Duration Bar */
+        .duration-bar {
+            width: 60px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .duration-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success) 0%, var(--warning) 50%, var(--danger) 100%);
+            border-radius: 2px;
+            transition: width 0.3s ease;
         }
 
         .task-meta {
@@ -417,6 +504,7 @@
             flex-wrap: wrap;
             font-size: 0.9rem;
             opacity: 0.8;
+            align-items: center;
         }
 
         .task-meta span {
@@ -425,33 +513,106 @@
             gap: 0.25rem;
         }
 
-        .assignee {
+        .assignee-info {
             font-weight: 600;
             color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Enhanced Difficulty Display */
+        .difficulty-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .difficulty {
             display: flex;
-            gap: 2px;
+            gap: 3px;
+            align-items: center;
         }
 
         .difficulty-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: var(--border);
+            transition: all 0.2s ease;
         }
 
         .difficulty-dot.filled {
             background: var(--accent);
+            box-shadow: 0 0 4px rgba(99, 102, 241, 0.3);
+        }
+
+        .difficulty-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-left: 0.25rem;
+        }
+
+        /* Duration Display */
+        .duration-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .duration-text {
+            font-size: 0.85rem;
+            font-weight: 500;
         }
 
         .dependencies {
-            margin-top: 0.5rem;
+            margin-top: 0.75rem;
             font-size: 0.85rem;
             color: var(--danger);
             font-style: italic;
+            padding: 0.5rem;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 4px;
+            border-left: 3px solid var(--danger);
         }
+
+        /* Collapsible secondary info for mobile */
+        .task-secondary {
+            margin-top: 1rem;
+            border-top: 1px solid var(--border);
+            padding-top: 0.75rem;
+        }
+
+        .task-toggle {
+            display: none; /* Hidden by default, shown on mobile */
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 0.25rem 0;
+            margin-top: 0.5rem;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .task-toggle:hover {
+            text-decoration: underline;
+        }
+
+        /* Phase color coding */
+        .task-card[data-phase="1"] { --phase-color: #3b82f6; --assignee-color: #3b82f6; }
+        .task-card[data-phase="2"] { --phase-color: #10b981; --assignee-color: #10b981; }
+        .task-card[data-phase="3"] { --phase-color: #f59e0b; --assignee-color: #f59e0b; }
+        .task-card[data-phase="4"] { --phase-color: #ef4444; --assignee-color: #ef4444; }
+        .task-card[data-phase="5"] { --phase-color: #8b5cf6; --assignee-color: #8b5cf6; }
+
+        /* Phase color coding - border stripes */\n        .task-card { border-left: 4px solid transparent; }\n        .task-card[data-phase=\"1\"] { border-left-color: #3b82f6; }\n        .task-card[data-phase=\"2\"] { border-left-color: #10b981; }\n        .task-card[data-phase=\"3\"] { border-left-color: #f59e0b; }\n        .task-card[data-phase=\"4\"] { border-left-color: #ef4444; }\n        .task-card[data-phase=\"5\"] { border-left-color: #8b5cf6; }\n\n        /* Team member color coding */
+        .task-card[data-assignee="Aldo"] .assignee-badge { background: #3b82f6; }
+        .task-card[data-assignee="Nuri"] .assignee-badge { background: #10b981; }
+        .task-card[data-assignee="Luis"] .assignee-badge { background: #f59e0b; }
+        .task-card[data-assignee="Silvia"] .assignee-badge { background: #ef4444; }
+        .task-card[data-assignee="Caro"] .assignee-badge { background: #8b5cf6; }
 
         /* Team Summary */
         .team-grid {
@@ -543,26 +704,96 @@
             }
             
             .btn {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.85rem;
+                padding: 0.75rem 1rem;
+                font-size: 16px;
+                min-height: 52px;
+                gap: 0.75rem;
             }
             
             .theme-btn {
-                padding: 0.4rem;
-                font-size: 0.9rem;
+                padding: 0.75rem;
+                font-size: 16px;
+                min-height: 52px;
+                min-width: 52px;
             }
             
             .task-card {
-                padding: 1rem;
+                padding: 1.2rem;
+                margin-bottom: 1rem;
             }
             
             .task-name {
                 font-size: 1rem;
+                line-height: 1.3;
+            }
+            
+            .task-header {
+                margin-bottom: 0.75rem;
+                gap: 0.75rem;
             }
             
             .task-meta {
                 font-size: 0.8rem;
-                gap: 0.5rem;
+                gap: 0.75rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .task-meta span {
+                width: 100%;
+                justify-content: space-between;
+                min-height: 32px; /* Touch-friendly */
+            }
+            
+            /* Show toggle button on mobile */
+            .task-toggle {
+                display: flex !important;
+            }
+            
+            /* Hide secondary info by default on mobile */
+            .task-secondary {
+                display: none;
+            }
+            
+            .task-secondary.expanded {
+                display: block;
+                animation: slideDown 0.2s ease;
+            }
+            
+            /* Enhanced assignee badge on mobile */
+            .assignee-badge {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
+            }
+            
+            /* Larger difficulty dots for touch */
+            .difficulty-dot {
+                width: 12px;
+                height: 12px;
+            }
+            
+            /* Wider duration bar on mobile */
+            .duration-bar {
+                width: 80px;
+                height: 6px;
+            }
+            
+            /* Better spacing for visual indicators */
+            .task-visual-indicators {
+                gap: 0.75rem;
+                flex-wrap: wrap;
+            }
+            
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    max-height: 0;
+                }
+                to {
+                    opacity: 1;
+                    max-height: 200px;
+                }
             }
             
             .team-grid {
@@ -587,13 +818,15 @@
             }
             
             .search-box {
-                font-size: 0.9rem;
-                padding: 0.6rem 0.8rem;
+                font-size: 16px;
+                padding: 0.75rem 1rem;
+                border-radius: 12px;
             }
             
             select {
-                font-size: 0.9rem;
-                padding: 0.6rem 0.8rem;
+                font-size: 16px;
+                padding: 0.75rem 1rem;
+                border-radius: 12px;
             }
             
             h3 {
@@ -622,6 +855,50 @@
             
             .hide-mobile {
                 display: none !important;
+            }
+        }
+
+        /* Tablet Specific Styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .task-card {
+                padding: 1.3rem;
+            }
+            
+            .task-header {
+                gap: 1rem;
+            }
+            
+            .task-meta {
+                gap: 1rem;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .task-meta span {
+                width: auto;
+                min-height: auto;
+            }
+            
+            /* Slightly larger visual elements on tablet */
+            .assignee-badge {
+                width: 34px;
+                height: 34px;
+                font-size: 0.85rem;
+            }
+            
+            .duration-bar {
+                width: 70px;
+                height: 5px;
+            }
+            
+            .difficulty-dot {
+                width: 11px;
+                height: 11px;
+            }
+            
+            /* Show toggle on tablet for dependency-heavy tasks */
+            .task-toggle {
+                display: flex !important;
             }
         }
         
@@ -859,7 +1136,7 @@
                 flex-direction: column;
             }
         }
-    </style>
+        /* Additional micro-animations for enhanced feedback */\n        @keyframes bounce {\n            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }\n            40% { transform: translateY(-8px); }\n            60% { transform: translateY(-4px); }\n        }\n\n        @keyframes glow {\n            0%, 100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }\n            50% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.6); }\n        }\n\n        /* Enhanced interactive feedback */\n        .btn:active {\n            transform: translateY(-2px) scale(0.98);\n            transition: transform 0.1s ease;\n        }\n\n        .assignee-badge:active {\n            animation: bounce 0.6s ease;\n        }\n\n        .difficulty-dot:hover {\n            animation: glow 1s ease infinite;\n        }\n\n        .task-card:active {\n            transform: translateY(-2px) scale(1.02);\n            box-shadow: 0 8px 25px var(--shadow);\n        }\n\n        .search-box:focus {\n            animation: glow 2s ease;\n        }\n\n        .phase-header:active {\n            transform: translateX(4px) scale(0.99);\n        }\n\n        /* Filter Chips for Mobile-Friendly UI */\n        .filter-chips-container {\n            margin: 1rem 0;\n            padding: 1rem;\n            background: var(--card);\n            border-radius: var(--radius);\n            border: 1px solid var(--border);\n        }\n\n        .filter-chips-title {\n            font-size: 0.9rem;\n            font-weight: 600;\n            color: var(--text);\n            margin-bottom: 0.75rem;\n            opacity: 0.8;\n        }\n\n        .filter-chips {\n            display: flex;\n            flex-wrap: wrap;\n            gap: 0.5rem;\n            margin-bottom: 0.75rem;\n        }\n\n        .filter-chip {\n            display: inline-flex;\n            align-items: center;\n            gap: 0.5rem;\n            padding: 0.5rem 0.75rem;\n            background: var(--primary);\n            color: white;\n            font-size: 0.85rem;\n            border-radius: 20px;\n            border: none;\n            cursor: pointer;\n            transition: var(--transition);\n            min-height: 36px;\n            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);\n        }\n\n        .filter-chip:hover {\n            background: var(--primary-dark);\n            transform: translateY(-1px);\n            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);\n        }\n\n        .filter-chip:active {\n            transform: translateY(0);\n            animation: bounce 0.3s ease;\n        }\n\n        .filter-chip-remove {\n            background: rgba(255, 255, 255, 0.2);\n            border-radius: 50%;\n            width: 18px;\n            height: 18px;\n            display: flex;\n            align-items: center;\n            justify-content: center;\n            font-size: 12px;\n            font-weight: bold;\n            line-height: 1;\n        }\n\n        .filter-chip-remove:hover {\n            background: rgba(255, 255, 255, 0.3);\n        }\n\n        .clear-all-filters {\n            background: var(--danger);\n            color: white;\n            border: none;\n            padding: 0.5rem 0.75rem;\n            border-radius: 6px;\n            font-size: 0.85rem;\n            cursor: pointer;\n            transition: var(--transition);\n            min-height: 36px;\n        }\n\n        .clear-all-filters:hover {\n            background: #dc2626;\n            transform: translateY(-1px);\n        }\n\n        .clear-all-filters:active {\n            transform: translateY(0);\n            animation: shake 0.3s ease;\n        }\n\n        /* Mobile optimizations for filter chips */\n        @media (max-width: 768px) {\n            .filter-chips-container {\n                margin: 0.75rem 0;\n                padding: 0.75rem;\n            }\n\n            .filter-chip {\n                font-size: 14px;\n                padding: 0.6rem 0.8rem;\n                min-height: 42px;\n            }\n\n            .clear-all-filters {\n                font-size: 14px;\n                padding: 0.6rem 0.8rem;\n                min-height: 42px;\n                width: 100%;\n                margin-top: 0.5rem;\n            }\n\n            .filter-chips {\n                gap: 0.4rem;\n            }\n        }\n    </style>
 </head>
 <body data-theme="auto">
     <header>
@@ -947,6 +1224,14 @@
                     🗑️ <span data-es="Limpiar" data-en="Clear">Limpiar</span>
                 </button>
             </div>
+            
+            <!-- Active Filter Chips -->
+            <div id="activeFilterChips" class="filter-chips-container" style="display: none;">
+                <div class="filter-chips-title" data-es="Filtros Activos:" data-en="Active Filters:">Filtros Activos:</div>
+                <div id="filterChips" class="filter-chips"></div>
+                <button class="clear-all-filters" onclick="clearAllFilters()" data-es="✕ Limpiar Todo" data-en="✕ Clear All" title="Limpiar todos los filtros">✕ Limpiar Todo</button>
+            </div>
+            
             <div class="filter-stats" id="filterStats">
                 <span data-es="Mostrando todas las tareas" data-en="Showing all tasks">Mostrando todas las tareas</span>
             </div>
@@ -1101,6 +1386,8 @@
                 difficulty: "Dificultad",
                 dependencies: "Dependencias",
                 none: "Ninguna",
+                showDetails: "Mostrar detalles",
+                hideDetails: "Ocultar detalles",
                 teamSummary: "Resumen del Equipo",
                 showingAllTasks: "Mostrando todas las tareas",
                 showing: "Mostrando",
@@ -1135,6 +1422,8 @@
                 difficulty: "Difficulty",
                 dependencies: "Dependencies",
                 none: "None",
+                showDetails: "Show details",
+                hideDetails: "Hide details",
                 teamSummary: "Team Summary",
                 showingAllTasks: "Showing all tasks",
                 showing: "Showing",
@@ -2796,22 +3085,91 @@
             
             const t = translations[currentLang] || translations.es; // Fallback to Spanish
             
+            // Get assignee initials for badge
+            const assigneeInitials = getAssigneeInitials(task.assignedTo || 'Unknown');
+            
+            // Calculate duration percentage for visual bar (max 12 hours)
+            const duration = parseFloat(task.duration) || 0;
+            const maxDuration = 12;
+            const durationPercent = Math.min((duration / maxDuration) * 100, 100);
+            
+            // Create unique ID for toggle functionality
+            const cardId = `task-${task.id.replace('.', '-')}`;
+            
             card.innerHTML = `
                 <div class="task-header">
-                    <div>
+                    <div class="task-main-info">
                         <div class="task-id">${task.id}</div>
                         <div class="task-name">${taskName}</div>
                     </div>
+                    <div class="task-visual-indicators">
+                        <div class="assignee-badge" title="${task.assignedTo}">${assigneeInitials}</div>
+                        <div class="duration-display" title="${t.duration}: ${duration} ${t.hours}">
+                            <div class="duration-bar">
+                                <div class="duration-fill" style="width: ${durationPercent}%"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="task-meta">
-                    <span class="assignee">${t.assignedTo}: ${task.assignedTo || 'Unknown'}</span>
-                    <span>${t.duration}: ${task.duration || '0'} ${t.hours}</span>
-                    <span>${t.difficulty}: ${renderDifficulty(task.difficulty || 1)}</span>
+                    <span class="assignee-info">
+                        <span>${t.assignedTo}:</span>
+                        <span>${task.assignedTo || 'Unknown'}</span>
+                    </span>
+                    <span class="duration-display">
+                        <span>${t.duration}:</span>
+                        <span class="duration-text">${task.duration || '0'} ${t.hours}</span>
+                    </span>
+                    <span class="difficulty-container">
+                        <span>${t.difficulty}:</span>
+                        <span class="difficulty">${renderDifficulty(task.difficulty || 1)}</span>
+                    </span>
                 </div>
-                ${deps !== t.none ? `<div class="dependencies">${t.dependencies}: ${deps}</div>` : ''}
+                ${deps !== t.none ? `
+                    <button class="task-toggle" onclick="toggleTaskDetails('${cardId}')" aria-expanded="false">
+                        <span>${t.showDetails || 'Show details'}</span>
+                        <span style="transform: rotate(0deg); transition: transform 0.2s;">▼</span>
+                    </button>
+                    <div class="task-secondary" id="${cardId}-details">
+                        <div class="dependencies">${t.dependencies}: ${deps}</div>
+                    </div>
+                ` : ''}
             `;
             
+            card.id = cardId;
+            
             return card;
+        }
+        
+        // Helper function to get assignee initials
+        function getAssigneeInitials(assignee) {
+            if (assignee === 'All') return 'AL';
+            if (assignee === 'Unknown') return '?';
+            return assignee.split(' ')
+                .map(name => name.charAt(0).toUpperCase())
+                .join('')
+                .substring(0, 2);
+        }
+        
+        // Toggle task details function
+        function toggleTaskDetails(cardId) {
+            const detailsDiv = document.getElementById(`${cardId}-details`);
+            const toggleBtn = document.querySelector(`button[onclick="toggleTaskDetails('${cardId}')"]`);
+            const arrow = toggleBtn.querySelector('span:last-child');
+            
+            if (detailsDiv.classList.contains('expanded')) {
+                detailsDiv.classList.remove('expanded');
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                arrow.style.transform = 'rotate(0deg)';
+                toggleBtn.querySelector('span:first-child').textContent = 
+                    translations[currentLang].showDetails || 'Show details';
+            } else {
+                detailsDiv.classList.add('expanded');
+                toggleBtn.setAttribute('aria-expanded', 'true');
+                arrow.style.transform = 'rotate(180deg)';
+                toggleBtn.querySelector('span:first-child').textContent = 
+                    translations[currentLang].hideDetails || 'Hide details';
+            }
         }
 
         function renderDifficulty(level) {
