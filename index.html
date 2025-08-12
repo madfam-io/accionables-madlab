@@ -682,6 +682,145 @@
             outline-offset: 2px;
         }
 
+        /* Export and Filter Enhancements */
+        .btn-export {
+            background: var(--secondary);
+            color: white;
+            border: none;
+        }
+
+        .btn-export:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .filter-stats {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.7;
+            text-align: center;
+        }
+
+        /* Export Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .export-modal {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px var(--shadow);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: var(--border);
+        }
+
         /* Better Mobile Touch Experience */
         @media (max-width: 768px) {
             .phase-header {
@@ -704,6 +843,20 @@
             .btn {
                 min-height: 48px;
                 padding: 0.75rem 1rem;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .export-modal {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+
+            .modal-actions {
+                flex-direction: column;
             }
         }
     </style>
@@ -773,6 +926,29 @@
                     <option value="4">Nivel 4</option>
                     <option value="5">Nivel 5</option>
                 </select>
+                <select id="phaseFilter" onchange="filterTasks()">
+                    <option value="">Todas las Fases</option>
+                    <option value="1">Fase 1: Fundación</option>
+                    <option value="2">Fase 2: Desarrollo</option>
+                    <option value="3">Fase 3: Piloto Prep</option>
+                    <option value="4">Fase 4: Piloto</option>
+                    <option value="5">Fase 5: Lanzamiento</option>
+                </select>
+                <select id="durationFilter" onchange="filterTasks()">
+                    <option value="">Toda Duración</option>
+                    <option value="short">Corta (≤2h)</option>
+                    <option value="medium">Media (2-5h)</option>
+                    <option value="long">Larga (>5h)</option>
+                </select>
+                <button class="btn btn-export" onclick="openExportModal()">
+                    📊 <span data-es="Exportar" data-en="Export">Exportar</span>
+                </button>
+                <button class="btn btn-secondary" onclick="clearAllFilters()">
+                    🗑️ <span data-es="Limpiar" data-en="Clear">Limpiar</span>
+                </button>
+            </div>
+            <div class="filter-stats" id="filterStats">
+                <span data-es="Mostrando todas las tareas" data-en="Showing all tasks">Mostrando todas las tareas</span>
             </div>
         </div>
 
@@ -808,6 +984,105 @@
         </div>
     </div>
 
+    <!-- Export Modal -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="export-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <span data-es="Exportar Tareas" data-en="Export Tasks">Exportar Tareas</span>
+                </h3>
+                <button class="modal-close" onclick="closeExportModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <span data-es="Formato" data-en="Format">Formato</span>
+                </label>
+                <select class="form-control" id="exportFormat">
+                    <option value="csv">CSV (Excel)</option>
+                    <option value="json">JSON (Datos)</option>
+                    <option value="txt">Texto Plano</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <span data-es="Idioma" data-en="Language">Idioma</span>
+                </label>
+                <select class="form-control" id="exportLanguage">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <span data-es="Alcance" data-en="Scope">Alcance</span>
+                </label>
+                <div style="margin-top: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <input type="radio" name="exportScope" value="filtered" checked>
+                        <span data-es="Solo tareas filtradas" data-en="Filtered tasks only">Solo tareas filtradas</span>
+                        <span id="filteredCount">(109)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="radio" name="exportScope" value="all">
+                        <span data-es="Todas las tareas" data-en="All tasks">Todas las tareas (109)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <span data-es="Incluir Campos" data-en="Include Fields">Incluir Campos</span>
+                </label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="includeId" checked>
+                        <span data-es="ID de Tarea" data-en="Task ID">ID de Tarea</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="includeName" checked>
+                        <span data-es="Nombre" data-en="Task Name">Nombre</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="includeAssignee" checked>
+                        <span data-es="Asignado" data-en="Assignee">Asignado</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="includeDuration" checked>
+                        <span data-es="Duración" data-en="Duration">Duración</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="includeDifficulty" checked>
+                        <span data-es="Dificultad" data-en="Difficulty">Dificultad</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="includePhase" checked>
+                        <span data-es="Fase" data-en="Phase">Fase</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="includeSection" checked>
+                        <span data-es="Sección" data-en="Section">Sección</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="includeDependencies">
+                        <span data-es="Dependencias" data-en="Dependencies">Dependencias</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeExportModal()">
+                    <span data-es="Cancelar" data-en="Cancel">Cancelar</span>
+                </button>
+                <button class="btn btn-export" onclick="performExport()">
+                    📊 <span data-es="Exportar" data-en="Export">Exportar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Language data
         const translations = {
@@ -827,6 +1102,16 @@
                 dependencies: "Dependencias",
                 none: "Ninguna",
                 teamSummary: "Resumen del Equipo",
+                showingAllTasks: "Mostrando todas las tareas",
+                showing: "Mostrando",
+                of: "de",
+                taskId: "ID",
+                taskName: "Nombre",
+                phase: "Fase",
+                section: "Sección",
+                projectTasks: "Tareas del Proyecto",
+                exportDate: "Fecha de Exportación",
+                totalTasks: "Total de Tareas",
                 phases: {
                     1: "Fase 1: Fundación (11 Ago - 5 Sep, 2025)",
                     2: "Fase 2: Desarrollo de Contenido (6-25 Sep, 2025)",
@@ -851,6 +1136,16 @@
                 dependencies: "Dependencies",
                 none: "None",
                 teamSummary: "Team Summary",
+                showingAllTasks: "Showing all tasks",
+                showing: "Showing",
+                of: "of",
+                taskId: "ID",
+                taskName: "Name",
+                phase: "Phase",
+                section: "Section",
+                projectTasks: "Project Tasks",
+                exportDate: "Export Date",
+                totalTasks: "Total Tasks",
                 phases: {
                     1: "Phase 1: Foundation (Aug 11 - Sep 5, 2025)",
                     2: "Phase 2: Content Development (Sept 6-25, 2025)",
@@ -2346,13 +2641,47 @@
             if (searchBox) searchBox.placeholder = t.searchPlaceholder || '';
             
             // Update filter options
-            document.querySelector('#teamFilter option[value=""]').textContent = t.allMembers;
-            document.querySelector('#difficultyFilter option[value=""]').textContent = t.allDifficulty;
+            const teamFilterDefault = document.querySelector('#teamFilter option[value=""]');
+            const difficultyFilterDefault = document.querySelector('#difficultyFilter option[value=""]');
+            const phaseFilterDefault = document.querySelector('#phaseFilter option[value=""]');
+            const durationFilterDefault = document.querySelector('#durationFilter option[value=""]');
+            
+            if (teamFilterDefault) teamFilterDefault.textContent = t.allMembers || 'Todos los Miembros';
+            if (difficultyFilterDefault) difficultyFilterDefault.textContent = t.allDifficulty || 'Toda Dificultad';
+            if (phaseFilterDefault) phaseFilterDefault.textContent = currentLang === 'es' ? 'Todas las Fases' : 'All Phases';
+            if (durationFilterDefault) durationFilterDefault.textContent = currentLang === 'es' ? 'Toda Duración' : 'All Duration';
             
             // Update difficulty filter options
             for (let i = 1; i <= 5; i++) {
-                document.querySelector(`#difficultyFilter option[value="${i}"]`).textContent = `${t.level} ${i}`;
+                const diffOption = document.querySelector(`#difficultyFilter option[value="${i}"]`);
+                if (diffOption) diffOption.textContent = `${t.level} ${i}`;
             }
+            
+            // Update phase filter options
+            const phaseOptions = [
+                { value: '1', es: 'Fase 1: Fundación', en: 'Phase 1: Foundation' },
+                { value: '2', es: 'Fase 2: Desarrollo', en: 'Phase 2: Development' },
+                { value: '3', es: 'Fase 3: Piloto Prep', en: 'Phase 3: Pilot Prep' },
+                { value: '4', es: 'Fase 4: Piloto', en: 'Phase 4: Pilot' },
+                { value: '5', es: 'Fase 5: Lanzamiento', en: 'Phase 5: Launch' }
+            ];
+            
+            phaseOptions.forEach(option => {
+                const phaseOption = document.querySelector(`#phaseFilter option[value="${option.value}"]`);
+                if (phaseOption) phaseOption.textContent = option[currentLang];
+            });
+            
+            // Update duration filter options
+            const durationOptions = [
+                { value: 'short', es: 'Corta (≤2h)', en: 'Short (≤2h)' },
+                { value: 'medium', es: 'Media (2-5h)', en: 'Medium (2-5h)' },
+                { value: 'long', es: 'Larga (>5h)', en: 'Long (>5h)' }
+            ];
+            
+            durationOptions.forEach(option => {
+                const durationOption = document.querySelector(`#durationFilter option[value="${option.value}"]`);
+                if (durationOption) durationOption.textContent = option[currentLang];
+            });
             
             // Update stat labels
             document.querySelectorAll('.stat-label').forEach(label => {
@@ -2426,7 +2755,7 @@
                     sectionDiv.innerHTML = `<h3 class="section-title">${section.title[currentLang]}</h3>`;
                     
                     section.tasks.forEach(task => {
-                        const taskCard = createTaskCard(task);
+                        const taskCard = createTaskCard(task, phaseNum, section.title[currentLang]);
                         sectionDiv.appendChild(taskCard);
                     });
                     
@@ -2439,7 +2768,7 @@
             });
         }
 
-        function createTaskCard(task) {
+        function createTaskCard(task, phaseNum, sectionTitle) {
             // Validate task object
             if (!task || !task.id || !task.name || !task.assignedTo) {
                 console.warn('Invalid task data:', task);
@@ -2450,6 +2779,9 @@
             card.className = 'task-card';
             card.setAttribute('data-assignee', task.assignedTo || 'Unknown');
             card.setAttribute('data-difficulty', task.difficulty || 1);
+            card.setAttribute('data-phase', phaseNum);
+            card.setAttribute('data-duration', task.duration || 0);
+            card.setAttribute('data-section', sectionTitle || '');
             
             // Safe name extraction with fallback
             const taskName = typeof task.name === 'object' 
@@ -2503,29 +2835,288 @@
             header.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
         }
 
-        // Filter functionality
+        // Enhanced filter functionality
         function filterTasks() {
             const searchTerm = document.getElementById('searchBox').value.toLowerCase();
             const teamFilter = document.getElementById('teamFilter').value;
             const difficultyFilter = document.getElementById('difficultyFilter').value;
+            const phaseFilter = document.getElementById('phaseFilter').value;
+            const durationFilter = document.getElementById('durationFilter').value;
             
             const taskCards = document.querySelectorAll('.task-card');
+            let visibleCount = 0;
             
             taskCards.forEach(card => {
                 const taskName = card.getAttribute('data-task-name');
                 const assignee = card.getAttribute('data-assignee');
                 const difficulty = card.getAttribute('data-difficulty');
+                const phase = card.getAttribute('data-phase');
+                const duration = parseFloat(card.getAttribute('data-duration')) || 0;
                 
                 const matchesSearch = taskName.includes(searchTerm);
                 const matchesTeam = !teamFilter || assignee === teamFilter;
                 const matchesDifficulty = !difficultyFilter || difficulty === difficultyFilter;
+                const matchesPhase = !phaseFilter || phase === phaseFilter;
                 
-                if (matchesSearch && matchesTeam && matchesDifficulty) {
+                let matchesDuration = true;
+                if (durationFilter) {
+                    switch (durationFilter) {
+                        case 'short':
+                            matchesDuration = duration <= 2;
+                            break;
+                        case 'medium':
+                            matchesDuration = duration > 2 && duration <= 5;
+                            break;
+                        case 'long':
+                            matchesDuration = duration > 5;
+                            break;
+                    }
+                }
+                
+                if (matchesSearch && matchesTeam && matchesDifficulty && matchesPhase && matchesDuration) {
                     card.style.display = 'block';
+                    visibleCount++;
                 } else {
                     card.style.display = 'none';
                 }
             });
+            
+            updateFilterStats(visibleCount);
+            updateExportModal(visibleCount);
+        }
+
+        function updateFilterStats(visibleCount) {
+            const filterStats = document.getElementById('filterStats');
+            const t = translations[currentLang] || translations.es;
+            
+            if (visibleCount === 109) {
+                filterStats.querySelector('span').textContent = t.showingAllTasks || 'Mostrando todas las tareas';
+            } else {
+                filterStats.querySelector('span').textContent = 
+                    `${t.showing || 'Mostrando'} ${visibleCount} ${t.of || 'de'} 109 ${t.tasks || 'tareas'}`;
+            }
+        }
+
+        function updateExportModal(visibleCount) {
+            const filteredCount = document.getElementById('filteredCount');
+            if (filteredCount) {
+                filteredCount.textContent = `(${visibleCount})`;
+            }
+        }
+
+        function clearAllFilters() {
+            document.getElementById('searchBox').value = '';
+            document.getElementById('teamFilter').value = '';
+            document.getElementById('difficultyFilter').value = '';
+            document.getElementById('phaseFilter').value = '';
+            document.getElementById('durationFilter').value = '';
+            filterTasks();
+        }
+
+        // Export Modal Functions
+        function openExportModal() {
+            document.getElementById('exportModal').classList.add('active');
+            document.getElementById('exportLanguage').value = currentLang;
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        // Export functionality
+        function getFilteredTasks() {
+            const taskCards = document.querySelectorAll('.task-card');
+            const filteredTasks = [];
+            
+            taskCards.forEach(card => {
+                if (card.style.display !== 'none') {
+                    const task = {
+                        id: card.querySelector('.task-id').textContent,
+                        name: card.querySelector('.task-name').textContent,
+                        assignee: card.getAttribute('data-assignee'),
+                        duration: card.getAttribute('data-duration'),
+                        difficulty: card.getAttribute('data-difficulty'),
+                        phase: card.getAttribute('data-phase'),
+                        section: card.getAttribute('data-section'),
+                        dependencies: card.querySelector('.dependencies')?.textContent || 'None'
+                    };
+                    filteredTasks.push(task);
+                }
+            });
+            
+            return filteredTasks;
+        }
+
+        function getAllTasks() {
+            const allTasks = [];
+            
+            Object.keys(tasksData).forEach(phaseNum => {
+                const phase = tasksData[phaseNum];
+                phase.sections.forEach(section => {
+                    section.tasks.forEach(task => {
+                        const exportLang = document.getElementById('exportLanguage').value;
+                        const taskName = typeof task.name === 'object' ? task.name[exportLang] : task.name;
+                        const deps = typeof task.dependencies === 'object' ? task.dependencies[exportLang] : task.dependencies;
+                        
+                        allTasks.push({
+                            id: task.id,
+                            name: taskName,
+                            assignee: task.assignedTo,
+                            duration: task.duration,
+                            difficulty: task.difficulty,
+                            phase: phaseNum,
+                            section: section.title[exportLang],
+                            dependencies: deps
+                        });
+                    });
+                });
+            });
+            
+            return allTasks;
+        }
+
+        function performExport() {
+            const format = document.getElementById('exportFormat').value;
+            const scope = document.querySelector('input[name="exportScope"]:checked').value;
+            const exportLang = document.getElementById('exportLanguage').value;
+            
+            // Get tasks based on scope
+            const tasks = scope === 'filtered' ? getFilteredTasks() : getAllTasks();
+            
+            if (tasks.length === 0) {
+                alert(exportLang === 'es' ? 'No hay tareas para exportar' : 'No tasks to export');
+                return;
+            }
+            
+            // Get selected fields
+            const fields = {
+                id: document.getElementById('includeId').checked,
+                name: document.getElementById('includeName').checked,
+                assignee: document.getElementById('includeAssignee').checked,
+                duration: document.getElementById('includeDuration').checked,
+                difficulty: document.getElementById('includeDifficulty').checked,
+                phase: document.getElementById('includePhase').checked,
+                section: document.getElementById('includeSection').checked,
+                dependencies: document.getElementById('includeDependencies').checked
+            };
+            
+            // Generate export based on format
+            switch (format) {
+                case 'csv':
+                    exportToCSV(tasks, fields, exportLang);
+                    break;
+                case 'json':
+                    exportToJSON(tasks, fields, exportLang);
+                    break;
+                case 'txt':
+                    exportToText(tasks, fields, exportLang);
+                    break;
+            }
+            
+            closeExportModal();
+        }
+
+        function exportToCSV(tasks, fields, lang) {
+            const t = translations[lang] || translations.es;
+            const headers = [];
+            const fieldMap = {
+                id: t.taskId || 'ID',
+                name: t.taskName || 'Nombre',
+                assignee: t.assignedTo || 'Asignado',
+                duration: t.duration || 'Duración',
+                difficulty: t.difficulty || 'Dificultad',
+                phase: t.phase || 'Fase',
+                section: t.section || 'Sección',
+                dependencies: t.dependencies || 'Dependencias'
+            };
+            
+            // Build headers
+            Object.keys(fields).forEach(key => {
+                if (fields[key]) {
+                    headers.push(fieldMap[key]);
+                }
+            });
+            
+            // Build CSV content
+            let csvContent = headers.join(',') + '\n';
+            
+            tasks.forEach(task => {
+                const row = [];
+                Object.keys(fields).forEach(key => {
+                    if (fields[key]) {
+                        let value = task[key] || '';
+                        // Escape commas and quotes in CSV
+                        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                            value = '"' + value.replace(/"/g, '""') + '"';
+                        }
+                        row.push(value);
+                    }
+                });
+                csvContent += row.join(',') + '\n';
+            });
+            
+            downloadFile(csvContent, 'madlab-tasks.csv', 'text/csv');
+        }
+
+        function exportToJSON(tasks, fields, lang) {
+            const filteredTasks = tasks.map(task => {
+                const filtered = {};
+                Object.keys(fields).forEach(key => {
+                    if (fields[key]) {
+                        filtered[key] = task[key];
+                    }
+                });
+                return filtered;
+            });
+            
+            const exportData = {
+                exportInfo: {
+                    timestamp: new Date().toISOString(),
+                    language: lang,
+                    totalTasks: filteredTasks.length,
+                    project: 'MADLAB'
+                },
+                tasks: filteredTasks
+            };
+            
+            const jsonContent = JSON.stringify(exportData, null, 2);
+            downloadFile(jsonContent, 'madlab-tasks.json', 'application/json');
+        }
+
+        function exportToText(tasks, fields, lang) {
+            const t = translations[lang] || translations.es;
+            let textContent = `MADLAB ${t.projectTasks || 'Tareas del Proyecto'}\n`;
+            textContent += `${t.exportDate || 'Fecha de Exportación'}: ${new Date().toLocaleDateString()}\n`;
+            textContent += `${t.totalTasks || 'Total de Tareas'}: ${tasks.length}\n\n`;
+            
+            tasks.forEach((task, index) => {
+                textContent += `${index + 1}. `;
+                if (fields.id) textContent += `[${task.id}] `;
+                if (fields.name) textContent += `${task.name}\n`;
+                if (fields.assignee) textContent += `   ${t.assignedTo || 'Asignado'}: ${task.assignee}\n`;
+                if (fields.duration) textContent += `   ${t.duration || 'Duración'}: ${task.duration} ${t.hours || 'horas'}\n`;
+                if (fields.difficulty) textContent += `   ${t.difficulty || 'Dificultad'}: ${task.difficulty}/5\n`;
+                if (fields.phase) textContent += `   ${t.phase || 'Fase'}: ${task.phase}\n`;
+                if (fields.section) textContent += `   ${t.section || 'Sección'}: ${task.section}\n`;
+                if (fields.dependencies && task.dependencies !== 'None') {
+                    textContent += `   ${t.dependencies || 'Dependencias'}: ${task.dependencies}\n`;
+                }
+                textContent += '\n';
+            });
+            
+            downloadFile(textContent, 'madlab-tasks.txt', 'text/plain');
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         // Initialize
