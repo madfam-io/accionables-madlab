@@ -324,6 +324,9 @@
         .phase:nth-child(3) { animation-delay: 0.3s; }
         .phase:nth-child(4) { animation-delay: 0.4s; }
         .phase:nth-child(5) { animation-delay: 0.5s; }
+        .phase:nth-child(6) { animation-delay: 0.6s; }
+        .phase:nth-child(7) { animation-delay: 0.7s; }
+        .phase:nth-child(8) { animation-delay: 0.8s; }
 
         .phase-header {
             background: var(--card);
@@ -361,13 +364,11 @@
             display: grid;
             gap: 1rem;
             transition: var(--transition);
-            max-height: 2000px;
             overflow: hidden;
         }
 
         .phase-content.collapsed {
-            max-height: 0;
-            margin-bottom: 0;
+            display: none;
         }
 
         /* Task Cards */
@@ -645,6 +646,66 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Utility Classes */
+        .section-separator {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 2rem 0;
+        }
+
+        .team-summary-title {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            margin: 1rem 0;
+            color: var(--primary);
+        }
+
+        .phases-container {
+            padding-bottom: 2rem;
+        }
+
+        /* Enhanced Focus Styles */
+        .phase-header:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .btn:focus, 
+        .search-box:focus, 
+        select:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Better Mobile Touch Experience */
+        @media (max-width: 768px) {
+            .phase-header {
+                min-height: 60px;
+                padding: 1rem;
+                -webkit-tap-highlight-color: rgba(99, 102, 241, 0.1);
+            }
+            
+            .task-card {
+                padding: 1.2rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            /* Improve button sizes on mobile */
+            .theme-btn {
+                min-width: 40px;
+                min-height: 40px;
+            }
+            
+            .btn {
+                min-height: 48px;
+                padding: 0.75rem 1rem;
+            }
+        }
     </style>
 </head>
 <body data-theme="auto">
@@ -715,11 +776,11 @@
             </div>
         </div>
 
-        <div id="phasesContainer" style="padding-bottom: 2rem;"></div>
+        <div id="phasesContainer" class="phases-container"></div>
 
-        <hr style="border: none; border-top: 1px solid var(--border); margin: 2rem 0;">
+        <hr class="section-separator">
 
-        <h2 style="text-align: center; color: var(--primary); margin-bottom: 2rem;">
+        <h2 class="team-summary-title">
             <span data-es="Resumen del Equipo" data-en="Team Summary">Resumen del Equipo</span>
         </h2>
 
@@ -2267,11 +2328,22 @@
         }
 
         function updateLanguage() {
-            const t = translations[currentLang];
-            document.getElementById('heroTitle').textContent = t.heroTitle;
-            document.getElementById('heroSubtitle').textContent = t.heroSubtitle;
-            document.getElementById('heroStartDate').textContent = t.startDate;
-            document.getElementById('searchBox').placeholder = t.searchPlaceholder;
+            const t = translations[currentLang] || translations.es; // Fallback to Spanish
+            if (!t) {
+                console.error('No translations available');
+                return;
+            }
+            
+            // Safe element updates with existence checks
+            const heroTitle = document.getElementById('heroTitle');
+            const heroSubtitle = document.getElementById('heroSubtitle');
+            const heroStartDate = document.getElementById('heroStartDate');
+            const searchBox = document.getElementById('searchBox');
+            
+            if (heroTitle) heroTitle.textContent = t.heroTitle || '';
+            if (heroSubtitle) heroSubtitle.textContent = t.heroSubtitle || '';
+            if (heroStartDate) heroStartDate.textContent = t.startDate || '';
+            if (searchBox) searchBox.placeholder = t.searchPlaceholder || '';
             
             // Update filter options
             document.querySelector('#teamFilter option[value=""]').textContent = t.allMembers;
@@ -2304,17 +2376,42 @@
         // Render phases
         function renderPhases() {
             const container = document.getElementById('phasesContainer');
+            if (!container) {
+                console.error('Phases container not found');
+                return;
+            }
+            
             container.innerHTML = '';
+            
+            if (!tasksData || typeof tasksData !== 'object') {
+                console.error('Invalid tasks data');
+                return;
+            }
             
             Object.keys(tasksData).forEach(phaseNum => {
                 const phase = tasksData[phaseNum];
+                if (!phase || !phase.title || !phase.sections) {
+                    console.warn(`Invalid phase data for phase ${phaseNum}:`, phase);
+                    return;
+                }
+                
                 const phaseDiv = document.createElement('div');
                 phaseDiv.className = 'phase';
                 phaseDiv.setAttribute('data-phase', phaseNum);
                 
                 const phaseHeader = document.createElement('div');
                 phaseHeader.className = 'phase-header';
+                phaseHeader.setAttribute('role', 'button');
+                phaseHeader.setAttribute('aria-expanded', 'true');
+                phaseHeader.setAttribute('aria-controls', `phase-${phaseNum}-content`);
+                phaseHeader.setAttribute('tabindex', '0');
                 phaseHeader.onclick = () => togglePhase(phaseNum);
+                phaseHeader.onkeydown = (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        togglePhase(phaseNum);
+                    }
+                };
                 phaseHeader.innerHTML = `
                     <div class="phase-title">${phase.title[currentLang]}</div>
                     <div class="phase-toggle">▼</div>
@@ -2326,7 +2423,7 @@
                 
                 phase.sections.forEach(section => {
                     const sectionDiv = document.createElement('div');
-                    sectionDiv.innerHTML = `<h3 style="margin: 1rem 0; color: var(--primary);">${section.title[currentLang]}</h3>`;
+                    sectionDiv.innerHTML = `<h3 class="section-title">${section.title[currentLang]}</h3>`;
                     
                     section.tasks.forEach(task => {
                         const taskCard = createTaskCard(task);
@@ -2343,14 +2440,29 @@
         }
 
         function createTaskCard(task) {
+            // Validate task object
+            if (!task || !task.id || !task.name || !task.assignedTo) {
+                console.warn('Invalid task data:', task);
+                return document.createElement('div'); // Return empty div
+            }
+            
             const card = document.createElement('div');
             card.className = 'task-card';
-            card.setAttribute('data-assignee', task.assignedTo);
-            card.setAttribute('data-difficulty', task.difficulty);
-            card.setAttribute('data-task-name', typeof task.name === 'object' ? task.name[currentLang].toLowerCase() : task.name.toLowerCase());
+            card.setAttribute('data-assignee', task.assignedTo || 'Unknown');
+            card.setAttribute('data-difficulty', task.difficulty || 1);
             
-            const taskName = typeof task.name === 'object' ? task.name[currentLang] : task.name;
-            const deps = typeof task.dependencies === 'object' ? task.dependencies[currentLang] : task.dependencies;
+            // Safe name extraction with fallback
+            const taskName = typeof task.name === 'object' 
+                ? (task.name[currentLang] || task.name.es || task.name.en || 'Unnamed Task')
+                : (task.name || 'Unnamed Task');
+            card.setAttribute('data-task-name', taskName.toLowerCase());
+            
+            // Safe dependencies extraction with fallback
+            const deps = typeof task.dependencies === 'object'
+                ? (task.dependencies[currentLang] || task.dependencies.es || task.dependencies.en || 'None')
+                : (task.dependencies || 'None');
+            
+            const t = translations[currentLang] || translations.es; // Fallback to Spanish
             
             card.innerHTML = `
                 <div class="task-header">
@@ -2360,11 +2472,11 @@
                     </div>
                 </div>
                 <div class="task-meta">
-                    <span class="assignee">${translations[currentLang].assignedTo}: ${task.assignedTo}</span>
-                    <span>${translations[currentLang].duration}: ${task.duration} ${translations[currentLang].hours}</span>
-                    <span>${translations[currentLang].difficulty}: ${renderDifficulty(task.difficulty)}</span>
+                    <span class="assignee">${t.assignedTo}: ${task.assignedTo || 'Unknown'}</span>
+                    <span>${t.duration}: ${task.duration || '0'} ${t.hours}</span>
+                    <span>${t.difficulty}: ${renderDifficulty(task.difficulty || 1)}</span>
                 </div>
-                ${deps !== translations[currentLang].none ? `<div class="dependencies">${translations[currentLang].dependencies}: ${deps}</div>` : ''}
+                ${deps !== t.none ? `<div class="dependencies">${t.dependencies}: ${deps}</div>` : ''}
             `;
             
             return card;
@@ -2382,8 +2494,13 @@
             const header = document.querySelector(`[data-phase="${phaseNum}"] .phase-header`);
             const content = document.getElementById(`phase-${phaseNum}-content`);
             
+            const isCollapsed = header.classList.contains('collapsed');
+            
             header.classList.toggle('collapsed');
             content.classList.toggle('collapsed');
+            
+            // Update ARIA attributes
+            header.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
         }
 
         // Filter functionality
