@@ -1,0 +1,37 @@
+/* ==========================================================================
+   CSS Custom Properties (Design Tokens)
+   ========================================================================== */
+
+:root {
+    /* Colors */
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #10b981;
+    --accent: #f59e0b;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --bg-light: #ffffff;
+    --bg-dark: #111827;
+    --text-light: #1f2937;
+    --text-dark: #f9fafb;
+    --text-secondary: #6b7280;
+    --card-light: #f3f4f6;
+    --card-dark: #1f2937;
+    --border-light: #e5e7eb;
+    --border-dark: #374151;
+    --shadow: rgba(0, 0, 0, 0.1);
+    
+    /* Spacing Scale */
+    --space-xs: 0.25rem;    /* 4px */
+    --space-sm: 0.5rem;     /* 8px */
+    --space-md: 0.75rem;    /* 12px */
+    --space-lg: 1rem;       /* 16px */
+    --space-xl: 1.5rem;     /* 24px */
+    --space-2xl: 2rem;      /* 32px */
+    --space-3xl: 3rem;      /* 48px */
+    
+    /* Design Tokens */
+    --radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

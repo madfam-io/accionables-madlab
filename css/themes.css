@@ -1,0 +1,38 @@
+/* ==========================================================================
+   Theme System
+   ========================================================================== */
+
+[data-theme="light"] {
+    --bg: var(--bg-light);
+    --text: var(--text-light);
+    --card: var(--card-light);
+    --border: var(--border-light);
+}
+
+[data-theme="dark"] {
+    --bg: var(--bg-dark);
+    --text: var(--text-dark);
+    --card: var(--card-dark);
+    --border: var(--border-dark);
+    --shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Auto theme detection */
+@media (prefers-color-scheme: dark) {
+    [data-theme="auto"] {
+        --bg: var(--bg-dark);
+        --text: var(--text-dark);
+        --card: var(--card-dark);
+        --border: var(--border-dark);
+        --shadow: rgba(0, 0, 0, 0.3);
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    [data-theme="auto"] {
+        --bg: var(--bg-light);
+        --text: var(--text-light);
+        --card: var(--card-light);
+        --border: var(--border-light);
+    }
+}
