@@ -570,6 +570,1015 @@ button, a, .phase-header, .task-card {
     min-height: 48px;
 }
 
+/* Touch gesture states */
+.touch-device .phase-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.touch-device .phase-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--primary), var(--secondary));
+    opacity: 0;
+    transform: scaleY(0);
+    transition: all 0.3s ease;
+}
+
+.phase-expanding .phase-header::after,
+.phase-collapsing .phase-header::after {
+    opacity: 1;
+    transform: scaleY(1);
+}
+
+.phase-expanding .phase-header {
+    background: linear-gradient(90deg, var(--card), rgba(99, 102, 241, 0.05));
+}
+
+.phase-collapsing .phase-header {
+    background: linear-gradient(90deg, var(--card), rgba(239, 68, 68, 0.05));
+}
+
+/* Task card touch states */
+.task-card.long-pressed {
+    transform: scale(0.98);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    background: linear-gradient(135deg, var(--card), rgba(99, 102, 241, 0.05));
+}
+
+.task-card.mobile-optimized {
+    will-change: transform;
+    contain: layout style paint;
+}
+
+/* Pull to refresh styles */
+.pull-to-refresh-active {
+    --pull-progress: 0;
+}
+
+.pull-to-refresh-active::before {
+    content: '🔄';
+    position: fixed;
+    top: calc(var(--pull-progress) * 60px - 30px);
+    left: 50%;
+    transform: translateX(-50%) rotate(calc(var(--pull-progress) * 360deg));
+    font-size: 1.5rem;
+    z-index: 1000;
+    opacity: var(--pull-progress);
+    transition: opacity 0.1s ease;
+}
+
+.pull-to-refresh-triggered::before {
+    animation: pullRefreshSpin 1s linear infinite;
+    top: 30px;
+    opacity: 1;
+}
+
+@keyframes pullRefreshSpin {
+    from { transform: translateX(-50%) rotate(0deg); }
+    to { transform: translateX(-50%) rotate(360deg); }
+}
+
+/* Refresh indicator */
+.refresh-indicator {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    background: var(--success);
+    color: white;
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 500;
+    z-index: 1001;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.refresh-indicator.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* Breakpoint-specific styles */
+body.bp-xs {
+    --space-lg: 1rem;
+    --space-xl: 1.5rem;
+}
+
+body.bp-sm {
+    --space-lg: 1.25rem;
+    --space-xl: 1.75rem;
+}
+
+/* Mobile layout optimizations */
+.mobile-layout .hero {
+    padding: var(--space-xl) 0;
+}
+
+.mobile-layout .hero h1 {
+    font-size: 2rem;
+}
+
+.mobile-layout .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+}
+
+.mobile-layout .phase {
+    margin-bottom: var(--space-lg);
+}
+
+/* Keyboard visibility handling */
+.keyboard-visible .hero {
+    display: none;
+}
+
+.keyboard-visible .stats-grid {
+    display: none;
+}
+
+.keyboard-visible .filters {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    margin-bottom: var(--space-md);
+}
+
+/* Orientation-specific styles */
+.landscape .modal {
+    max-height: 70vh;
+    width: 80%;
+    max-width: 600px;
+}
+
+.landscape-modal {
+    display: flex;
+    flex-direction: row;
+    max-width: 80vw;
+    max-height: 60vh;
+}
+
+.landscape-modal .modal-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Enhanced touch targets for small screens */
+@media (max-width: 480px) {
+    .theme-btn, .btn {
+        min-height: 48px;
+        min-width: 48px;
+        padding: var(--space-md);
+    }
+    
+    .phase-header {
+        min-height: 64px;
+        padding: var(--space-lg);
+    }
+    
+    .task-card {
+        padding: var(--space-lg);
+        margin-bottom: var(--space-lg);
+        min-height: 80px;
+    }
+    
+    .assignee-badge {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
+/* ==========================================================================
+   Lazy Loading and Performance Optimizations
+   ========================================================================== */
+
+/* Lazy loading states */
+.lazy-loading {
+    opacity: 0.6;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.lazy-loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Lazy section optimizations */
+.lazy-section {
+    contain: layout style paint;
+    will-change: contents;
+}
+
+/* Virtual scroll container */
+.virtual-scroll-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.virtual-scroll-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    will-change: transform;
+}
+
+.virtual-item {
+    contain: layout style paint;
+    position: relative;
+}
+
+/* Lazy image loading */
+img[data-src] {
+    background: var(--border);
+    border-radius: var(--radius);
+    transition: opacity 0.3s ease;
+}
+
+.lazy-image-loaded {
+    opacity: 1;
+}
+
+.lazy-image-complete {
+    background: none;
+}
+
+.lazy-image-error {
+    background: var(--border);
+    opacity: 0.5;
+}
+
+.lazy-image-error::after {
+    content: '❌';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+}
+
+/* Performance optimizations for mobile */
+.mobile-optimized {
+    contain: layout style paint;
+    transform: translateZ(0); /* Force hardware acceleration */
+}
+
+.mobile-optimized.task-card {
+    will-change: auto; /* Only change when needed */
+}
+
+/* Skeleton loading states */
+.skeleton-loader {
+    background: linear-gradient(90deg, var(--border) 25%, var(--card) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s infinite;
+    border-radius: var(--radius);
+}
+
+@keyframes skeletonShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton-text {
+    height: 1em;
+    margin-bottom: 0.5em;
+    border-radius: 4px;
+}
+
+.skeleton-text.short {
+    width: 60%;
+}
+
+.skeleton-text.medium {
+    width: 80%;
+}
+
+.skeleton-text.long {
+    width: 100%;
+}
+
+/* Performance indicators */
+.performance-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-sm);
+    font-size: 0.8rem;
+    opacity: 0.8;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.performance-indicator.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.performance-indicator .fps-counter {
+    color: var(--success);
+}
+
+.performance-indicator .fps-counter.low {
+    color: var(--warning);
+}
+
+.performance-indicator .fps-counter.critical {
+    color: var(--danger);
+}
+
+/* Intersection observer animations */
+.task-card[data-observed] {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.task-card[data-observed].visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Memory-efficient animations */
+@media (prefers-reduced-motion: no-preference) {
+    .task-card {
+        animation: taskSlideIn 0.3s ease-out;
+    }
+}
+
+@keyframes taskSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .lazy-loading,
+    .lazy-loaded,
+    .task-card,
+    .virtual-scroll-viewport {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    .task-card[data-observed] {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ==========================================================================
+   Mobile Filter Bottom Sheet
+   ========================================================================== */
+
+/* Mobile filter trigger */
+.mobile-filter-trigger {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    border-radius: 50px;
+    padding: var(--space-md) var(--space-lg);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+@media (max-width: 768px) {
+    .mobile-filter-trigger {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+    }
+    
+    /* Hide desktop filters on mobile */
+    .filters .filter-group {
+        display: none;
+    }
+    
+    .filters .phase-controls {
+        display: flex; /* Keep phase controls visible */
+    }
+}
+
+/* Bottom sheet backdrop */
+.mobile-filter-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    z-index: 1000;
+    display: none;
+    transition: opacity 300ms ease-out;
+}
+
+/* Bottom sheet container */
+.mobile-filter-bottom-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--card);
+    border-radius: var(--radius) var(--radius) 0 0;
+    max-height: 80vh;
+    transform: translateY(100%);
+    z-index: 1001;
+    display: none;
+    overflow: hidden;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Bottom sheet handle */
+.bottom-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: var(--space-sm) auto var(--space-md);
+    cursor: grab;
+    touch-action: none;
+}
+
+.bottom-sheet-handle:active {
+    cursor: grabbing;
+}
+
+/* Bottom sheet header */
+.bottom-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--space-lg) var(--space-md);
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.bottom-sheet-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+}
+
+.btn-clear-filters {
+    min-height: 36px;
+    padding: var(--space-xs) var(--space-md);
+    font-size: 0.9rem;
+}
+
+/* Bottom sheet content */
+.bottom-sheet-content {
+    padding: var(--space-lg);
+    overflow-y: auto;
+    max-height: calc(80vh - 120px); /* Account for header and handle */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Filter sections */
+.mobile-filter-section {
+    margin-bottom: var(--space-xl);
+}
+
+.filter-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+    color: var(--primary);
+}
+
+/* Mobile search input */
+.mobile-search-input {
+    width: 100%;
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px; /* Prevent iOS zoom */
+    min-height: 48px;
+}
+
+.mobile-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Quick filters */
+.quick-filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.quick-filter-chip {
+    background: var(--border);
+    color: var(--text);
+    border: none;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-height: 40px;
+    touch-action: manipulation;
+}
+
+.quick-filter-chip:hover,
+.quick-filter-chip.active {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+/* Assignee filter */
+.assignee-filter-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-sm);
+}
+
+.assignee-option {
+    display: flex;
+    align-items: center;
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 48px;
+}
+
+.assignee-option:hover {
+    background: var(--border);
+    border-color: var(--primary);
+}
+
+.assignee-option input[type="radio"] {
+    margin-right: var(--space-sm);
+    accent-color: var(--primary);
+}
+
+.assignee-option input[type="radio"]:checked + span {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Difficulty filter */
+.difficulty-filter-container {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.difficulty-level-btn {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 48px;
+    min-width: 48px;
+}
+
+.difficulty-level-btn:hover,
+.difficulty-level-btn.active {
+    background: var(--warning);
+    color: white;
+    border-color: var(--warning);
+    transform: scale(1.05);
+}
+
+.difficulty-level-btn .star {
+    font-size: 0.8rem;
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+}
+
+.difficulty-level-btn .star.filled {
+    opacity: 1;
+}
+
+/* Phase filter */
+.phase-filter-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: var(--space-sm);
+}
+
+.phase-btn {
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 48px;
+}
+
+.phase-btn:hover,
+.phase-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+/* Duration filter */
+.duration-filter-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-sm);
+}
+
+.duration-btn {
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 48px;
+    text-align: center;
+}
+
+.duration-btn:hover,
+.duration-btn.active {
+    background: var(--secondary);
+    color: white;
+    border-color: var(--secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Body class when bottom sheet is open */
+.bottom-sheet-open {
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .mobile-filter-bottom-sheet {
+        max-height: 85vh;
+    }
+    
+    .bottom-sheet-content {
+        padding: var(--space-md);
+        max-height: calc(85vh - 100px);
+    }
+    
+    .assignee-filter-container,
+    .phase-filter-container,
+    .duration-filter-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .difficulty-filter-container {
+        justify-content: center;
+    }
+    
+    .quick-filters-container {
+        justify-content: center;
+    }
+}
+
+/* Animation for bottom sheet */
+@keyframes bottomSheetSlideIn {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes bottomSheetSlideOut {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(100%);
+    }
+}
+
+/* Smooth scrolling for bottom sheet content */
+.bottom-sheet-content {
+    scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+.mobile-filter-bottom-sheet button:focus,
+.mobile-filter-bottom-sheet input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .mobile-filter-backdrop {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .bottom-sheet-handle {
+    background: var(--text);
+    opacity: 0.6;
+}
+
+/* ==========================================================================
+   Enhanced Mobile Modal Presentations
+   ========================================================================== */
+
+/* Mobile modal adaptations */
+.modal-mobile {
+    width: 95vw !important;
+    max-width: none !important;
+    height: auto;
+    max-height: 90vh;
+    margin: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: mobileModalSlideUp 0.3s ease-out;
+}
+
+.modal-mobile .modal-header {
+    position: relative;
+    padding: var(--space-lg);
+    touch-action: pan-y;
+}
+
+.modal-mobile .modal-header::before {
+    content: '';
+    position: absolute;
+    top: var(--space-sm);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.modal-mobile .modal-header[data-mobile-draggable="true"] {
+    cursor: grab;
+    user-select: none;
+}
+
+.modal-mobile .modal-header[data-mobile-draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.modal-mobile .modal-body {
+    max-height: calc(90vh - 150px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-md) var(--space-lg);
+}
+
+.modal-mobile .modal-footer {
+    padding: var(--space-lg);
+    border-top: 1px solid var(--border);
+    background: var(--card);
+    position: sticky;
+    bottom: 0;
+}
+
+/* Mobile landscape modal */
+.modal-landscape {
+    width: 80vw !important;
+    height: auto;
+    max-height: 75vh;
+    top: 50%;
+    left: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    border-radius: var(--radius);
+    animation: modalZoomIn 0.3s ease-out;
+}
+
+.modal-landscape .modal-body {
+    max-height: calc(75vh - 140px);
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-lg);
+}
+
+.modal-landscape .modal-body > * {
+    flex: 1;
+}
+
+/* Modal animations */
+@keyframes mobileModalSlideUp {
+    from {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes modalZoomIn {
+    from {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Body class when mobile modal is open */
+.modal-open-mobile {
+    overflow: hidden;
+    height: 100vh;
+    position: fixed;
+    width: 100%;
+}
+
+.modal-open-mobile .modal-overlay {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+/* Enhanced modal touch targets */
+.modal-mobile .btn {
+    min-height: 52px;
+    padding: var(--space-md) var(--space-xl);
+    font-size: 1rem;
+    touch-action: manipulation;
+}
+
+.modal-mobile .modal-close {
+    min-height: 48px;
+    min-width: 48px;
+    padding: var(--space-md);
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.modal-mobile .modal-close:hover {
+    background: var(--border);
+    transform: scale(1.1);
+}
+
+/* Modal form elements for mobile */
+.modal-mobile input,
+.modal-mobile select,
+.modal-mobile textarea {
+    min-height: 52px;
+    font-size: 16px; /* Prevent iOS zoom */
+    padding: var(--space-md);
+}
+
+.modal-mobile .radio-option,
+.modal-mobile .checkbox-option {
+    min-height: 52px;
+    padding: var(--space-md);
+    touch-action: manipulation;
+}
+
+.modal-mobile .radio-label,
+.modal-mobile .checkbox-label {
+    font-size: 1rem;
+    padding: var(--space-sm);
+}
+
+/* Safe area insets for devices with notches */
+@supports (padding: max(0px)) {
+    .modal-mobile {
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+    
+    .modal-mobile .modal-footer {
+        padding-bottom: max(var(--space-lg), env(safe-area-inset-bottom));
+    }
+}
+
+/* Accessibility improvements */
+.modal[aria-hidden="true"] {
+    display: none !important;
+}
+
+.modal-mobile .modal-header:focus-within::before {
+    background: var(--primary);
+}
+
+/* Focus management for mobile */
+.modal-mobile button:focus,
+.modal-mobile input:focus,
+.modal-mobile select:focus {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .modal-mobile {
+        border: 2px solid var(--text);
+    }
+    
+    .modal-mobile .modal-header::before {
+        background: var(--text);
+        height: 6px;
+    }
+}
+
+/* Reduced motion support for modals */
+@media (prefers-reduced-motion: reduce) {
+    .modal-mobile,
+    .modal-landscape {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    .modal-mobile {
+        transform: translateX(-50%) translateY(0) !important;
+        opacity: 1 !important;
+    }
+    
+    .modal-landscape {
+        transform: translate(-50%, -50%) scale(1) !important;
+        opacity: 1 !important;
+    }
+}
+
+/* Dark theme adjustments for mobile modals */
+[data-theme="dark"] .modal-mobile .modal-header::before {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .modal-mobile .modal-footer {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ultra-wide screen adaptations */
+@media (min-width: 1400px) {
+    .modal-landscape {
+        width: 60vw !important;
+        max-width: 800px;
+    }
+}
+
+/* Very small screen adaptations */
+@media (max-width: 320px) {
+    .modal-mobile {
+        width: 100vw !important;
+        border-radius: 0;
+        max-height: 95vh;
+    }
+    
+    .modal-mobile .modal-body {
+        padding: var(--space-sm) var(--space-md);
+    }
+    
+    .modal-mobile .modal-footer {
+        padding: var(--space-md);
+    }
+}
+
 @media (max-width: 768px) {
     button, .btn, select, .search-box {
         min-height: 52px !important;

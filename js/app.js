@@ -8,6 +8,10 @@ import { LanguageManager } from './components/LanguageManager.js';
 import { TaskManager } from './components/TaskManager.js';
 import { ExportManager } from './components/ExportManager.js';
 import { StatsManager } from './components/StatsManager.js';
+import { ResponsiveManager } from './components/ResponsiveManager.js';
+import { TouchGestureManager } from './components/TouchGestureManager.js';
+import { PerformanceManager } from './components/PerformanceManager.js';
+import { MobileFilterManager } from './components/MobileFilterManager.js';
 
 /**
  * Main MADLAB Application Class
@@ -71,6 +75,18 @@ export class MadlabApp {
      * Initialize all components
      */
     async initializeComponents() {
+        // Responsive Manager (first - provides viewport state for others)
+        const responsiveManager = new ResponsiveManager(document.body, this.state);
+        this.components.set('responsive', responsiveManager);
+
+        // Touch Gesture Manager (second - requires viewport state)
+        const touchGestureManager = new TouchGestureManager(document.body, this.state);
+        this.components.set('touchGestures', touchGestureManager);
+
+        // Performance Manager (third - optimizes rendering for other components)
+        const performanceManager = new PerformanceManager(document.body, this.state);
+        this.components.set('performance', performanceManager);
+
         // Theme Manager
         const themeContainer = document.querySelector('.theme-switcher')?.parentElement || document.body;
         const themeManager = new ThemeManager(themeContainer, this.state);
@@ -95,6 +111,10 @@ export class MadlabApp {
         const statsContainer = document.querySelector('.stats-grid') || document.body;
         const statsManager = new StatsManager(statsContainer, this.state);
         this.components.set('stats', statsManager);
+
+        // Mobile Filter Manager (for responsive filter interfaces)
+        const mobileFilterManager = new MobileFilterManager(document.body, this.state);
+        this.components.set('mobileFilters', mobileFilterManager);
 
         // Initialize global functions for backward compatibility
         this.setupGlobalFunctions();
@@ -132,7 +152,33 @@ export class MadlabApp {
      * Bind global event listeners
      */
     bindGlobalEvents() {
-        // Window resize handler
+        // Responsive event listeners
+        window.addEventListener('viewportchange', (e) => {
+            this.handleViewportChange(e.detail);
+        });
+
+        window.addEventListener('breakpointchange', (e) => {
+            this.handleBreakpointChange(e.detail);
+        });
+
+        window.addEventListener('orientationchange', (e) => {
+            this.handleOrientationChange(e.detail);
+        });
+
+        // Touch gesture event listeners
+        window.addEventListener('gesture:swipe', (e) => {
+            this.handleSwipeGesture(e.detail);
+        });
+
+        window.addEventListener('gesture:pullToRefresh', (e) => {
+            this.handlePullToRefresh(e.detail);
+        });
+
+        window.addEventListener('gesture:longpress', (e) => {
+            this.handleLongPress(e.detail);
+        });
+
+        // Legacy window resize handler (kept for backward compatibility)
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
@@ -184,6 +230,245 @@ export class MadlabApp {
                 isMobile: window.innerWidth < 768
             }
         }));
+    }
+
+    /**
+     * Handle viewport changes from ResponsiveManager
+     * @param {Object} detail - Viewport change details
+     */
+    handleViewportChange(detail) {
+        const { viewport, changes } = detail;
+        
+        // Update components based on viewport changes
+        if (changes.breakpointChanged) {
+            this.adaptToBreakpoint(viewport.breakpoint);
+        }
+        
+        if (changes.orientationChanged) {
+            this.adaptToOrientation(viewport.orientation);
+        }
+        
+        console.log('📱 Viewport changed:', viewport);
+    }
+
+    /**
+     * Handle breakpoint changes
+     * @param {Object} detail - Breakpoint change details
+     */
+    handleBreakpointChange(detail) {
+        const { from, to, viewport } = detail;
+        
+        // Adapt UI for new breakpoint
+        this.adaptToBreakpoint(to);
+        
+        // Update task manager for mobile optimizations
+        const taskManager = this.components.get('tasks');
+        if (taskManager && viewport.isMobile) {
+            // Apply mobile-specific task optimizations
+            this.enableMobileTaskOptimizations();
+        } else {
+            this.disableMobileTaskOptimizations();
+        }
+        
+        console.log(`📱 Breakpoint changed: ${from} → ${to}`);
+    }
+
+    /**
+     * Handle orientation changes
+     * @param {Object} detail - Orientation change details
+     */
+    handleOrientationChange(detail) {
+        const { from, to, viewport } = detail;
+        
+        // Adapt modals for orientation
+        if (viewport.isMobile) {
+            this.adaptModalsForMobile(to);
+        }
+        
+        console.log(`🔄 Orientation changed: ${from} → ${to}`);
+    }
+
+    /**
+     * Handle swipe gestures
+     * @param {Object} detail - Swipe gesture details
+     */
+    handleSwipeGesture(detail) {
+        const { direction, target, distance, velocity } = detail;
+        
+        // Handle global swipe actions
+        if (target?.classList.contains('phase-header')) {
+            // Phase header swipes are handled by TouchGestureManager
+            console.log(`👆 Phase swipe: ${direction}`);
+        } else if (target?.classList.contains('modal')) {
+            // Handle modal dismissal swipes
+            if (direction === 'down' && distance > 100) {
+                this.components.get('export')?.closeModal();
+            }
+        }
+    }
+
+    /**
+     * Handle pull to refresh gesture
+     * @param {Object} detail - Pull to refresh details
+     */
+    handlePullToRefresh(detail) {
+        if (detail.triggered) {
+            console.log('🔄 Pull to refresh triggered');
+            
+            // Simulate data refresh
+            this.showRefreshIndicator();
+            
+            // Hide indicator after delay
+            setTimeout(() => {
+                this.hideRefreshIndicator();
+            }, 1500);
+        }
+    }
+
+    /**
+     * Handle long press gestures
+     * @param {Object} detail - Long press details
+     */
+    handleLongPress(detail) {
+        const { target, position } = detail;
+        
+        // Handle task card long press
+        if (target?.closest('.task-card')) {
+            const taskCard = target.closest('.task-card');
+            const taskId = taskCard.dataset.taskId;
+            
+            if (taskId) {
+                this.showTaskContextMenu(taskCard, position, taskId);
+            }
+        }
+    }
+
+    /**
+     * Adapt UI for specific breakpoint
+     * @param {string} breakpoint - Target breakpoint
+     */
+    adaptToBreakpoint(breakpoint) {
+        const container = document.querySelector('.container');
+        if (!container) return;
+        
+        // Update container classes
+        container.classList.remove('bp-xs', 'bp-sm', 'bp-md', 'bp-lg', 'bp-xl', 'bp-xxl');
+        container.classList.add(`bp-${breakpoint}`);
+        
+        // Mobile-specific adaptations
+        if (['xs', 'sm'].includes(breakpoint)) {
+            this.enableMobileLayout();
+        } else {
+            this.disableMobileLayout();
+        }
+    }
+
+    /**
+     * Adapt UI for orientation
+     * @param {string} orientation - Target orientation
+     */
+    adaptToOrientation(orientation) {
+        document.body.classList.toggle('landscape', orientation === 'landscape');
+        document.body.classList.toggle('portrait', orientation === 'portrait');
+    }
+
+    /**
+     * Enable mobile layout optimizations
+     */
+    enableMobileLayout() {
+        document.body.classList.add('mobile-layout');
+        
+        // Collapse all phases by default on mobile
+        if (window.innerWidth < 576) {
+            this.collapseAllPhases();
+        }
+    }
+
+    /**
+     * Disable mobile layout optimizations
+     */
+    disableMobileLayout() {
+        document.body.classList.remove('mobile-layout');
+    }
+
+    /**
+     * Enable mobile task optimizations
+     */
+    enableMobileTaskOptimizations() {
+        // Implement lazy loading for mobile
+        const taskCards = document.querySelectorAll('.task-card');
+        taskCards.forEach(card => {
+            card.classList.add('mobile-optimized');
+        });
+    }
+
+    /**
+     * Disable mobile task optimizations
+     */
+    disableMobileTaskOptimizations() {
+        const taskCards = document.querySelectorAll('.task-card');
+        taskCards.forEach(card => {
+            card.classList.remove('mobile-optimized');
+        });
+    }
+
+    /**
+     * Adapt modals for mobile orientation
+     * @param {string} orientation - Current orientation
+     */
+    adaptModalsForMobile(orientation) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (orientation === 'landscape') {
+                modal.classList.add('landscape-modal');
+            } else {
+                modal.classList.remove('landscape-modal');
+            }
+        });
+    }
+
+    /**
+     * Show refresh indicator
+     */
+    showRefreshIndicator() {
+        const indicator = document.createElement('div');
+        indicator.className = 'refresh-indicator';
+        indicator.innerHTML = '🔄 Refreshing...';
+        document.body.appendChild(indicator);
+        
+        setTimeout(() => indicator.classList.add('visible'), 10);
+    }
+
+    /**
+     * Hide refresh indicator
+     */
+    hideRefreshIndicator() {
+        const indicator = document.querySelector('.refresh-indicator');
+        if (indicator) {
+            indicator.classList.remove('visible');
+            setTimeout(() => indicator.remove(), 300);
+        }
+    }
+
+    /**
+     * Show task context menu
+     * @param {Element} taskCard - Task card element
+     * @param {Object} position - Touch position
+     * @param {string} taskId - Task ID
+     */
+    showTaskContextMenu(taskCard, position, taskId) {
+        // Add haptic feedback if available
+        if (navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+        
+        // Highlight task card
+        taskCard.classList.add('long-pressed');
+        setTimeout(() => {
+            taskCard.classList.remove('long-pressed');
+        }, 200);
+        
+        console.log(`📋 Task context menu for: ${taskId}`);
     }
 
     /**

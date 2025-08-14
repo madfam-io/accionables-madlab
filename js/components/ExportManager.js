@@ -42,6 +42,7 @@ export class ExportManager extends Component {
 
         const currentLang = this.state.getState('currentLang');
         const t = translations[currentLang] || translations.es;
+        const viewport = this.state.getState('viewport');
 
         // Create modal overlay
         const overlay = this.createElement('div', {
@@ -49,9 +50,17 @@ export class ExportManager extends Component {
             id: 'exportModalOverlay'
         });
 
-        // Create modal content
+        // Create modal content with responsive classes
+        const modalClasses = ['modal'];
+        if (viewport?.isMobile) {
+            modalClasses.push('modal-mobile');
+        }
+        if (viewport?.orientation === 'landscape' && viewport?.isMobile) {
+            modalClasses.push('modal-landscape');
+        }
+
         const modal = this.createElement('div', {
-            className: 'modal'
+            className: modalClasses.join(' ')
         });
 
         // Modal header
@@ -121,13 +130,32 @@ export class ExportManager extends Component {
             if (e.target === overlay) this.closeModal();
         });
 
+        // Add touch gesture support for mobile
+        if (viewport?.isMobile) {
+            this.addMobileGestureSupport(modal, overlay);
+        }
+
+        // Add keyboard navigation
+        this.addKeyboardNavigation(modal);
+
         // Add to DOM
         document.body.appendChild(overlay);
 
-        // Focus management
+        // Add mobile-specific classes to body
+        if (viewport?.isMobile) {
+            document.body.classList.add('modal-open-mobile');
+        }
+
+        // Enhanced focus management for mobile
         setTimeout(() => {
-            const firstInput = modal.querySelector('input, select, button');
-            if (firstInput) firstInput.focus();
+            if (viewport?.isMobile) {
+                // On mobile, focus the first interactive element that's not an input (to avoid keyboard)
+                const firstButton = modal.querySelector('button:not(.modal-close)');
+                if (firstButton) firstButton.focus();
+            } else {
+                const firstInput = modal.querySelector('input, select, button');
+                if (firstInput) firstInput.focus();
+            }
         }, 100);
     }
 
@@ -559,11 +587,154 @@ export class ExportManager extends Component {
     }
 
     /**
+     * Add mobile gesture support to modal
+     * @param {Element} modal - Modal element
+     * @param {Element} overlay - Overlay element
+     */
+    addMobileGestureSupport(modal, overlay) {
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let initialModalTop = 0;
+
+        const onTouchStart = (e) => {
+            startY = e.touches[0].clientY;
+            currentY = startY;
+            isDragging = true;
+            initialModalTop = modal.offsetTop;
+            modal.style.transition = 'none';
+        };
+
+        const onTouchMove = (e) => {
+            if (!isDragging) return;
+            
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            
+            // Only allow downward drag
+            if (deltaY > 0) {
+                e.preventDefault();
+                const newTop = Math.max(0, deltaY * 0.5); // Add resistance
+                modal.style.transform = `translateY(${newTop}px)`;
+                
+                // Fade overlay based on drag distance
+                const opacity = Math.max(0.3, 1 - (deltaY / 300));
+                overlay.style.opacity = opacity;
+            }
+        };
+
+        const onTouchEnd = (e) => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            const deltaY = currentY - startY;
+            
+            modal.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            overlay.style.transition = 'opacity 0.3s ease';
+            
+            if (deltaY > 100) {
+                // Close modal if dragged down enough
+                this.closeModal();
+            } else {
+                // Snap back to original position
+                modal.style.transform = 'translateY(0)';
+                overlay.style.opacity = '1';
+            }
+        };
+
+        // Add touch event listeners to modal header for dragging
+        const modalHeader = modal.querySelector('.modal-header');
+        if (modalHeader) {
+            modalHeader.addEventListener('touchstart', onTouchStart, { passive: false });
+            modalHeader.addEventListener('touchmove', onTouchMove, { passive: false });
+            modalHeader.addEventListener('touchend', onTouchEnd, { passive: false });
+            
+            // Add drag indicator
+            modalHeader.style.cursor = 'grab';
+            modalHeader.setAttribute('data-mobile-draggable', 'true');
+        }
+
+        // Listen for swipe down on modal content
+        modal.addEventListener('touchstart', (e) => {
+            // Only start drag from the top area of modal
+            const rect = modal.getBoundingClientRect();
+            const touchY = e.touches[0].clientY;
+            if (touchY - rect.top < 50) {
+                onTouchStart(e);
+            }
+        }, { passive: false });
+
+        modal.addEventListener('touchmove', onTouchMove, { passive: false });
+        modal.addEventListener('touchend', onTouchEnd, { passive: false });
+    }
+
+    /**
+     * Add keyboard navigation to modal
+     * @param {Element} modal - Modal element
+     */
+    addKeyboardNavigation(modal) {
+        const focusableElements = modal.querySelectorAll(
+            'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        
+        if (focusableElements.length === 0) return;
+        
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        const handleKeyDown = (e) => {
+            switch (e.key) {
+                case 'Escape':
+                    e.preventDefault();
+                    this.closeModal();
+                    break;
+                    
+                case 'Tab':
+                    if (e.shiftKey) {
+                        // Shift + Tab
+                        if (document.activeElement === firstElement) {
+                            e.preventDefault();
+                            lastElement.focus();
+                        }
+                    } else {
+                        // Tab
+                        if (document.activeElement === lastElement) {
+                            e.preventDefault();
+                            firstElement.focus();
+                        }
+                    }
+                    break;
+                    
+                case 'Enter':
+                    if (document.activeElement?.classList.contains('btn-primary')) {
+                        e.preventDefault();
+                        this.performExport();
+                    }
+                    break;
+            }
+        };
+
+        modal.addEventListener('keydown', handleKeyDown);
+        
+        // Store handler for cleanup
+        modal._keyboardHandler = handleKeyDown;
+    }
+
+    /**
      * Remove modal from DOM
      */
     removeModal() {
         const existingModal = document.getElementById('exportModalOverlay');
         if (existingModal) {
+            // Clean up mobile classes
+            document.body.classList.remove('modal-open-mobile');
+            
+            // Clean up keyboard handler
+            const modal = existingModal.querySelector('.modal');
+            if (modal?._keyboardHandler) {
+                modal.removeEventListener('keydown', modal._keyboardHandler);
+            }
+            
             existingModal.remove();
         }
     }

@@ -137,6 +137,7 @@ export class TaskManager extends Component {
     updateTaskDisplay() {
         const filteredTasks = this.state.getState('filteredTasks');
         const currentLang = this.state.getState('currentLang');
+        const viewport = this.state.getState('viewport');
         
         // Update filtered tasks state (this will trigger StatsManager to update counter)
         this.state.setState({ filteredTasks });
@@ -144,13 +145,126 @@ export class TaskManager extends Component {
         // Group filtered tasks by phase
         const tasksByPhase = this.groupTasksByPhase(filteredTasks);
         
-        // Update each phase section
-        Object.entries(tasksByPhase).forEach(([phaseNum, phaseTasks]) => {
-            this.updatePhaseSection(phaseNum, phaseTasks, currentLang);
-        });
+        // Check if we should use performance optimizations
+        const shouldOptimize = viewport?.isMobile || filteredTasks.length > 20;
+        
+        if (shouldOptimize) {
+            this.updateTaskDisplayOptimized(tasksByPhase, currentLang);
+        } else {
+            // Standard update for desktop/small lists
+            Object.entries(tasksByPhase).forEach(([phaseNum, phaseTasks]) => {
+                this.updatePhaseSection(phaseNum, phaseTasks, currentLang);
+            });
+        }
 
         // Hide phases with no tasks
         this.hideEmptyPhases(tasksByPhase);
+        
+        // Enable lazy loading for new task cards
+        this.enableLazyLoadingForTasks();
+    }
+
+    /**
+     * Update task display with performance optimizations
+     * @param {Object} tasksByPhase - Tasks grouped by phase
+     * @param {string} currentLang - Current language
+     */
+    updateTaskDisplayOptimized(tasksByPhase, currentLang) {
+        // Use document fragment for batch DOM updates
+        const fragment = document.createDocumentFragment();
+        
+        Object.entries(tasksByPhase).forEach(([phaseNum, phaseTasks]) => {
+            const phaseElement = document.querySelector(`[data-phase="${phaseNum}"]`);
+            if (!phaseElement) return;
+
+            const tasksContainer = phaseElement.querySelector('.phase-content');
+            if (!tasksContainer) return;
+
+            // Clear existing tasks
+            tasksContainer.innerHTML = '';
+
+            // Create optimized task elements
+            const optimizedElements = this.createOptimizedTaskElements(phaseTasks, currentLang);
+            optimizedElements.forEach(element => fragment.appendChild(element));
+            
+            // Append fragment in one operation
+            tasksContainer.appendChild(fragment.cloneNode(true));
+            
+            // Show phase if it has tasks
+            phaseElement.style.display = phaseTasks.length > 0 ? 'block' : 'none';
+            
+            // Clear fragment for reuse
+            while (fragment.firstChild) {
+                fragment.removeChild(fragment.firstChild);
+            }
+        });
+    }
+
+    /**
+     * Create optimized task elements for performance
+     * @param {Array} tasks - Tasks to create elements for
+     * @param {string} lang - Current language
+     * @returns {Array} Array of task elements
+     */
+    createOptimizedTaskElements(tasks, lang) {
+        // Group tasks by section first
+        const tasksBySection = tasks.reduce((groups, task) => {
+            const sectionTitle = task.section[lang] || task.section.es;
+            if (!groups[sectionTitle]) {
+                groups[sectionTitle] = [];
+            }
+            groups[sectionTitle].push(task);
+            return groups;
+        }, {});
+
+        const elements = [];
+        
+        Object.entries(tasksBySection).forEach(([sectionTitle, sectionTasks]) => {
+            // Create section element
+            const sectionElement = this.createSectionElement(sectionTitle, sectionTasks, lang);
+            
+            // Add lazy loading preparation for mobile
+            const viewport = this.state.getState('viewport');
+            if (viewport?.isMobile) {
+                sectionElement.classList.add('lazy-section');
+                
+                // Mark task cards for lazy loading
+                const taskCards = sectionElement.querySelectorAll('.task-card');
+                taskCards.forEach(card => {
+                    card.classList.add('lazy-load-candidate');
+                });
+            }
+            
+            elements.push(sectionElement);
+        });
+        
+        return elements;
+    }
+
+    /**
+     * Enable lazy loading for task cards
+     */
+    enableLazyLoadingForTasks() {
+        const performanceManager = window.madlabApp?.components?.get('performance');
+        if (!performanceManager) return;
+        
+        // Get all task cards that need lazy loading
+        const taskCards = document.querySelectorAll('.task-card.lazy-load-candidate');
+        
+        if (taskCards.length > 0) {
+            performanceManager.enableLazyLoading(taskCards);
+            
+            // Remove candidate class to avoid re-processing
+            taskCards.forEach(card => {
+                card.classList.remove('lazy-load-candidate');
+            });
+        }
+        
+        // Also enable image lazy loading if any images exist
+        const images = document.querySelectorAll('.task-card img[data-src]');
+        if (images.length > 0) {
+            performanceManager.enableImageLazyLoading(images);
+        }
     }
 
     /**
