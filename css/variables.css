@@ -6,21 +6,27 @@
     /* Colors */
     --primary: #6366f1;
     --primary-dark: #4f46e5;
+    --primary-light: #a5b4fc;
     --secondary: #10b981;
+    --secondary-dark: #047857;
     --accent: #f59e0b;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
+    --info: #3b82f6;
     --bg-light: #ffffff;
     --bg-dark: #111827;
     --text-light: #1f2937;
     --text-dark: #f9fafb;
     --text-secondary: #6b7280;
-    --card-light: #f3f4f6;
+    --text-muted: #9ca3af;
+    --card-light: #f9fafb;
     --card-dark: #1f2937;
     --border-light: #e5e7eb;
     --border-dark: #374151;
     --shadow: rgba(0, 0, 0, 0.1);
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-heavy: rgba(0, 0, 0, 0.25);
     
     /* Spacing Scale */
     --space-xs: 0.25rem;    /* 4px */
@@ -30,8 +36,50 @@
     --space-xl: 1.5rem;     /* 24px */
     --space-2xl: 2rem;      /* 32px */
     --space-3xl: 3rem;      /* 48px */
+    --space-4xl: 4rem;      /* 64px */
+    
+    /* Enhanced Responsive Breakpoints */
+    --breakpoint-xs: 320px;
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 992px;
+    --breakpoint-xl: 1200px;
+    --breakpoint-xxl: 1400px;
     
     /* Design Tokens */
     --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 9999px;
+    
+    /* Enhanced Transitions */
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Touch & Mobile Optimizations */
+    --touch-target: 44px;
+    --touch-target-large: 52px;
+    --safe-area-top: 0px;
+    --safe-area-bottom: 0px;
+    --safe-area-left: 0px;
+    --safe-area-right: 0px;
+    
+    /* Performance Optimizations */
+    --gpu-acceleration: translateZ(0);
+    --font-display: swap;
+    --text-rendering: optimizeSpeed;
+    --contain: layout style paint;
+    
+    /* Z-Index Scale */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+    --z-toast: 1080;
 }

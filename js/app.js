@@ -118,6 +118,9 @@ export class MadlabApp {
 
         // Initialize global functions for backward compatibility
         this.setupGlobalFunctions();
+        
+        // Setup component communication
+        this.setupComponentCommunication();
     }
 
     /**
@@ -146,6 +149,96 @@ export class MadlabApp {
         window.collapseAllPhases = this.collapseAllPhases;
         window.expandAllPhases = this.expandAllPhases;
         window.getStats = () => this.components.get('stats')?.getStatsSummary();
+        
+        // Enhanced responsive functions
+        window.getResponsiveInfo = () => this.components.get('responsive')?.getResponsiveInfo();
+        window.getPerformanceMetrics = () => this.components.get('performance')?.getPerformanceMetrics();
+    }
+
+    /**
+     * Setup component communication and event handling
+     */
+    setupComponentCommunication() {
+        // Mobile filter integration
+        window.addEventListener('mobilefiltersapplied', (e) => {
+            const { filters } = e.detail;
+            this.components.get('tasks')?.applyMobileFilters(filters);
+        });
+
+        // Touch gesture integration
+        window.addEventListener('gestureswipe', (e) => {
+            const { direction, element } = e.detail;
+            this.handleSwipeGesture(direction, element);
+        });
+
+        window.addEventListener('gesturerefresh', (e) => {
+            this.handlePullToRefresh();
+        });
+
+        // Responsive breakpoint changes
+        window.addEventListener('breakpointchange', (e) => {
+            const { current, previous } = e.detail;
+            this.handleBreakpointChange(current, previous);
+        });
+
+        // Performance warnings
+        window.addEventListener('performancewarning', (e) => {
+            const { type, metric } = e.detail;
+            this.handlePerformanceWarning(type, metric);
+        });
+    }
+
+    /**
+     * Handle swipe gestures
+     */
+    handleSwipeGesture(direction, element) {
+        // Phase toggle via swipe
+        const phaseElement = element.closest('.phase');
+        if (phaseElement && direction === 'left') {
+            const phaseNum = phaseElement.dataset.phase;
+            if (phaseNum) {
+                this.togglePhase(phaseNum);
+            }
+        }
+    }
+
+    /**
+     * Handle pull-to-refresh
+     */
+    handlePullToRefresh() {
+        // Refresh stats and task counts
+        const statsManager = this.components.get('stats');
+        if (statsManager) {
+            statsManager.updateStats();
+        }
+
+        // Trigger any data refresh if needed
+        console.log('🔄 Pull-to-refresh triggered');
+    }
+
+    /**
+     * Handle breakpoint changes
+     */
+    handleBreakpointChange(current, previous) {
+        console.log(`📱 Breakpoint changed: ${previous} → ${current}`);
+        
+        // Update mobile/desktop specific features
+        const isMobile = ['xs', 'sm'].includes(current);
+        document.body.classList.toggle('mobile-breakpoint', isMobile);
+        document.body.classList.toggle('desktop-breakpoint', !isMobile);
+    }
+
+    /**
+     * Handle performance warnings
+     */
+    handlePerformanceWarning(type, metric) {
+        console.warn(`⚠️ Performance warning: ${type}`, metric);
+        
+        // Could implement adaptive performance adjustments here
+        if (type === 'low-fps' && metric < 30) {
+            // Reduce animations or visual effects
+            document.body.classList.add('performance-mode');
+        }
     }
 
     /**
@@ -222,12 +315,23 @@ export class MadlabApp {
      * Handle window resize
      */
     handleResize() {
-        // Dispatch resize event for components
+        // Get responsive info from ResponsiveManager
+        const responsiveInfo = this.components.get('responsive')?.getResponsiveInfo();
+        
+        // Dispatch enhanced resize event for components
         window.dispatchEvent(new CustomEvent('appresize', {
             detail: {
                 width: window.innerWidth,
                 height: window.innerHeight,
-                isMobile: window.innerWidth < 768
+                isMobile: responsiveInfo?.isMobile || window.innerWidth < 768,
+                isTablet: responsiveInfo?.isTablet || false,
+                isDesktop: responsiveInfo?.isDesktop || window.innerWidth >= 992,
+                breakpoint: responsiveInfo?.currentBreakpoint || 'md',
+                viewport: responsiveInfo?.viewport || {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                    orientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'
+                }
             }
         }));
     }

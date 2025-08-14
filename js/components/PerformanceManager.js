@@ -1,625 +1,806 @@
 // ==========================================================================
-// Performance Manager Component
+// PerformanceManager - Performance Optimization & Lazy Loading
 // ==========================================================================
 
 import { Component } from './Component.js';
-import { debounce, throttle } from '../utils/helpers.js';
 
+/**
+ * PerformanceManager handles lazy loading, virtual scrolling, and
+ * performance optimizations for the application
+ */
 export class PerformanceManager extends Component {
-    constructor(element, state) {
-        super(element, state);
+    constructor(container, state) {
+        super(container, state);
         
-        // Performance configuration
-        this.config = {
-            lazyLoadThreshold: 0.1,          // Trigger when 10% visible
-            virtualScrollThreshold: 50,      // Virtualize after 50 items
-            imageLazyLoadThreshold: 0.2,     // Images load when 20% visible
-            debounceDelay: 100,              // Debounce delay for scroll events
-            preloadDistance: 500,            // Preload items 500px before visible
-            maxVisibleItems: 20              // Maximum items to render at once
-        };
-        
-        // Observer instances
         this.intersectionObserver = null;
-        this.imageObserver = null;
-        this.resizeObserver = null;
+        this.mutationObserver = null;
+        this.performanceObserver = null;
         
-        // Performance tracking
-        this.performance = {
-            renderTimes: [],
-            scrollEvents: 0,
-            lazyLoadedItems: 0,
-            memoryUsage: 0
-        };
-        
-        // Virtual scroll state
-        this.virtualScroll = {
+        // Virtual scrolling configuration
+        this.virtualScrolling = {
             enabled: false,
-            scrollTop: 0,
-            containerHeight: 0,
-            itemHeight: 120, // Estimated task card height
-            visibleRange: { start: 0, end: 0 },
+            itemHeight: 120,
+            bufferSize: 5,
+            visibleStart: 0,
+            visibleEnd: 0,
             totalItems: 0,
-            renderedItems: new Set()
+            container: null,
+            viewport: null
         };
         
-        // Lazy load queues
-        this.lazyLoadQueue = new Set();
-        this.imageLoadQueue = new Set();
+        // Lazy loading configuration
+        this.lazyLoading = {
+            enabled: true,
+            rootMargin: '300px',
+            threshold: 0.1,
+            loadedItems: new Set(),
+            pendingItems: new Set()
+        };
         
-        // Debounced handlers
-        this.handleScroll = throttle(this.onScroll.bind(this), 16); // ~60fps
-        this.handleResize = debounce(this.onResize.bind(this), 200);
+        // Performance metrics
+        this.metrics = {
+            fps: 0,
+            frameCount: 0,
+            lastTime: 0,
+            memory: null,
+            renderTime: 0,
+            scrollPerformance: []
+        };
         
-        // Initialize observers
-        this.initializeObservers();
+        // Optimization flags
+        this.optimizations = {
+            imageOptimization: true,
+            cssContainment: true,
+            willChange: true,
+            reducedMotion: false,
+            batchDOMUpdates: true
+        };
+        
+        // Bind methods
+        this.handleIntersection = this.handleIntersection.bind(this);
+        this.handleMutation = this.handleMutation.bind(this);
+        this.handleScroll = this.handleScroll.bind(this);
+        this.measurePerformance = this.measurePerformance.bind(this);
+        this.throttledScroll = this.throttle(this.handleScroll, 16); // 60fps
     }
 
     /**
-     * Initialize intersection observers
+     * Initialize performance manager
      */
-    initializeObservers() {
-        // Task card lazy loading observer
-        if ('IntersectionObserver' in window) {
-            this.intersectionObserver = new IntersectionObserver(
-                this.handleIntersection.bind(this),
-                {
-                    rootMargin: `${this.config.preloadDistance}px`,
-                    threshold: this.config.lazyLoadThreshold
-                }
-            );
+    mount() {
+        this.setupIntersectionObserver();
+        this.setupMutationObserver();
+        this.setupPerformanceMonitoring();
+        this.applyInitialOptimizations();
+        this.bindEvents();
+        
+        console.log('⚡ PerformanceManager initialized');
+        console.log('Lazy loading enabled:', this.lazyLoading.enabled);
+        console.log('Optimizations applied:', this.optimizations);
+    }
+
+    /**
+     * Setup intersection observer for lazy loading
+     */
+    setupIntersectionObserver() {
+        if (!('IntersectionObserver' in window)) {
+            console.warn('IntersectionObserver not supported, falling back to immediate loading');
+            return;
+        }
+
+        this.intersectionObserver = new IntersectionObserver(
+            this.handleIntersection,
+            {
+                root: null,
+                rootMargin: this.lazyLoading.rootMargin,
+                threshold: this.lazyLoading.threshold
+            }
+        );
+
+        // Observe existing lazy-loadable elements
+        this.observeLazyElements();
+    }
+
+    /**
+     * Setup mutation observer for dynamic content
+     */
+    setupMutationObserver() {
+        if (!('MutationObserver' in window)) return;
+
+        this.mutationObserver = new MutationObserver(this.handleMutation);
+        this.mutationObserver.observe(this.container, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['data-lazy', 'data-virtual']
+        });
+    }
+
+    /**
+     * Setup performance monitoring
+     */
+    setupPerformanceMonitoring() {
+        // FPS monitoring
+        this.startFPSMonitoring();
+        
+        // Performance Observer for paint timings
+        if ('PerformanceObserver' in window) {
+            try {
+                this.performanceObserver = new PerformanceObserver((list) => {
+                    const entries = list.getEntries();
+                    entries.forEach(entry => {
+                        if (entry.entryType === 'paint') {
+                            this.metrics[entry.name.replace('-', '')] = entry.startTime;
+                        }
+                    });
+                });
+                
+                this.performanceObserver.observe({ entryTypes: ['paint', 'navigation'] });
+            } catch (e) {
+                console.warn('PerformanceObserver setup failed:', e);
+            }
+        }
+
+        // Memory monitoring
+        this.monitorMemoryUsage();
+    }
+
+    /**
+     * Apply initial performance optimizations
+     */
+    applyInitialOptimizations() {
+        const root = document.documentElement;
+        
+        // CSS containment for better performance
+        if (this.optimizations.cssContainment) {
+            this.applyCSSContainment();
         }
         
-        // Image lazy loading observer
-        if ('IntersectionObserver' in window) {
-            this.imageObserver = new IntersectionObserver(
-                this.handleImageIntersection.bind(this),
-                {
-                    rootMargin: '50px',
-                    threshold: this.config.imageLazyLoadThreshold
-                }
-            );
+        // Reduced motion support
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            this.optimizations.reducedMotion = true;
+            root.classList.add('reduced-motion');
         }
         
-        // Resize observer for container size changes
-        if ('ResizeObserver' in window) {
-            this.resizeObserver = new ResizeObserver(
-                this.handleResizeObservation.bind(this)
-            );
-        }
+        // Enable hardware acceleration for scrolling
+        root.style.transform = 'translateZ(0)';
+        
+        // Optimize font rendering
+        root.style.textRendering = 'optimizeSpeed';
+        root.style.fontDisplay = 'swap';
+    }
+
+    /**
+     * Apply CSS containment for performance
+     */
+    applyCSSContainment() {
+        const containerElements = [
+            '.task-card',
+            '.phase-content',
+            '.modal',
+            '.filter-chips'
+        ];
+        
+        containerElements.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                el.style.contain = 'layout style paint';
+            });
+        });
+    }
+
+    /**
+     * Bind performance-related events
+     */
+    bindEvents() {
+        // Scroll performance monitoring
+        window.addEventListener('scroll', this.throttledScroll, { passive: true });
+        
+        // Resize handling for virtual scrolling
+        window.addEventListener('resize', this.throttle(() => {
+            this.updateVirtualScrolling();
+        }, 250), { passive: true });
+        
+        // Page visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.pausePerformanceMonitoring();
+            } else {
+                this.resumePerformanceMonitoring();
+            }
+        });
     }
 
     /**
      * Handle intersection observer entries
-     * @param {IntersectionObserverEntry[]} entries - Observer entries
      */
     handleIntersection(entries) {
         entries.forEach(entry => {
-            const element = entry.target;
-            
             if (entry.isIntersecting) {
-                // Element is now visible
-                this.loadElement(element);
-                this.intersectionObserver?.unobserve(element);
+                this.loadLazyElement(entry.target);
             }
         });
     }
 
     /**
-     * Handle image intersection observer entries
-     * @param {IntersectionObserverEntry[]} entries - Observer entries
+     * Handle DOM mutations
      */
-    handleImageIntersection(entries) {
-        entries.forEach(entry => {
-            const img = entry.target;
-            
-            if (entry.isIntersecting) {
-                this.loadImage(img);
-                this.imageObserver?.unobserve(img);
-            }
-        });
-    }
-
-    /**
-     * Handle resize observer entries
-     * @param {ResizeObserverEntry[]} entries - Observer entries
-     */
-    handleResizeObservation(entries) {
-        entries.forEach(entry => {
-            const element = entry.target;
-            
-            if (element.classList.contains('tasks-container')) {
-                this.updateVirtualScrollDimensions();
-            }
-        });
-    }
-
-    /**
-     * Load element with lazy loading
-     * @param {Element} element - Element to load
-     */
-    loadElement(element) {
-        if (element.classList.contains('lazy-loaded')) return;
+    handleMutation(mutations) {
+        let shouldUpdateObserver = false;
         
-        const startTime = performance.now();
+        mutations.forEach(mutation => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const lazyElements = node.querySelectorAll 
+                            ? node.querySelectorAll('[data-lazy]')
+                            : [];
+                        
+                        lazyElements.forEach(el => {
+                            this.observeLazyElement(el);
+                        });
+                        
+                        // Check if virtual scrolling should be enabled
+                        this.checkVirtualScrollingTrigger();
+                        shouldUpdateObserver = true;
+                    }
+                });
+            }
+        });
         
-        // Add loaded class
+        if (shouldUpdateObserver) {
+            this.updateLazyObserver();
+        }
+    }
+
+    /**
+     * Handle scroll events for performance monitoring
+     */
+    handleScroll() {
+        const now = performance.now();
+        this.metrics.scrollPerformance.push(now);
+        
+        // Keep only last 100 scroll events for analysis
+        if (this.metrics.scrollPerformance.length > 100) {
+            this.metrics.scrollPerformance.shift();
+        }
+        
+        // Update virtual scrolling if enabled
+        if (this.virtualScrolling.enabled) {
+            this.updateVirtualScrollPosition();
+        }
+    }
+
+    /**
+     * Load lazy element
+     */
+    loadLazyElement(element) {
+        if (this.lazyLoading.loadedItems.has(element)) return;
+        
+        this.lazyLoading.loadedItems.add(element);
+        this.intersectionObserver?.unobserve(element);
+        
+        // Handle different types of lazy loading
+        const lazyType = element.dataset.lazy;
+        
+        switch (lazyType) {
+            case 'image':
+                this.loadLazyImage(element);
+                break;
+            case 'content':
+                this.loadLazyContent(element);
+                break;
+            case 'component':
+                this.loadLazyComponent(element);
+                break;
+            default:
+                this.loadGenericLazyElement(element);
+        }
+        
+        // Add loaded class for styling
         element.classList.add('lazy-loaded');
-        element.classList.remove('lazy-loading');
         
-        // Trigger load animation
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(20px)';
-        
-        requestAnimationFrame(() => {
-            element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            element.style.opacity = '1';
-            element.style.transform = 'translateY(0)';
-        });
-        
-        // Track performance
-        const loadTime = performance.now() - startTime;
-        this.performance.renderTimes.push(loadTime);
-        this.performance.lazyLoadedItems++;
-        
-        // Dispatch load event
-        element.dispatchEvent(new CustomEvent('lazy-loaded', {
-            detail: { loadTime }
+        // Emit event
+        element.dispatchEvent(new CustomEvent('lazyloaded', {
+            detail: { type: lazyType, element }
         }));
     }
 
     /**
-     * Load image with lazy loading
-     * @param {HTMLImageElement} img - Image element to load
+     * Load lazy image
      */
-    loadImage(img) {
-        const src = img.dataset.src;
-        if (!src || img.src === src) return;
+    loadLazyImage(img) {
+        const src = img.dataset.src || img.dataset.lazySrc;
+        if (!src) return;
         
-        img.src = src;
-        img.classList.add('lazy-image-loaded');
-        
-        img.addEventListener('load', () => {
-            img.classList.add('lazy-image-complete');
-        });
-        
-        img.addEventListener('error', () => {
-            img.classList.add('lazy-image-error');
-        });
+        const image = new Image();
+        image.onload = () => {
+            img.src = src;
+            img.classList.add('loaded');
+        };
+        image.onerror = () => {
+            img.classList.add('error');
+        };
+        image.src = src;
     }
 
     /**
-     * Enable lazy loading for task cards
-     * @param {NodeList|Array} elements - Elements to observe
+     * Load lazy content
      */
-    enableLazyLoading(elements) {
+    loadLazyContent(element) {
+        const content = element.dataset.lazyContent;
+        if (content) {
+            element.innerHTML = content;
+        }
+        
+        // Trigger any initialization scripts
+        const initScript = element.dataset.lazyInit;
+        if (initScript && window[initScript]) {
+            window[initScript](element);
+        }
+    }
+
+    /**
+     * Load lazy component
+     */
+    loadLazyComponent(element) {
+        const componentName = element.dataset.component;
+        if (!componentName) return;
+        
+        // Dynamic component loading would go here
+        // For now, just mark as loaded
+        element.classList.add('component-loaded');
+    }
+
+    /**
+     * Load generic lazy element
+     */
+    loadGenericLazyElement(element) {
+        // Remove lazy loading attributes
+        delete element.dataset.lazy;
+        
+        // Apply any deferred styles
+        const styles = element.dataset.lazyStyles;
+        if (styles) {
+            element.style.cssText += styles;
+            delete element.dataset.lazyStyles;
+        }
+    }
+
+    /**
+     * Observe lazy elements
+     */
+    observeLazyElements() {
         if (!this.intersectionObserver) return;
         
-        elements.forEach(element => {
-            if (!element.classList.contains('lazy-loaded')) {
-                element.classList.add('lazy-loading');
-                this.intersectionObserver.observe(element);
-                this.lazyLoadQueue.add(element);
-            }
+        const lazyElements = this.container.querySelectorAll('[data-lazy]');
+        lazyElements.forEach(element => {
+            this.observeLazyElement(element);
         });
     }
 
     /**
-     * Enable lazy loading for images
-     * @param {NodeList|Array} images - Images to observe
+     * Observe single lazy element
      */
-    enableImageLazyLoading(images) {
-        if (!this.imageObserver) return;
-        
-        images.forEach(img => {
-            if (img.dataset.src && !img.classList.contains('lazy-image-loaded')) {
-                this.imageObserver.observe(img);
-                this.imageLoadQueue.add(img);
-            }
-        });
-    }
-
-    /**
-     * Initialize virtual scrolling for large lists
-     * @param {Element} container - Container element
-     * @param {Array} items - All items data
-     */
-    initializeVirtualScroll(container, items) {
-        if (!container || items.length < this.config.virtualScrollThreshold) {
-            this.virtualScroll.enabled = false;
+    observeLazyElement(element) {
+        if (!this.intersectionObserver || this.lazyLoading.loadedItems.has(element)) {
             return;
         }
         
-        this.virtualScroll.enabled = true;
-        this.virtualScroll.totalItems = items.length;
-        this.virtualScroll.container = container;
+        this.intersectionObserver.observe(element);
+    }
+
+    /**
+     * Update lazy observer
+     */
+    updateLazyObserver() {
+        if (!this.intersectionObserver) return;
         
-        // Set up container
-        container.style.overflowY = 'auto';
-        container.style.position = 'relative';
+        // Re-observe new elements
+        this.observeLazyElements();
+    }
+
+    /**
+     * Check if virtual scrolling should be triggered
+     */
+    checkVirtualScrollingTrigger() {
+        const taskCards = this.container.querySelectorAll('.task-card');
+        const threshold = 50; // Enable virtual scrolling for 50+ items
+        
+        if (taskCards.length >= threshold && !this.virtualScrolling.enabled) {
+            this.enableVirtualScrolling();
+        } else if (taskCards.length < threshold && this.virtualScrolling.enabled) {
+            this.disableVirtualScrolling();
+        }
+    }
+
+    /**
+     * Enable virtual scrolling
+     */
+    enableVirtualScrolling() {
+        console.log('🔄 Enabling virtual scrolling for performance');
+        
+        this.virtualScrolling.enabled = true;
+        this.setupVirtualScrollContainer();
+        this.updateVirtualScrolling();
+    }
+
+    /**
+     * Disable virtual scrolling
+     */
+    disableVirtualScrolling() {
+        console.log('🔄 Disabling virtual scrolling');
+        
+        this.virtualScrolling.enabled = false;
+        this.cleanupVirtualScrollContainer();
+    }
+
+    /**
+     * Setup virtual scroll container
+     */
+    setupVirtualScrollContainer() {
+        const tasksContainer = this.container.querySelector('#tasksContainer');
+        if (!tasksContainer) return;
         
         // Create virtual scroll wrapper
         const wrapper = document.createElement('div');
         wrapper.className = 'virtual-scroll-wrapper';
-        wrapper.style.height = `${items.length * this.virtualScroll.itemHeight}px`;
-        wrapper.style.position = 'relative';
+        wrapper.style.cssText = `
+            height: 400px;
+            overflow-y: auto;
+            position: relative;
+        `;
         
         // Create viewport
         const viewport = document.createElement('div');
         viewport.className = 'virtual-scroll-viewport';
-        viewport.style.position = 'absolute';
-        viewport.style.top = '0';
-        viewport.style.left = '0';
-        viewport.style.right = '0';
+        viewport.style.cssText = `
+            position: relative;
+            will-change: transform;
+        `;
         
-        // Move existing content to viewport
-        while (container.firstChild) {
-            viewport.appendChild(container.firstChild);
-        }
+        // Move existing content
+        const existingContent = Array.from(tasksContainer.children);
+        existingContent.forEach(child => viewport.appendChild(child));
         
         wrapper.appendChild(viewport);
-        container.appendChild(wrapper);
+        tasksContainer.appendChild(wrapper);
         
-        // Store references
-        this.virtualScroll.wrapper = wrapper;
-        this.virtualScroll.viewport = viewport;
-        this.virtualScroll.items = items;
+        this.virtualScrolling.container = wrapper;
+        this.virtualScrolling.viewport = viewport;
         
-        // Bind scroll events
-        container.addEventListener('scroll', this.handleScroll);
-        
-        // Start resize observer
-        if (this.resizeObserver) {
-            this.resizeObserver.observe(container);
-        }
-        
-        // Initial render
-        this.updateVirtualScrollDimensions();
-        this.renderVirtualItems();
-        
-        console.log(`🚀 Virtual scroll enabled for ${items.length} items`);
+        // Setup scroll listener
+        wrapper.addEventListener('scroll', this.throttle(() => {
+            this.updateVirtualScrollPosition();
+        }, 16), { passive: true });
     }
 
     /**
-     * Handle scroll events for virtual scrolling
-     * @param {Event} event - Scroll event
+     * Update virtual scrolling
      */
-    onScroll(event) {
-        if (!this.virtualScroll.enabled) return;
+    updateVirtualScrolling() {
+        if (!this.virtualScrolling.enabled || !this.virtualScrolling.container) return;
         
-        this.performance.scrollEvents++;
-        this.virtualScroll.scrollTop = event.target.scrollTop;
+        const container = this.virtualScrolling.container;
+        const viewport = this.virtualScrolling.viewport;
+        const items = viewport.children;
         
-        this.updateVisibleRange();
-        this.renderVirtualItems();
-    }
-
-    /**
-     * Handle resize events
-     */
-    onResize() {
-        if (this.virtualScroll.enabled) {
-            this.updateVirtualScrollDimensions();
-            this.renderVirtualItems();
-        }
-    }
-
-    /**
-     * Update virtual scroll dimensions
-     */
-    updateVirtualScrollDimensions() {
-        if (!this.virtualScroll.container) return;
+        this.virtualScrolling.totalItems = items.length;
         
-        const rect = this.virtualScroll.container.getBoundingClientRect();
-        this.virtualScroll.containerHeight = rect.height;
+        if (this.virtualScrolling.totalItems === 0) return;
         
-        // Update visible range
-        this.updateVisibleRange();
-    }
-
-    /**
-     * Update visible item range for virtual scrolling
-     */
-    updateVisibleRange() {
-        const { scrollTop, containerHeight, itemHeight, totalItems } = this.virtualScroll;
+        // Calculate dimensions
+        const containerHeight = container.clientHeight;
+        const itemHeight = this.virtualScrolling.itemHeight;
+        const totalHeight = this.virtualScrolling.totalItems * itemHeight;
         
-        const startIndex = Math.floor(scrollTop / itemHeight);
+        // Set viewport height
+        viewport.style.height = `${totalHeight}px`;
+        
+        // Calculate visible range
+        const scrollTop = container.scrollTop;
+        const visibleStart = Math.floor(scrollTop / itemHeight);
         const visibleCount = Math.ceil(containerHeight / itemHeight);
-        const endIndex = Math.min(startIndex + visibleCount + 5, totalItems); // 5 item buffer
+        const bufferSize = this.virtualScrolling.bufferSize;
         
-        this.virtualScroll.visibleRange = {
-            start: Math.max(0, startIndex - 5), // 5 item buffer before
-            end: endIndex
-        };
+        this.virtualScrolling.visibleStart = Math.max(0, visibleStart - bufferSize);
+        this.virtualScrolling.visibleEnd = Math.min(
+            this.virtualScrolling.totalItems - 1,
+            visibleStart + visibleCount + bufferSize
+        );
+        
+        this.renderVirtualItems();
     }
 
     /**
-     * Render visible items in virtual scroll
+     * Update virtual scroll position
+     */
+    updateVirtualScrollPosition() {
+        this.updateVirtualScrolling();
+    }
+
+    /**
+     * Render virtual items
      */
     renderVirtualItems() {
-        if (!this.virtualScroll.enabled || !this.virtualScroll.viewport) return;
+        const viewport = this.virtualScrolling.viewport;
+        const items = Array.from(viewport.children);
         
-        const { visibleRange, items, itemHeight, viewport } = this.virtualScroll;
-        const { start, end } = visibleRange;
-        
-        // Clear viewport
-        viewport.innerHTML = '';
-        
-        // Set viewport position
-        viewport.style.transform = `translateY(${start * itemHeight}px)`;
-        
-        // Render visible items
-        for (let i = start; i < end; i++) {
-            if (items[i]) {
-                const itemElement = this.createVirtualItem(items[i], i);
-                viewport.appendChild(itemElement);
-                this.virtualScroll.renderedItems.add(i);
-            }
-        }
-        
-        // Clean up old rendered items
-        this.virtualScroll.renderedItems.forEach(index => {
-            if (index < start || index >= end) {
-                this.virtualScroll.renderedItems.delete(index);
+        items.forEach((item, index) => {
+            const isVisible = index >= this.virtualScrolling.visibleStart && 
+                            index <= this.virtualScrolling.visibleEnd;
+            
+            if (isVisible) {
+                item.style.display = '';
+                item.style.transform = `translateY(${index * this.virtualScrolling.itemHeight}px)`;
+                item.style.position = 'absolute';
+                item.style.width = '100%';
+                item.style.height = `${this.virtualScrolling.itemHeight}px`;
+            } else {
+                item.style.display = 'none';
             }
         });
     }
 
     /**
-     * Create virtual scroll item element
-     * @param {Object} itemData - Item data
-     * @param {number} index - Item index
-     * @returns {Element} Item element
+     * Cleanup virtual scroll container
      */
-    createVirtualItem(itemData, index) {
-        // This should be implemented based on the specific item type
-        // For task cards, delegate to TaskManager
-        const taskManager = window.madlabApp?.components?.get('tasks');
-        if (taskManager && typeof taskManager.createTaskElement === 'function') {
-            const element = taskManager.createTaskElement(itemData, this.state.getState('currentLang'));
-            element.dataset.virtualIndex = index.toString();
-            element.style.height = `${this.virtualScroll.itemHeight}px`;
-            return element;
-        }
+    cleanupVirtualScrollContainer() {
+        if (!this.virtualScrolling.container) return;
         
-        // Fallback: create simple element
-        const element = document.createElement('div');
-        element.className = 'virtual-item';
-        element.textContent = `Item ${index}`;
-        element.style.height = `${this.virtualScroll.itemHeight}px`;
-        return element;
+        const wrapper = this.virtualScrolling.container;
+        const viewport = this.virtualScrolling.viewport;
+        const tasksContainer = wrapper.parentElement;
+        
+        // Move items back
+        const items = Array.from(viewport.children);
+        items.forEach(item => {
+            item.style.display = '';
+            item.style.transform = '';
+            item.style.position = '';
+            item.style.width = '';
+            item.style.height = '';
+            tasksContainer.appendChild(item);
+        });
+        
+        // Remove wrapper
+        wrapper.remove();
+        
+        this.virtualScrolling.container = null;
+        this.virtualScrolling.viewport = null;
     }
 
     /**
-     * Optimize images for mobile
+     * Start FPS monitoring
      */
-    optimizeImagesForMobile() {
-        const viewport = this.state.getState('viewport');
-        if (!viewport?.isMobile) return;
+    startFPSMonitoring() {
+        const measureFPS = (currentTime) => {
+            this.metrics.frameCount++;
+            
+            if (currentTime >= this.metrics.lastTime + 1000) {
+                this.metrics.fps = Math.round(
+                    (this.metrics.frameCount * 1000) / (currentTime - this.metrics.lastTime)
+                );
+                this.metrics.frameCount = 0;
+                this.metrics.lastTime = currentTime;
+                
+                // Update performance indicator if exists
+                this.updatePerformanceIndicator();
+            }
+            
+            if (!document.hidden) {
+                requestAnimationFrame(measureFPS);
+            }
+        };
         
-        // Find all images
-        const images = document.querySelectorAll('img');
+        requestAnimationFrame(measureFPS);
+    }
+
+    /**
+     * Monitor memory usage
+     */
+    monitorMemoryUsage() {
+        if ('memory' in performance) {
+            setInterval(() => {
+                this.metrics.memory = {
+                    used: performance.memory.usedJSHeapSize,
+                    total: performance.memory.totalJSHeapSize,
+                    limit: performance.memory.jsHeapSizeLimit
+                };
+            }, 5000);
+        }
+    }
+
+    /**
+     * Update performance indicator
+     */
+    updatePerformanceIndicator() {
+        // Create or update performance indicator in DOM
+        let indicator = document.getElementById('performance-indicator');
         
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'performance-indicator';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                z-index: 10000;
+                display: none;
+            `;
+            document.body.appendChild(indicator);
+        }
+        
+        // Show indicator if performance is poor
+        const showIndicator = this.metrics.fps < 30;
+        indicator.style.display = showIndicator ? 'block' : 'none';
+        
+        if (showIndicator) {
+            indicator.innerHTML = `
+                FPS: ${this.metrics.fps}<br>
+                ${this.metrics.memory ? `Memory: ${Math.round(this.metrics.memory.used / 1024 / 1024)}MB` : ''}
+            `;
+        }
+    }
+
+    /**
+     * Batch DOM updates for better performance
+     */
+    batchDOMUpdates(callback) {
+        if (!this.optimizations.batchDOMUpdates) {
+            callback();
+            return;
+        }
+        
+        requestAnimationFrame(() => {
+            const fragment = document.createDocumentFragment();
+            callback(fragment);
+            
+            // Apply batched updates
+            if (fragment.children.length > 0) {
+                this.container.appendChild(fragment);
+            }
+        });
+    }
+
+    /**
+     * Optimize images for performance
+     */
+    optimizeImages() {
+        if (!this.optimizations.imageOptimization) return;
+        
+        const images = this.container.querySelectorAll('img');
         images.forEach(img => {
-            // Add loading="lazy" for native lazy loading
+            // Add loading attribute
             if (!img.hasAttribute('loading')) {
                 img.setAttribute('loading', 'lazy');
             }
             
-            // Optimize image quality for mobile
-            if (img.src && !img.dataset.optimized) {
-                img.dataset.optimized = 'true';
-                // Could implement image optimization logic here
+            // Add decode attribute
+            if (!img.hasAttribute('decoding')) {
+                img.setAttribute('decoding', 'async');
             }
         });
     }
 
     /**
-     * Preload critical resources
+     * Throttle function for performance
      */
-    preloadCriticalResources() {
-        const head = document.head;
-        
-        // Preload critical CSS if not already loaded
-        const criticalStyles = [
-            '/css/base.css',
-            '/css/variables.css',
-            '/css/components.css'
-        ];
-        
-        criticalStyles.forEach(href => {
-            if (!document.querySelector(`link[href="${href}"]`)) {
-                const link = document.createElement('link');
-                link.rel = 'preload';
-                link.as = 'style';
-                link.href = href;
-                head.appendChild(link);
+    throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
             }
-        });
-        
-        // Preload critical JavaScript modules
-        const criticalModules = [
-            '/js/utils/helpers.js',
-            '/js/data/tasks.js',
-            '/js/data/translations.js'
-        ];
-        
-        criticalModules.forEach(href => {
-            const link = document.createElement('link');
-            link.rel = 'modulepreload';
-            link.href = href;
-            head.appendChild(link);
-        });
+        };
     }
 
     /**
-     * Monitor performance metrics
+     * Debounce function for performance
      */
-    monitorPerformance() {
-        if (!window.performance) return;
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    /**
+     * Pause performance monitoring
+     */
+    pausePerformanceMonitoring() {
+        this.performanceObserver?.disconnect();
+    }
+
+    /**
+     * Resume performance monitoring
+     */
+    resumePerformanceMonitoring() {
+        this.setupPerformanceMonitoring();
+    }
+
+    /**
+     * Get performance metrics
+     */
+    getPerformanceMetrics() {
+        return {
+            ...this.metrics,
+            virtualScrolling: this.virtualScrolling.enabled,
+            lazyLoadedItems: this.lazyLoading.loadedItems.size,
+            averageScrollTime: this.getAverageScrollTime()
+        };
+    }
+
+    /**
+     * Get average scroll performance time
+     */
+    getAverageScrollTime() {
+        if (this.metrics.scrollPerformance.length < 2) return 0;
         
-        // Monitor memory usage
-        if (performance.memory) {
-            this.performance.memoryUsage = performance.memory.usedJSHeapSize;
+        const times = this.metrics.scrollPerformance;
+        let totalTime = 0;
+        
+        for (let i = 1; i < times.length; i++) {
+            totalTime += times[i] - times[i - 1];
         }
         
-        // Monitor frame rate
-        this.startFrameRateMonitoring();
-        
-        // Monitor load times
-        window.addEventListener('load', () => {
-            const navigation = performance.getEntriesByType('navigation')[0];
-            if (navigation) {
-                console.log('📊 Performance metrics:', {
-                    loadTime: navigation.loadEventEnd - navigation.loadEventStart,
-                    domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
-                    firstPaint: this.getFirstPaint(),
-                    memoryUsage: this.performance.memoryUsage
-                });
-            }
-        });
+        return totalTime / (times.length - 1);
     }
 
     /**
-     * Start frame rate monitoring
-     */
-    startFrameRateMonitoring() {
-        let frames = 0;
-        let lastTime = performance.now();
-        
-        const countFrames = () => {
-            frames++;
-            const currentTime = performance.now();
-            
-            if (currentTime >= lastTime + 1000) {
-                const fps = Math.round((frames * 1000) / (currentTime - lastTime));
-                this.performance.fps = fps;
-                
-                // Warn if FPS is low
-                if (fps < 30) {
-                    console.warn(`⚠️ Low FPS detected: ${fps}`);
-                }
-                
-                frames = 0;
-                lastTime = currentTime;
-            }
-            
-            requestAnimationFrame(countFrames);
-        };
-        
-        requestAnimationFrame(countFrames);
-    }
-
-    /**
-     * Get first paint timing
-     * @returns {number} First paint time
-     */
-    getFirstPaint() {
-        const paintMetrics = performance.getEntriesByType('paint');
-        const firstPaint = paintMetrics.find(metric => metric.name === 'first-paint');
-        return firstPaint ? firstPaint.startTime : 0;
-    }
-
-    /**
-     * Optimize task rendering for mobile
-     */
-    optimizeTaskRendering() {
-        const viewport = this.state.getState('viewport');
-        if (!viewport?.isMobile) return;
-        
-        // Use document fragments for batch DOM updates
-        const taskContainer = document.querySelector('#tasksContainer');
-        if (!taskContainer) return;
-        
-        // Enable CSS containment for task cards
-        const taskCards = taskContainer.querySelectorAll('.task-card');
-        taskCards.forEach(card => {
-            card.style.contain = 'layout style paint';
-        });
-        
-        // Enable will-change for frequently animated elements
-        const phaseHeaders = taskContainer.querySelectorAll('.phase-header');
-        phaseHeaders.forEach(header => {
-            header.style.willChange = 'transform';
-        });
-    }
-
-    /**
-     * Cleanup performance resources
+     * Force cleanup of lazy loading
      */
     cleanup() {
-        // Disconnect observers
-        if (this.intersectionObserver) {
-            this.intersectionObserver.disconnect();
-        }
-        
-        if (this.imageObserver) {
-            this.imageObserver.disconnect();
-        }
-        
-        if (this.resizeObserver) {
-            this.resizeObserver.disconnect();
-        }
-        
-        // Remove scroll listeners
-        if (this.virtualScroll.container) {
-            this.virtualScroll.container.removeEventListener('scroll', this.handleScroll);
-        }
-        
-        // Clear queues
-        this.lazyLoadQueue.clear();
-        this.imageLoadQueue.clear();
-        this.virtualScroll.renderedItems.clear();
+        this.lazyLoading.loadedItems.clear();
+        this.lazyLoading.pendingItems.clear();
     }
 
     /**
-     * Initialize performance optimizations on mount
+     * Unmount and cleanup
      */
-    onMount() {
-        // Start performance monitoring
-        this.monitorPerformance();
+    unmount() {
+        this.intersectionObserver?.disconnect();
+        this.mutationObserver?.disconnect();
+        this.performanceObserver?.disconnect();
         
-        // Preload critical resources
-        this.preloadCriticalResources();
+        window.removeEventListener('scroll', this.throttledScroll);
         
-        // Optimize for current viewport
-        this.optimizeImagesForMobile();
-        this.optimizeTaskRendering();
-        
-        // Subscribe to viewport changes
-        this.subscribeToState('viewport', (viewport) => {
-            if (viewport.isMobile) {
-                this.optimizeImagesForMobile();
-                this.optimizeTaskRendering();
-            }
-        });
-        
-        console.log('⚡ PerformanceManager initialized');
-    }
-
-    /**
-     * Cleanup on unmount
-     */
-    onUnmount() {
+        this.disableVirtualScrolling();
         this.cleanup();
+        
+        // Remove performance indicator
+        const indicator = document.getElementById('performance-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+        
+        console.log('⚡ PerformanceManager unmounted');
     }
 
     /**
-     * Get performance statistics
-     * @returns {Object} Performance data
+     * Get component status
      */
-    getPerformanceStats() {
+    getStatus() {
         return {
-            ...this.performance,
-            averageRenderTime: this.performance.renderTimes.length > 0 
-                ? this.performance.renderTimes.reduce((a, b) => a + b, 0) / this.performance.renderTimes.length 
-                : 0,
-            virtualScrollEnabled: this.virtualScroll.enabled,
-            virtualScrollItems: this.virtualScroll.totalItems,
-            lazyLoadQueueSize: this.lazyLoadQueue.size,
-            imageLoadQueueSize: this.imageLoadQueue.size
+            mounted: this.mounted,
+            lazyLoadingEnabled: this.lazyLoading.enabled,
+            virtualScrollingEnabled: this.virtualScrolling.enabled,
+            loadedItems: this.lazyLoading.loadedItems.size,
+            metrics: this.getPerformanceMetrics()
         };
     }
 }
-
-export default PerformanceManager;

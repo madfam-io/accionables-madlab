@@ -1,407 +1,490 @@
 // ==========================================================================
-// Responsive Manager Component
+// ResponsiveManager - Advanced Responsive Design Management
 // ==========================================================================
 
 import { Component } from './Component.js';
-import { debounce, throttle } from '../utils/helpers.js';
 
+/**
+ * ResponsiveManager handles viewport detection, breakpoint tracking,
+ * and responsive behavior coordination across the application
+ */
 export class ResponsiveManager extends Component {
-    constructor(element, state) {
-        super(element, state);
+    constructor(container, state) {
+        super(container, state);
         
-        // Responsive breakpoints
+        // Enhanced breakpoint system
         this.breakpoints = {
-            xs: 320,
-            sm: 576,
-            md: 768,
-            lg: 992,
-            xl: 1200,
-            xxl: 1400
+            xs: 320,   // Extra small devices (phones in portrait)
+            sm: 576,   // Small devices (large phones)
+            md: 768,   // Medium devices (tablets)
+            lg: 992,   // Large devices (desktops)
+            xl: 1200,  // Extra large devices (large desktops)
+            xxl: 1400  // Ultra-wide displays
         };
         
-        // Current viewport state
+        this.currentBreakpoint = null;
+        this.previousBreakpoint = null;
         this.viewport = {
-            width: window.innerWidth,
-            height: window.innerHeight,
-            breakpoint: this.getCurrentBreakpoint(),
-            orientation: this.getOrientation(),
-            isMobile: window.innerWidth < this.breakpoints.md,
-            isTablet: window.innerWidth >= this.breakpoints.md && window.innerWidth < this.breakpoints.lg,
-            isDesktop: window.innerWidth >= this.breakpoints.lg,
-            hasTouch: this.hasTouchSupport(),
-            devicePixelRatio: window.devicePixelRatio || 1
+            width: 0,
+            height: 0,
+            ratio: 0,
+            orientation: 'portrait',
+            isTouch: false,
+            pixelRatio: 1
         };
         
-        // Debounced handlers
-        this.handleResize = debounce(this.updateViewport.bind(this), 150);
-        this.handleOrientationChange = throttle(this.updateOrientation.bind(this), 100);
+        this.resizeTimer = null;
+        this.orientationTimer = null;
+        this.callbacks = new Map();
+        this.mediaQueries = new Map();
         
-        // Initialize viewport state
-        this.updateState();
+        // Bind methods
+        this.handleResize = this.handleResize.bind(this);
+        this.handleOrientationChange = this.handleOrientationChange.bind(this);
+        this.detectTouch = this.detectTouch.bind(this);
     }
 
     /**
-     * Get current breakpoint based on viewport width
-     * @returns {string} Current breakpoint name
+     * Initialize the responsive manager
      */
-    getCurrentBreakpoint() {
-        const width = window.innerWidth;
+    mount() {
+        this.updateViewport();
+        this.setupMediaQueries();
+        this.bindEvents();
+        this.detectDeviceCapabilities();
+        this.applyInitialClasses();
         
-        if (width < this.breakpoints.sm) return 'xs';
-        if (width < this.breakpoints.md) return 'sm';
-        if (width < this.breakpoints.lg) return 'md';
-        if (width < this.breakpoints.xl) return 'lg';
-        if (width < this.breakpoints.xxl) return 'xl';
-        return 'xxl';
+        console.log('📱 ResponsiveManager initialized');
+        console.log('Current breakpoint:', this.currentBreakpoint);
+        console.log('Viewport:', this.viewport);
+        
+        this.emitBreakpointChange();
     }
 
     /**
-     * Get current orientation
-     * @returns {string} Orientation ('portrait' or 'landscape')
+     * Setup media query listeners for each breakpoint
      */
-    getOrientation() {
-        return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+    setupMediaQueries() {
+        Object.entries(this.breakpoints).forEach(([name, width]) => {
+            const mediaQuery = window.matchMedia(`(min-width: ${width}px)`);
+            this.mediaQueries.set(name, mediaQuery);
+            
+            // Listen for changes
+            mediaQuery.addListener(() => {
+                this.updateBreakpoint();
+            });
+        });
     }
 
     /**
-     * Check if device has touch support
-     * @returns {boolean} Has touch support
+     * Bind resize and orientation events
      */
-    hasTouchSupport() {
-        return 'ontouchstart' in window || 
-               navigator.maxTouchPoints > 0 || 
-               navigator.msMaxTouchPoints > 0;
+    bindEvents() {
+        // Resize handling with debouncing
+        window.addEventListener('resize', this.handleResize);
+        
+        // Orientation change handling
+        window.addEventListener('orientationchange', this.handleOrientationChange);
+        
+        // Visual viewport API support (iOS Safari)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', this.handleResize);
+        }
+        
+        // Touch detection
+        window.addEventListener('touchstart', this.detectTouch, { once: true });
     }
 
     /**
-     * Update viewport measurements and breakpoint
+     * Handle window resize with debouncing
+     */
+    handleResize() {
+        clearTimeout(this.resizeTimer);
+        this.resizeTimer = setTimeout(() => {
+            const oldViewport = { ...this.viewport };
+            this.updateViewport();
+            
+            // Check if significant change occurred
+            if (this.hasSignificantChange(oldViewport, this.viewport)) {
+                this.emitViewportChange(oldViewport);
+            }
+        }, 100);
+    }
+
+    /**
+     * Handle orientation change
+     */
+    handleOrientationChange() {
+        clearTimeout(this.orientationTimer);
+        this.orientationTimer = setTimeout(() => {
+            this.updateViewport();
+            this.emitOrientationChange();
+        }, 300); // Wait for orientation change to complete
+    }
+
+    /**
+     * Detect touch capabilities
+     */
+    detectTouch() {
+        this.viewport.isTouch = true;
+        document.documentElement.classList.add('touch-device');
+        document.documentElement.classList.remove('no-touch');
+        
+        this.emitCapabilityChange();
+    }
+
+    /**
+     * Update viewport information
      */
     updateViewport() {
-        const previousViewport = { ...this.viewport };
+        this.viewport.width = window.innerWidth;
+        this.viewport.height = window.innerHeight;
+        this.viewport.ratio = this.viewport.width / this.viewport.height;
+        this.viewport.orientation = this.viewport.width > this.viewport.height ? 'landscape' : 'portrait';
+        this.viewport.pixelRatio = window.devicePixelRatio || 1;
         
-        this.viewport = {
-            width: window.innerWidth,
-            height: window.innerHeight,
-            breakpoint: this.getCurrentBreakpoint(),
-            orientation: this.getOrientation(),
-            isMobile: window.innerWidth < this.breakpoints.md,
-            isTablet: window.innerWidth >= this.breakpoints.md && window.innerWidth < this.breakpoints.lg,
-            isDesktop: window.innerWidth >= this.breakpoints.lg,
-            hasTouch: this.hasTouchSupport(),
-            devicePixelRatio: window.devicePixelRatio || 1
-        };
+        this.updateBreakpoint();
+        this.updateCSSVariables();
+    }
 
-        // Check for significant changes
-        const breakpointChanged = previousViewport.breakpoint !== this.viewport.breakpoint;
-        const orientationChanged = previousViewport.orientation !== this.viewport.orientation;
+    /**
+     * Update current breakpoint
+     */
+    updateBreakpoint() {
+        this.previousBreakpoint = this.currentBreakpoint;
         
-        // Update state and trigger events
-        this.updateState();
-        
-        if (breakpointChanged) {
-            this.handleBreakpointChange(previousViewport.breakpoint, this.viewport.breakpoint);
-        }
-        
-        if (orientationChanged) {
-            this.handleOrientationChangeEvent(previousViewport.orientation, this.viewport.orientation);
-        }
-
-        // Dispatch global responsive event
-        window.dispatchEvent(new CustomEvent('viewportchange', {
-            detail: {
-                viewport: this.viewport,
-                changes: {
-                    breakpointChanged,
-                    orientationChanged,
-                    previousViewport
-                }
+        // Find the largest breakpoint that matches
+        let newBreakpoint = 'xs';
+        Object.entries(this.breakpoints).forEach(([name, width]) => {
+            if (this.viewport.width >= width) {
+                newBreakpoint = name;
             }
-        }));
-    }
-
-    /**
-     * Handle orientation change specifically
-     */
-    updateOrientation() {
-        const previousOrientation = this.viewport.orientation;
-        this.viewport.orientation = this.getOrientation();
+        });
         
-        if (previousOrientation !== this.viewport.orientation) {
-            this.handleOrientationChangeEvent(previousOrientation, this.viewport.orientation);
-            this.updateState();
+        this.currentBreakpoint = newBreakpoint;
+        
+        // Update state
+        this.state.setState({
+            responsive: {
+                breakpoint: this.currentBreakpoint,
+                viewport: this.viewport,
+                isMobile: this.isMobile(),
+                isTablet: this.isTablet(),
+                isDesktop: this.isDesktop()
+            }
+        });
+        
+        // Apply classes
+        this.applyBreakpointClasses();
+        
+        // Emit change if breakpoint changed
+        if (this.previousBreakpoint !== this.currentBreakpoint) {
+            this.emitBreakpointChange();
         }
     }
 
     /**
-     * Handle breakpoint changes
-     * @param {string} from - Previous breakpoint
-     * @param {string} to - New breakpoint
+     * Update CSS custom properties with viewport values
      */
-    handleBreakpointChange(from, to) {
-        console.log(`📱 Breakpoint changed: ${from} → ${to}`);
+    updateCSSVariables() {
+        const root = document.documentElement;
+        root.style.setProperty('--viewport-width', `${this.viewport.width}px`);
+        root.style.setProperty('--viewport-height', `${this.viewport.height}px`);
+        root.style.setProperty('--viewport-ratio', this.viewport.ratio);
+        root.style.setProperty('--pixel-ratio', this.viewport.pixelRatio);
         
-        // Update CSS custom properties for responsive behavior
-        document.documentElement.style.setProperty('--current-breakpoint', to);
-        document.documentElement.setAttribute('data-breakpoint', to);
-        
-        // Apply breakpoint-specific optimizations
-        this.applyBreakpointOptimizations(to);
-        
-        // Dispatch breakpoint change event
-        window.dispatchEvent(new CustomEvent('breakpointchange', {
-            detail: { from, to, viewport: this.viewport }
-        }));
+        // Safe area insets for iOS
+        if (CSS.supports('env(safe-area-inset-top)')) {
+            root.style.setProperty('--safe-area-top', 'env(safe-area-inset-top)');
+            root.style.setProperty('--safe-area-bottom', 'env(safe-area-inset-bottom)');
+            root.style.setProperty('--safe-area-left', 'env(safe-area-inset-left)');
+            root.style.setProperty('--safe-area-right', 'env(safe-area-inset-right)');
+        }
     }
 
     /**
-     * Handle orientation changes
-     * @param {string} from - Previous orientation
-     * @param {string} to - New orientation
+     * Apply initial device and capability classes
      */
-    handleOrientationChangeEvent(from, to) {
-        console.log(`🔄 Orientation changed: ${from} → ${to}`);
+    applyInitialClasses() {
+        const root = document.documentElement;
         
-        // Update document attributes
-        document.documentElement.setAttribute('data-orientation', to);
-        
-        // Handle mobile keyboard issues
-        if (this.viewport.isMobile) {
-            this.handleMobileKeyboardAdjustments();
+        // Touch capability
+        if (!this.viewport.isTouch) {
+            root.classList.add('no-touch');
+            root.classList.remove('touch-device');
         }
         
-        // Dispatch orientation change event
-        window.dispatchEvent(new CustomEvent('orientationchange', {
-            detail: { from, to, viewport: this.viewport }
-        }));
+        // Device type classes
+        root.classList.toggle('mobile-device', this.isMobile());
+        root.classList.toggle('tablet-device', this.isTablet());
+        root.classList.toggle('desktop-device', this.isDesktop());
+        
+        // Orientation class
+        root.classList.toggle('portrait', this.viewport.orientation === 'portrait');
+        root.classList.toggle('landscape', this.viewport.orientation === 'landscape');
+        
+        // High DPI
+        root.classList.toggle('high-dpi', this.viewport.pixelRatio > 1.5);
     }
 
     /**
-     * Apply breakpoint-specific optimizations
-     * @param {string} breakpoint - Current breakpoint
+     * Apply breakpoint-specific classes
      */
-    applyBreakpointOptimizations(breakpoint) {
-        const body = document.body;
+    applyBreakpointClasses() {
+        const root = document.documentElement;
         
-        // Remove previous breakpoint classes
+        // Remove all breakpoint classes
         Object.keys(this.breakpoints).forEach(bp => {
-            body.classList.remove(`bp-${bp}`);
+            root.classList.remove(`bp-${bp}`, `bp-${bp}-up`, `bp-${bp}-down`);
         });
         
         // Add current breakpoint class
-        body.classList.add(`bp-${breakpoint}`);
+        root.classList.add(`bp-${this.currentBreakpoint}`);
         
-        // Mobile-specific optimizations
-        if (this.viewport.isMobile) {
-            body.classList.add('mobile-device');
-            this.enableMobileOptimizations();
-        } else {
-            body.classList.remove('mobile-device');
-            this.disableMobileOptimizations();
-        }
+        // Add up classes (current and larger)
+        let found = false;
+        Object.keys(this.breakpoints).forEach(bp => {
+            if (bp === this.currentBreakpoint) found = true;
+            if (found) root.classList.add(`bp-${bp}-up`);
+        });
         
-        // Touch device optimizations
-        if (this.viewport.hasTouch) {
-            body.classList.add('touch-device');
-        } else {
-            body.classList.remove('touch-device');
-        }
-    }
-
-    /**
-     * Enable mobile-specific optimizations
-     */
-    enableMobileOptimizations() {
-        // Disable hover effects on mobile
-        document.documentElement.style.setProperty('--enable-hover', '0');
-        
-        // Optimize scroll behavior
-        document.body.style.setProperty('-webkit-overflow-scrolling', 'touch');
-        
-        // Prevent zoom on input focus (iOS)
-        this.preventIOSZoom();
-    }
-
-    /**
-     * Disable mobile optimizations for desktop
-     */
-    disableMobileOptimizations() {
-        // Re-enable hover effects
-        document.documentElement.style.setProperty('--enable-hover', '1');
-        
-        // Reset scroll behavior
-        document.body.style.removeProperty('-webkit-overflow-scrolling');
-    }
-
-    /**
-     * Prevent iOS zoom on input focus
-     */
-    preventIOSZoom() {
-        const inputs = document.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-            if (input.style.fontSize !== '16px') {
-                input.style.fontSize = '16px';
-            }
+        // Add down classes (current and smaller)
+        found = false;
+        Object.keys(this.breakpoints).reverse().forEach(bp => {
+            if (bp === this.currentBreakpoint) found = true;
+            if (found) root.classList.add(`bp-${bp}-down`);
         });
     }
 
     /**
-     * Handle mobile keyboard showing/hiding
+     * Detect device capabilities
      */
-    handleMobileKeyboardAdjustments() {
-        if (!this.viewport.isMobile) return;
+    detectDeviceCapabilities() {
+        const root = document.documentElement;
         
-        let initialViewportHeight = window.innerHeight;
+        // Hover capability
+        const hasHover = window.matchMedia('(hover: hover)').matches;
+        root.classList.toggle('has-hover', hasHover);
+        root.classList.toggle('no-hover', !hasHover);
         
-        const checkKeyboard = () => {
-            const currentHeight = window.innerHeight;
-            const heightDifference = initialViewportHeight - currentHeight;
-            const keyboardVisible = heightDifference > 150; // Threshold for keyboard detection
-            
-            document.body.classList.toggle('keyboard-visible', keyboardVisible);
-            
-            // Dispatch keyboard visibility event
-            window.dispatchEvent(new CustomEvent('keyboardtoggle', {
-                detail: { 
-                    visible: keyboardVisible, 
-                    heightDifference,
-                    viewport: this.viewport 
-                }
-            }));
-        };
+        // Pointer capability
+        const hasPointer = window.matchMedia('(pointer: fine)').matches;
+        root.classList.toggle('fine-pointer', hasPointer);
+        root.classList.toggle('coarse-pointer', !hasPointer);
         
-        // Check for keyboard on resize with debouncing
-        const debouncedKeyboardCheck = debounce(checkKeyboard, 100);
-        window.addEventListener('resize', debouncedKeyboardCheck);
+        // Reduced motion preference
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        root.classList.toggle('reduced-motion', prefersReducedMotion);
         
-        // Store the handler for cleanup
-        this.keyboardHandler = debouncedKeyboardCheck;
+        // Color scheme preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        root.classList.toggle('prefers-dark', prefersDark);
+        root.classList.toggle('prefers-light', !prefersDark);
     }
 
     /**
-     * Update component state
+     * Check if significant viewport change occurred
      */
-    updateState() {
-        this.state.setState({
-            viewport: this.viewport,
-            responsive: {
-                isMobile: this.viewport.isMobile,
-                isTablet: this.viewport.isTablet,
-                isDesktop: this.viewport.isDesktop,
-                hasTouch: this.viewport.hasTouch,
-                breakpoint: this.viewport.breakpoint,
-                orientation: this.viewport.orientation
+    hasSignificantChange(oldViewport, newViewport) {
+        const widthChange = Math.abs(oldViewport.width - newViewport.width) > 50;
+        const heightChange = Math.abs(oldViewport.height - newViewport.height) > 100;
+        const orientationChange = oldViewport.orientation !== newViewport.orientation;
+        
+        return widthChange || heightChange || orientationChange;
+    }
+
+    /**
+     * Device type detection methods
+     */
+    isMobile() {
+        return ['xs', 'sm'].includes(this.currentBreakpoint);
+    }
+
+    isTablet() {
+        return this.currentBreakpoint === 'md';
+    }
+
+    isDesktop() {
+        return ['lg', 'xl', 'xxl'].includes(this.currentBreakpoint);
+    }
+
+    /**
+     * Register callback for breakpoint changes
+     */
+    onBreakpointChange(callback, immediate = false) {
+        const id = Date.now() + Math.random();
+        this.callbacks.set(id, { type: 'breakpoint', callback });
+        
+        if (immediate) {
+            callback(this.currentBreakpoint, this.previousBreakpoint, this.viewport);
+        }
+        
+        return () => this.callbacks.delete(id);
+    }
+
+    /**
+     * Register callback for viewport changes
+     */
+    onViewportChange(callback, immediate = false) {
+        const id = Date.now() + Math.random();
+        this.callbacks.set(id, { type: 'viewport', callback });
+        
+        if (immediate) {
+            callback(this.viewport);
+        }
+        
+        return () => this.callbacks.delete(id);
+    }
+
+    /**
+     * Emit breakpoint change event
+     */
+    emitBreakpointChange() {
+        this.callbacks.forEach(({ type, callback }) => {
+            if (type === 'breakpoint') {
+                callback(this.currentBreakpoint, this.previousBreakpoint, this.viewport);
             }
         });
-    }
 
-    /**
-     * Check if current viewport matches breakpoint
-     * @param {string} breakpoint - Breakpoint to check
-     * @returns {boolean} Matches breakpoint
-     */
-    matchesBreakpoint(breakpoint) {
-        return this.viewport.breakpoint === breakpoint;
-    }
-
-    /**
-     * Check if viewport is at least specified breakpoint
-     * @param {string} minBreakpoint - Minimum breakpoint
-     * @returns {boolean} Is at least breakpoint
-     */
-    isAtLeast(minBreakpoint) {
-        const breakpointOrder = Object.keys(this.breakpoints);
-        const currentIndex = breakpointOrder.indexOf(this.viewport.breakpoint);
-        const minIndex = breakpointOrder.indexOf(minBreakpoint);
-        return currentIndex >= minIndex;
-    }
-
-    /**
-     * Get responsive value based on current breakpoint
-     * @param {Object} values - Values for different breakpoints
-     * @returns {*} Value for current breakpoint
-     */
-    getResponsiveValue(values) {
-        const breakpointOrder = Object.keys(this.breakpoints);
-        const currentIndex = breakpointOrder.indexOf(this.viewport.breakpoint);
-        
-        // Find the largest breakpoint that has a value and is <= current
-        for (let i = currentIndex; i >= 0; i--) {
-            const breakpoint = breakpointOrder[i];
-            if (values[breakpoint] !== undefined) {
-                return values[breakpoint];
+        // Dispatch custom event
+        window.dispatchEvent(new CustomEvent('breakpointchange', {
+            detail: {
+                current: this.currentBreakpoint,
+                previous: this.previousBreakpoint,
+                viewport: this.viewport
             }
-        }
-        
-        // Fallback to the smallest breakpoint with a value
-        for (const breakpoint of breakpointOrder) {
-            if (values[breakpoint] !== undefined) {
-                return values[breakpoint];
+        }));
+    }
+
+    /**
+     * Emit viewport change event
+     */
+    emitViewportChange(oldViewport) {
+        this.callbacks.forEach(({ type, callback }) => {
+            if (type === 'viewport') {
+                callback(this.viewport, oldViewport);
             }
-        }
-        
-        return null;
-    }
+        });
 
-    /**
-     * Bind responsive event listeners
-     */
-    bindEvents() {
-        // Window resize
-        window.addEventListener('resize', this.handleResize);
-        
-        // Orientation change
-        window.addEventListener('orientationchange', this.handleOrientationChange);
-        
-        // Device pixel ratio change (for zoom detection)
-        if (window.matchMedia) {
-            const mediaQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-            if (mediaQuery.addEventListener) {
-                mediaQuery.addEventListener('change', this.handleResize);
+        // Dispatch custom event
+        window.dispatchEvent(new CustomEvent('viewportchange', {
+            detail: {
+                current: this.viewport,
+                previous: oldViewport
             }
-        }
+        }));
     }
 
     /**
-     * Initialize responsive features on mount
+     * Emit orientation change event
      */
-    onMount() {
-        // Initial setup
-        this.applyBreakpointOptimizations(this.viewport.breakpoint);
-        
-        // Set up mobile keyboard handling
-        if (this.viewport.isMobile) {
-            this.handleMobileKeyboardAdjustments();
-        }
-        
-        console.log('📱 ResponsiveManager initialized:', this.viewport);
+    emitOrientationChange() {
+        window.dispatchEvent(new CustomEvent('orientationchange', {
+            detail: {
+                orientation: this.viewport.orientation,
+                viewport: this.viewport
+            }
+        }));
     }
 
     /**
-     * Cleanup on unmount
+     * Emit device capability change event
      */
-    onUnmount() {
-        // Remove keyboard handler if exists
-        if (this.keyboardHandler) {
-            window.removeEventListener('resize', this.keyboardHandler);
-        }
+    emitCapabilityChange() {
+        window.dispatchEvent(new CustomEvent('capabilitychange', {
+            detail: {
+                isTouch: this.viewport.isTouch,
+                viewport: this.viewport
+            }
+        }));
     }
 
     /**
-     * Get current responsive state for debugging
-     * @returns {Object} Current responsive state
+     * Get responsive information
      */
-    getResponsiveState() {
+    getResponsiveInfo() {
         return {
+            currentBreakpoint: this.currentBreakpoint,
+            previousBreakpoint: this.previousBreakpoint,
+            viewport: { ...this.viewport },
+            isMobile: this.isMobile(),
+            isTablet: this.isTablet(),
+            isDesktop: this.isDesktop(),
+            breakpoints: { ...this.breakpoints }
+        };
+    }
+
+    /**
+     * Check if viewport matches specific breakpoint
+     */
+    matches(breakpoint) {
+        if (typeof breakpoint === 'string') {
+            return this.currentBreakpoint === breakpoint;
+        }
+        
+        if (Array.isArray(breakpoint)) {
+            return breakpoint.includes(this.currentBreakpoint);
+        }
+        
+        return false;
+    }
+
+    /**
+     * Check if viewport is at or above specific breakpoint
+     */
+    up(breakpoint) {
+        const breakpointOrder = Object.keys(this.breakpoints);
+        const currentIndex = breakpointOrder.indexOf(this.currentBreakpoint);
+        const targetIndex = breakpointOrder.indexOf(breakpoint);
+        
+        return currentIndex >= targetIndex;
+    }
+
+    /**
+     * Check if viewport is at or below specific breakpoint
+     */
+    down(breakpoint) {
+        const breakpointOrder = Object.keys(this.breakpoints);
+        const currentIndex = breakpointOrder.indexOf(this.currentBreakpoint);
+        const targetIndex = breakpointOrder.indexOf(breakpoint);
+        
+        return currentIndex <= targetIndex;
+    }
+
+    /**
+     * Cleanup and unmount
+     */
+    unmount() {
+        clearTimeout(this.resizeTimer);
+        clearTimeout(this.orientationTimer);
+        
+        window.removeEventListener('resize', this.handleResize);
+        window.removeEventListener('orientationchange', this.handleOrientationChange);
+        
+        if (window.visualViewport) {
+            window.visualViewport.removeEventListener('resize', this.handleResize);
+        }
+        
+        // Clear media query listeners
+        this.mediaQueries.forEach(mq => {
+            mq.removeListener();
+        });
+        
+        this.callbacks.clear();
+        this.mediaQueries.clear();
+        
+        console.log('📱 ResponsiveManager unmounted');
+    }
+
+    /**
+     * Get component status
+     */
+    getStatus() {
+        return {
+            mounted: this.mounted,
+            breakpoint: this.currentBreakpoint,
             viewport: this.viewport,
-            breakpoints: this.breakpoints,
-            capabilities: {
-                touch: this.viewport.hasTouch,
-                mobile: this.viewport.isMobile,
-                tablet: this.viewport.isTablet,
-                desktop: this.viewport.isDesktop
-            }
+            callbacks: this.callbacks.size
         };
     }
 }
-
-export default ResponsiveManager;

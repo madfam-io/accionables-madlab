@@ -1,734 +1,905 @@
 // ==========================================================================
-// Mobile Filter Manager Component
+// MobileFilterManager - Mobile-Native Filter Interface
 // ==========================================================================
 
 import { Component } from './Component.js';
-import { debounce } from '../utils/helpers.js';
 
+/**
+ * MobileFilterManager provides a mobile-native bottom sheet interface
+ * for filtering tasks with touch-friendly interactions
+ */
 export class MobileFilterManager extends Component {
-    constructor(element, state) {
-        super(element, state);
+    constructor(container, state) {
+        super(container, state);
         
-        // Mobile filter configuration
+        this.bottomSheet = null;
+        this.overlay = null;
+        this.isOpen = false;
+        this.isDragging = false;
+        this.startY = 0;
+        this.currentY = 0;
+        this.sheetHeight = 0;
+        
+        // Bottom sheet configuration
         this.config = {
-            breakpoint: 768,                // Mobile breakpoint
-            bottomSheetThreshold: 0.3,      // Swipe threshold to open/close
-            animationDuration: 300,         // Animation duration in ms
-            backdropOpacity: 0.5,           // Backdrop opacity
-            snapPoints: [0.3, 0.7, 1.0],   // Bottom sheet snap positions
-            dragResistance: 0.8             // Drag resistance when overscrolling
-        };
-        
-        // Bottom sheet state
-        this.bottomSheet = {
-            isOpen: false,
-            isDragging: false,
-            startY: 0,
-            currentY: 0,
-            height: 0,
-            position: 0, // 0 = closed, 1 = fully open
-            snapPosition: 0
+            snapPoints: [0.25, 0.5, 0.85], // Percentage of screen height
+            currentSnapPoint: 0.5,
+            minHeight: 200,
+            maxHeight: window.innerHeight * 0.85,
+            dragThreshold: 50,
+            animationDuration: 300
         };
         
         // Filter state
-        this.mobileFilters = {
+        this.filters = {
             search: '',
-            assignee: '',
+            team: '',
             difficulty: '',
             phase: '',
             duration: ''
         };
         
-        // DOM elements
-        this.elements = {
-            bottomSheet: null,
-            backdrop: null,
-            handle: null,
-            content: null,
-            trigger: null
-        };
-        
-        // Debounced handlers
-        this.handleSearch = debounce(this.onSearchChange.bind(this), 300);
+        this.activeFilters = new Set();
         
         // Bind methods
-        this.onTouchStart = this.onTouchStart.bind(this);
-        this.onTouchMove = this.onTouchMove.bind(this);
-        this.onTouchEnd = this.onTouchEnd.bind(this);
-        this.onBackdropClick = this.onBackdropClick.bind(this);
+        this.handleTouchStart = this.handleTouchStart.bind(this);
+        this.handleTouchMove = this.handleTouchMove.bind(this);
+        this.handleTouchEnd = this.handleTouchEnd.bind(this);
+        this.handleFilterChange = this.handleFilterChange.bind(this);
+        this.handleResize = this.handleResize.bind(this);
     }
 
     /**
-     * Create mobile filter bottom sheet
+     * Initialize mobile filter manager
+     */
+    mount() {
+        this.createBottomSheet();
+        this.bindEvents();
+        this.setupResponsiveDetection();
+        
+        console.log('📱 MobileFilterManager initialized');
+    }
+
+    /**
+     * Create bottom sheet structure
      */
     createBottomSheet() {
-        if (this.elements.bottomSheet) return;
-        
-        const currentLang = this.state.getState('currentLang');
-        const t = this.getTranslations(currentLang);
-        
-        // Create backdrop
-        this.elements.backdrop = this.createElement('div', {
-            className: 'mobile-filter-backdrop'
-        });
-        this.elements.backdrop.addEventListener('click', this.onBackdropClick);
+        // Create overlay
+        this.overlay = document.createElement('div');
+        this.overlay.className = 'filter-bottom-sheet-overlay';
         
         // Create bottom sheet
-        this.elements.bottomSheet = this.createElement('div', {
-            className: 'mobile-filter-bottom-sheet'
-        });
+        this.bottomSheet = document.createElement('div');
+        this.bottomSheet.className = 'filter-bottom-sheet';
         
-        // Create drag handle
-        this.elements.handle = this.createElement('div', {
-            className: 'bottom-sheet-handle'
-        });
+        // Create handle
+        const handle = document.createElement('div');
+        handle.className = 'bottom-sheet-handle';
         
         // Create header
-        const header = this.createElement('div', {
-            className: 'bottom-sheet-header'
-        });
-        
-        const title = this.createElement('h3', {
-            className: 'bottom-sheet-title'
-        }, currentLang === 'es' ? 'Filtros' : 'Filters');
-        
-        const clearBtn = this.createElement('button', {
-            className: 'btn btn-outline btn-clear-filters'
-        }, currentLang === 'es' ? 'Limpiar' : 'Clear');
-        
-        clearBtn.addEventListener('click', () => this.clearAllFilters());
-        
-        header.appendChild(title);
-        header.appendChild(clearBtn);
+        const header = document.createElement('div');
+        header.className = 'bottom-sheet-header';
+        header.innerHTML = `
+            <h3 class="sheet-title" data-es="Filtros" data-en="Filters">Filtros</h3>
+            <button class="sheet-close-btn" aria-label="Close filters">
+                <span>×</span>
+            </button>
+        `;
         
         // Create content
-        this.elements.content = this.createElement('div', {
-            className: 'bottom-sheet-content'
-        });
+        const content = document.createElement('div');
+        content.className = 'bottom-sheet-content';
+        content.innerHTML = this.createFilterContent();
         
-        // Create filter sections
-        this.createFilterSections(this.elements.content, currentLang);
+        // Create footer
+        const footer = document.createElement('div');
+        footer.className = 'bottom-sheet-footer';
+        footer.innerHTML = `
+            <button class="btn btn-outline clear-filters-btn" data-es="Limpiar todo" data-en="Clear all">
+                Limpiar todo
+            </button>
+            <button class="btn btn-primary apply-filters-btn" data-es="Aplicar filtros" data-en="Apply filters">
+                Aplicar filtros
+            </button>
+        `;
         
         // Assemble bottom sheet
-        this.elements.bottomSheet.appendChild(this.elements.handle);
-        this.elements.bottomSheet.appendChild(header);
-        this.elements.bottomSheet.appendChild(this.elements.content);
+        this.bottomSheet.appendChild(handle);
+        this.bottomSheet.appendChild(header);
+        this.bottomSheet.appendChild(content);
+        this.bottomSheet.appendChild(footer);
         
-        // Add to DOM
-        document.body.appendChild(this.elements.backdrop);
-        document.body.appendChild(this.elements.bottomSheet);
+        // Add to overlay
+        this.overlay.appendChild(this.bottomSheet);
         
-        // Add touch events to handle
-        this.elements.handle.addEventListener('touchstart', this.onTouchStart, { passive: false });
-        this.elements.handle.addEventListener('touchmove', this.onTouchMove, { passive: false });
-        this.elements.handle.addEventListener('touchend', this.onTouchEnd, { passive: false });
-        
-        // Add touch events to content for dragging
-        this.elements.content.addEventListener('touchstart', this.onTouchStart, { passive: false });
-        
-        console.log('📱 Mobile filter bottom sheet created');
+        // Initially hidden
+        this.overlay.style.display = 'none';
+        document.body.appendChild(this.overlay);
     }
 
     /**
-     * Create filter sections in bottom sheet
-     * @param {Element} container - Container element
-     * @param {string} lang - Current language
+     * Create filter content HTML
      */
-    createFilterSections(container, lang) {
-        const t = this.getTranslations(lang);
-        
-        // Search section
-        const searchSection = this.createFilterSection(
-            lang === 'es' ? 'Buscar' : 'Search',
-            this.createSearchInput(lang)
-        );
-        container.appendChild(searchSection);
-        
-        // Quick filters section
-        const quickFiltersSection = this.createFilterSection(
-            lang === 'es' ? 'Filtros Rápidos' : 'Quick Filters',
-            this.createQuickFilters(lang)
-        );
-        container.appendChild(quickFiltersSection);
-        
-        // Assignee section
-        const assigneeSection = this.createFilterSection(
-            lang === 'es' ? 'Asignado a' : 'Assigned to',
-            this.createAssigneeFilter(lang)
-        );
-        container.appendChild(assigneeSection);
-        
-        // Difficulty section
-        const difficultySection = this.createFilterSection(
-            lang === 'es' ? 'Dificultad' : 'Difficulty',
-            this.createDifficultyFilter(lang)
-        );
-        container.appendChild(difficultySection);
-        
-        // Phase section
-        const phaseSection = this.createFilterSection(
-            lang === 'es' ? 'Fase' : 'Phase',
-            this.createPhaseFilter(lang)
-        );
-        container.appendChild(phaseSection);
-        
-        // Duration section
-        const durationSection = this.createFilterSection(
-            lang === 'es' ? 'Duración' : 'Duration',
-            this.createDurationFilter(lang)
-        );
-        container.appendChild(durationSection);
+    createFilterContent() {
+        return `
+            <div class="filter-section">
+                <label class="filter-label" data-es="Buscar tareas" data-en="Search tasks">Buscar tareas</label>
+                <div class="search-input-wrapper">
+                    <input type="text" class="mobile-search-input" placeholder="Escribe para buscar..." data-filter="search">
+                    <button class="search-clear-btn" style="display: none;">×</button>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <label class="filter-label" data-es="Miembro del equipo" data-en="Team member">Miembro del equipo</label>
+                <div class="filter-chips-container" data-filter-type="team">
+                    <div class="filter-chip" data-value="">
+                        <span data-es="Todos" data-en="All">Todos</span>
+                    </div>
+                    <div class="filter-chip" data-value="Aldo">
+                        <span>Aldo</span>
+                    </div>
+                    <div class="filter-chip" data-value="Nuri">
+                        <span>Nuri</span>
+                    </div>
+                    <div class="filter-chip" data-value="Luis">
+                        <span>Luis</span>
+                    </div>
+                    <div class="filter-chip" data-value="Silvia">
+                        <span>Silvia</span>
+                    </div>
+                    <div class="filter-chip" data-value="Caro">
+                        <span>Caro</span>
+                    </div>
+                    <div class="filter-chip" data-value="All">
+                        <span data-es="Equipo Completo" data-en="Full Team">Equipo Completo</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <label class="filter-label" data-es="Dificultad" data-en="Difficulty">Dificultad</label>
+                <div class="filter-chips-container" data-filter-type="difficulty">
+                    <div class="filter-chip" data-value="">
+                        <span data-es="Todas" data-en="All">Todas</span>
+                    </div>
+                    <div class="filter-chip" data-value="1">
+                        <span>⭐ Nivel 1</span>
+                    </div>
+                    <div class="filter-chip" data-value="2">
+                        <span>⭐⭐ Nivel 2</span>
+                    </div>
+                    <div class="filter-chip" data-value="3">
+                        <span>⭐⭐⭐ Nivel 3</span>
+                    </div>
+                    <div class="filter-chip" data-value="4">
+                        <span>⭐⭐⭐⭐ Nivel 4</span>
+                    </div>
+                    <div class="filter-chip" data-value="5">
+                        <span>⭐⭐⭐⭐⭐ Nivel 5</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <label class="filter-label" data-es="Fase del proyecto" data-en="Project phase">Fase del proyecto</label>
+                <div class="filter-chips-container" data-filter-type="phase">
+                    <div class="filter-chip" data-value="">
+                        <span data-es="Todas las fases" data-en="All phases">Todas las fases</span>
+                    </div>
+                    <div class="filter-chip" data-value="1">
+                        <span data-es="Fase 1: Fundación" data-en="Phase 1: Foundation">Fase 1: Fundación</span>
+                    </div>
+                    <div class="filter-chip" data-value="2">
+                        <span data-es="Fase 2: Desarrollo" data-en="Phase 2: Development">Fase 2: Desarrollo</span>
+                    </div>
+                    <div class="filter-chip" data-value="3">
+                        <span data-es="Fase 3: Piloto Prep" data-en="Phase 3: Pilot Prep">Fase 3: Piloto Prep</span>
+                    </div>
+                    <div class="filter-chip" data-value="4">
+                        <span data-es="Fase 4: Piloto" data-en="Phase 4: Pilot">Fase 4: Piloto</span>
+                    </div>
+                    <div class="filter-chip" data-value="5">
+                        <span data-es="Fase 5: Lanzamiento" data-en="Phase 5: Launch">Fase 5: Lanzamiento</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <label class="filter-label" data-es="Duración" data-en="Duration">Duración</label>
+                <div class="filter-chips-container" data-filter-type="duration">
+                    <div class="filter-chip" data-value="">
+                        <span data-es="Toda duración" data-en="All durations">Toda duración</span>
+                    </div>
+                    <div class="filter-chip" data-value="short">
+                        <span data-es="Corta (≤2h)" data-en="Short (≤2h)">Corta (≤2h)</span>
+                    </div>
+                    <div class="filter-chip" data-value="medium">
+                        <span data-es="Media (2-5h)" data-en="Medium (2-5h)">Media (2-5h)</span>
+                    </div>
+                    <div class="filter-chip" data-value="long">
+                        <span data-es="Larga (>5h)" data-en="Long (>5h)">Larga (>5h)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="active-filters-section">
+                <label class="filter-label" data-es="Filtros activos" data-en="Active filters">Filtros activos</label>
+                <div class="active-filters-container"></div>
+            </div>
+        `;
     }
 
     /**
-     * Create filter section
-     * @param {string} title - Section title
-     * @param {Element} content - Section content
-     * @returns {Element} Section element
+     * Bind events
      */
-    createFilterSection(title, content) {
-        const section = this.createElement('div', {
-            className: 'mobile-filter-section'
+    bindEvents() {
+        // Touch events for dragging
+        const handle = this.bottomSheet.querySelector('.bottom-sheet-handle');
+        const header = this.bottomSheet.querySelector('.bottom-sheet-header');
+        
+        [handle, header].forEach(element => {
+            element.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+            element.addEventListener('touchmove', this.handleTouchMove, { passive: false });
+            element.addEventListener('touchend', this.handleTouchEnd, { passive: true });
         });
         
-        const sectionTitle = this.createElement('h4', {
-            className: 'filter-section-title'
-        }, title);
+        // Close button
+        const closeBtn = this.bottomSheet.querySelector('.sheet-close-btn');
+        closeBtn.addEventListener('click', () => this.close());
         
-        section.appendChild(sectionTitle);
-        section.appendChild(content);
-        
-        return section;
-    }
-
-    /**
-     * Create search input
-     * @param {string} lang - Current language
-     * @returns {Element} Search input element
-     */
-    createSearchInput(lang) {
-        const searchInput = this.createElement('input', {
-            type: 'text',
-            className: 'mobile-search-input',
-            placeholder: lang === 'es' ? 'Buscar tareas...' : 'Search tasks...'
-        });
-        
-        searchInput.addEventListener('input', (e) => {
-            this.mobileFilters.search = e.target.value;
-            this.handleSearch();
-        });
-        
-        return searchInput;
-    }
-
-    /**
-     * Create quick filter chips
-     * @param {string} lang - Current language
-     * @returns {Element} Quick filters container
-     */
-    createQuickFilters(lang) {
-        const container = this.createElement('div', {
-            className: 'quick-filters-container'
-        });
-        
-        const quickFilters = [
-            { key: 'myTasks', label: lang === 'es' ? 'Mis Tareas' : 'My Tasks', filter: { assignee: 'Aldo' } },
-            { key: 'urgent', label: lang === 'es' ? 'Urgente' : 'Urgent', filter: { difficulty: '5' } },
-            { key: 'quick', label: lang === 'es' ? 'Rápido' : 'Quick', filter: { duration: 'short' } },
-            { key: 'phase1', label: lang === 'es' ? 'Fase 1' : 'Phase 1', filter: { phase: '1' } }
-        ];
-        
-        quickFilters.forEach(quickFilter => {
-            const chip = this.createElement('button', {
-                className: 'quick-filter-chip',
-                dataset: { filter: quickFilter.key }
-            }, quickFilter.label);
-            
-            chip.addEventListener('click', () => {
-                this.applyQuickFilter(quickFilter.filter);
-                chip.classList.toggle('active');
-            });
-            
-            container.appendChild(chip);
-        });
-        
-        return container;
-    }
-
-    /**
-     * Create assignee filter
-     * @param {string} lang - Current language
-     * @returns {Element} Assignee filter element
-     */
-    createAssigneeFilter(lang) {
-        const container = this.createElement('div', {
-            className: 'assignee-filter-container'
-        });
-        
-        const teamMembers = ['Aldo', 'Nuri', 'Luis', 'Silvia', 'Caro'];
-        
-        teamMembers.forEach(member => {
-            const option = this.createElement('label', {
-                className: 'assignee-option'
-            });
-            
-            const radio = this.createElement('input', {
-                type: 'radio',
-                name: 'mobileAssignee',
-                value: member
-            });
-            
-            const label = this.createElement('span', {}, member);
-            
-            radio.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.mobileFilters.assignee = member;
-                    this.applyFilters();
-                }
-            });
-            
-            option.appendChild(radio);
-            option.appendChild(label);
-            container.appendChild(option);
-        });
-        
-        return container;
-    }
-
-    /**
-     * Create difficulty filter
-     * @param {string} lang - Current language
-     * @returns {Element} Difficulty filter element
-     */
-    createDifficultyFilter(lang) {
-        const container = this.createElement('div', {
-            className: 'difficulty-filter-container'
-        });
-        
-        for (let i = 1; i <= 5; i++) {
-            const difficultyBtn = this.createElement('button', {
-                className: 'difficulty-level-btn',
-                dataset: { level: i.toString() }
-            });
-            
-            // Add stars
-            for (let j = 1; j <= 5; j++) {
-                const star = this.createElement('span', {
-                    className: j <= i ? 'star filled' : 'star'
-                }, '⭐');
-                difficultyBtn.appendChild(star);
+        // Overlay click to close
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) {
+                this.close();
             }
-            
-            difficultyBtn.addEventListener('click', () => {
-                // Toggle active state
-                const isActive = difficultyBtn.classList.contains('active');
-                container.querySelectorAll('.difficulty-level-btn').forEach(btn => 
-                    btn.classList.remove('active')
-                );
-                
-                if (!isActive) {
-                    difficultyBtn.classList.add('active');
-                    this.mobileFilters.difficulty = i.toString();
-                } else {
-                    this.mobileFilters.difficulty = '';
-                }
-                
-                this.applyFilters();
-            });
-            
-            container.appendChild(difficultyBtn);
-        }
+        });
         
-        return container;
+        // Filter chips
+        const filterChips = this.bottomSheet.querySelectorAll('.filter-chip');
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', this.handleFilterChange);
+        });
+        
+        // Search input
+        const searchInput = this.bottomSheet.querySelector('.mobile-search-input');
+        searchInput.addEventListener('input', this.handleFilterChange);
+        
+        // Search clear button
+        const searchClearBtn = this.bottomSheet.querySelector('.search-clear-btn');
+        searchClearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchClearBtn.style.display = 'none';
+            this.handleFilterChange();
+        });
+        
+        // Footer buttons
+        const clearBtn = this.bottomSheet.querySelector('.clear-filters-btn');
+        const applyBtn = this.bottomSheet.querySelector('.apply-filters-btn');
+        
+        clearBtn.addEventListener('click', () => this.clearAllFilters());
+        applyBtn.addEventListener('click', () => this.applyFilters());
+        
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isOpen) {
+                this.close();
+            }
+        });
+        
+        // Resize handling
+        window.addEventListener('resize', this.handleResize);
     }
 
     /**
-     * Create phase filter
-     * @param {string} lang - Current language
-     * @returns {Element} Phase filter element
+     * Setup responsive detection
      */
-    createPhaseFilter(lang) {
-        const container = this.createElement('div', {
-            className: 'phase-filter-container'
+    setupResponsiveDetection() {
+        // Listen for breakpoint changes from ResponsiveManager
+        window.addEventListener('breakpointchange', (e) => {
+            const { current } = e.detail;
+            this.updateForBreakpoint(current);
         });
         
-        for (let i = 1; i <= 5; i++) {
-            const phaseBtn = this.createElement('button', {
-                className: 'phase-btn',
-                dataset: { phase: i.toString() }
-            }, `${lang === 'es' ? 'Fase' : 'Phase'} ${i}`);
-            
-            phaseBtn.addEventListener('click', () => {
-                // Toggle active state
-                const isActive = phaseBtn.classList.contains('active');
-                container.querySelectorAll('.phase-btn').forEach(btn => 
-                    btn.classList.remove('active')
-                );
-                
-                if (!isActive) {
-                    phaseBtn.classList.add('active');
-                    this.mobileFilters.phase = i.toString();
-                } else {
-                    this.mobileFilters.phase = '';
-                }
-                
-                this.applyFilters();
-            });
-            
-            container.appendChild(phaseBtn);
-        }
-        
-        return container;
+        // Initial setup
+        this.updateForBreakpoint(this.getCurrentBreakpoint());
     }
 
     /**
-     * Create duration filter
-     * @param {string} lang - Current language
-     * @returns {Element} Duration filter element
+     * Get current breakpoint
      */
-    createDurationFilter(lang) {
-        const container = this.createElement('div', {
-            className: 'duration-filter-container'
-        });
+    getCurrentBreakpoint() {
+        const width = window.innerWidth;
+        if (width < 576) return 'xs';
+        if (width < 768) return 'sm';
+        if (width < 992) return 'md';
+        if (width < 1200) return 'lg';
+        if (width < 1400) return 'xl';
+        return 'xxl';
+    }
+
+    /**
+     * Update for breakpoint change
+     */
+    updateForBreakpoint(breakpoint) {
+        const isMobile = ['xs', 'sm'].includes(breakpoint);
         
-        const durations = [
-            { key: 'short', label: lang === 'es' ? 'Corta (≤2h)' : 'Short (≤2h)' },
-            { key: 'medium', label: lang === 'es' ? 'Media (2-5h)' : 'Medium (2-5h)' },
-            { key: 'long', label: lang === 'es' ? 'Larga (>5h)' : 'Long (>5h)' }
-        ];
+        if (isMobile) {
+            this.enableMobileFilters();
+        } else {
+            this.disableMobileFilters();
+        }
+    }
+
+    /**
+     * Enable mobile filter interface
+     */
+    enableMobileFilters() {
+        // Hide desktop filters
+        const desktopFilters = document.querySelector('.filters');
+        if (desktopFilters) {
+            desktopFilters.style.display = 'none';
+        }
         
-        durations.forEach(duration => {
-            const durationBtn = this.createElement('button', {
-                className: 'duration-btn',
-                dataset: { duration: duration.key }
-            }, duration.label);
+        // Show mobile filter trigger
+        this.createMobileFilterTrigger();
+    }
+
+    /**
+     * Disable mobile filter interface
+     */
+    disableMobileFilters() {
+        // Show desktop filters
+        const desktopFilters = document.querySelector('.filters');
+        if (desktopFilters) {
+            desktopFilters.style.display = '';
+        }
+        
+        // Hide mobile filter trigger
+        this.removeMobileFilterTrigger();
+        
+        // Close if open
+        if (this.isOpen) {
+            this.close();
+        }
+    }
+
+    /**
+     * Create mobile filter trigger button
+     */
+    createMobileFilterTrigger() {
+        let trigger = document.getElementById('mobile-filter-trigger');
+        
+        if (!trigger) {
+            trigger = document.createElement('button');
+            trigger.id = 'mobile-filter-trigger';
+            trigger.className = 'mobile-filter-trigger';
+            trigger.innerHTML = `
+                <span class="filter-icon">🔍</span>
+                <span class="filter-text" data-es="Filtros" data-en="Filters">Filtros</span>
+                <span class="active-count" style="display: none;">0</span>
+            `;
             
-            durationBtn.addEventListener('click', () => {
-                // Toggle active state
-                const isActive = durationBtn.classList.contains('active');
-                container.querySelectorAll('.duration-btn').forEach(btn => 
-                    btn.classList.remove('active')
-                );
-                
-                if (!isActive) {
-                    durationBtn.classList.add('active');
-                    this.mobileFilters.duration = duration.key;
-                } else {
-                    this.mobileFilters.duration = '';
-                }
-                
-                this.applyFilters();
-            });
+            trigger.addEventListener('click', () => this.open());
             
-            container.appendChild(durationBtn);
-        });
-        
-        return container;
+            // Insert after hero section
+            const hero = document.querySelector('.hero');
+            if (hero && hero.nextSibling) {
+                hero.parentNode.insertBefore(trigger, hero.nextSibling);
+            } else {
+                document.querySelector('.container').appendChild(trigger);
+            }
+        }
+    }
+
+    /**
+     * Remove mobile filter trigger
+     */
+    removeMobileFilterTrigger() {
+        const trigger = document.getElementById('mobile-filter-trigger');
+        if (trigger) {
+            trigger.remove();
+        }
     }
 
     /**
      * Handle touch start for dragging
-     * @param {TouchEvent} event - Touch event
      */
-    onTouchStart(event) {
-        this.bottomSheet.isDragging = true;
-        this.bottomSheet.startY = event.touches[0].clientY;
-        this.bottomSheet.currentY = this.bottomSheet.startY;
+    handleTouchStart(e) {
+        this.isDragging = true;
+        this.startY = e.touches[0].clientY;
+        this.currentY = this.startY;
         
-        // Disable transitions during drag
-        this.elements.bottomSheet.style.transition = 'none';
+        this.bottomSheet.style.transition = 'none';
     }
 
     /**
      * Handle touch move for dragging
-     * @param {TouchEvent} event - Touch event
      */
-    onTouchMove(event) {
-        if (!this.bottomSheet.isDragging) return;
+    handleTouchMove(e) {
+        if (!this.isDragging) return;
         
-        event.preventDefault();
+        e.preventDefault();
+        this.currentY = e.touches[0].clientY;
+        const deltaY = this.currentY - this.startY;
         
-        const currentY = event.touches[0].clientY;
-        const deltaY = currentY - this.bottomSheet.startY;
-        const newPosition = Math.max(0, Math.min(1, this.bottomSheet.position - (deltaY / this.bottomSheet.height)));
-        
-        this.setBottomSheetPosition(newPosition);
-        this.bottomSheet.currentY = currentY;
-    }
-
-    /**
-     * Handle touch end for dragging
-     * @param {TouchEvent} event - Touch event
-     */
-    onTouchEnd(event) {
-        if (!this.bottomSheet.isDragging) return;
-        
-        this.bottomSheet.isDragging = false;
-        
-        // Re-enable transitions
-        this.elements.bottomSheet.style.transition = `transform ${this.config.animationDuration}ms ease-out`;
-        
-        // Calculate velocity
-        const deltaY = this.bottomSheet.currentY - this.bottomSheet.startY;
-        const velocity = Math.abs(deltaY) / this.config.animationDuration;
-        
-        // Determine snap position
-        let targetPosition;
-        if (velocity > 0.5) {
-            // Fast swipe - snap in direction of movement
-            targetPosition = deltaY > 0 ? 0 : 1;
-        } else {
-            // Slow drag - snap to nearest snap point
-            targetPosition = this.findNearestSnapPoint(this.bottomSheet.position);
-        }
-        
-        if (targetPosition === 0) {
-            this.closeBottomSheet();
-        } else {
-            this.setBottomSheetPosition(targetPosition);
-            this.bottomSheet.snapPosition = targetPosition;
-        }
-    }
-
-    /**
-     * Handle backdrop click
-     */
-    onBackdropClick() {
-        this.closeBottomSheet();
-    }
-
-    /**
-     * Find nearest snap point
-     * @param {number} position - Current position
-     * @returns {number} Nearest snap point
-     */
-    findNearestSnapPoint(position) {
-        return this.config.snapPoints.reduce((nearest, snapPoint) => {
-            return Math.abs(snapPoint - position) < Math.abs(nearest - position) ? snapPoint : nearest;
-        });
-    }
-
-    /**
-     * Set bottom sheet position
-     * @param {number} position - Position (0-1)
-     */
-    setBottomSheetPosition(position) {
-        this.bottomSheet.position = position;
-        const translateY = (1 - position) * 100;
-        
-        this.elements.bottomSheet.style.transform = `translateY(${translateY}%)`;
-        this.elements.backdrop.style.opacity = position * this.config.backdropOpacity;
-    }
-
-    /**
-     * Open bottom sheet
-     * @param {number} [position=0.7] - Target position
-     */
-    openBottomSheet(position = 0.7) {
-        if (!this.elements.bottomSheet) {
-            this.createBottomSheet();
-        }
-        
-        this.bottomSheet.isOpen = true;
-        this.bottomSheet.height = this.elements.bottomSheet.offsetHeight;
-        
-        // Show elements
-        this.elements.backdrop.style.display = 'block';
-        this.elements.bottomSheet.style.display = 'block';
-        
-        // Add body class to prevent scrolling
-        document.body.classList.add('bottom-sheet-open');
-        
-        // Animate to open position
-        requestAnimationFrame(() => {
-            this.elements.bottomSheet.style.transition = `transform ${this.config.animationDuration}ms ease-out`;
-            this.elements.backdrop.style.transition = `opacity ${this.config.animationDuration}ms ease-out`;
+        // Only allow dragging down when at top snap point
+        if (deltaY > 0) {
+            const currentHeight = this.sheetHeight;
+            const newHeight = Math.max(
+                this.config.minHeight,
+                currentHeight - deltaY
+            );
             
-            this.setBottomSheetPosition(position);
-            this.bottomSheet.snapPosition = position;
+            this.setSheetHeight(newHeight);
+        }
+    }
+
+    /**
+     * Handle touch end for snap points
+     */
+    handleTouchEnd(e) {
+        if (!this.isDragging) return;
+        
+        this.isDragging = false;
+        this.bottomSheet.style.transition = `transform ${this.config.animationDuration}ms ease-out`;
+        
+        const deltaY = this.currentY - this.startY;
+        const velocity = Math.abs(deltaY) / 100; // Simple velocity calculation
+        
+        // Determine snap point based on position and velocity
+        if (deltaY > this.config.dragThreshold || velocity > 1.5) {
+            // Drag down - close or go to lower snap point
+            if (this.config.currentSnapPoint === 0.25) {
+                this.close();
+            } else {
+                this.snapTo(0.25);
+            }
+        } else if (deltaY < -this.config.dragThreshold) {
+            // Drag up - go to higher snap point
+            if (this.config.currentSnapPoint < 0.85) {
+                this.snapTo(0.85);
+            }
+        } else {
+            // Return to current snap point
+            this.snapTo(this.config.currentSnapPoint);
+        }
+    }
+
+    /**
+     * Handle filter changes
+     */
+    handleFilterChange(e) {
+        const target = e.target;
+        
+        if (target.classList.contains('filter-chip')) {
+            this.handleChipSelection(target);
+        } else if (target.classList.contains('mobile-search-input')) {
+            this.handleSearchInput(target);
+        }
+        
+        this.updateActiveFilters();
+        this.updateFilterCount();
+    }
+
+    /**
+     * Handle chip selection
+     */
+    handleChipSelection(chip) {
+        const container = chip.closest('.filter-chips-container');
+        const filterType = container.dataset.filterType;
+        const value = chip.dataset.value;
+        
+        // Remove active state from siblings
+        container.querySelectorAll('.filter-chip').forEach(c => {
+            c.classList.remove('active');
         });
         
-        console.log('📱 Mobile filter bottom sheet opened');
+        // Add active state to selected chip
+        chip.classList.add('active');
+        
+        // Update filter state
+        this.filters[filterType] = value;
+        
+        // Add haptic feedback if available
+        if (navigator.vibrate) {
+            navigator.vibrate(25);
+        }
     }
 
     /**
-     * Close bottom sheet
+     * Handle search input
      */
-    closeBottomSheet() {
-        if (!this.bottomSheet.isOpen) return;
+    handleSearchInput(input) {
+        this.filters.search = input.value;
         
-        this.bottomSheet.isOpen = false;
-        
-        // Animate to closed position
-        this.setBottomSheetPosition(0);
-        
-        // Hide elements after animation
-        setTimeout(() => {
-            this.elements.backdrop.style.display = 'none';
-            this.elements.bottomSheet.style.display = 'none';
-            document.body.classList.remove('bottom-sheet-open');
-        }, this.config.animationDuration);
-        
-        console.log('📱 Mobile filter bottom sheet closed');
+        // Show/hide clear button
+        const clearBtn = input.parentNode.querySelector('.search-clear-btn');
+        clearBtn.style.display = input.value ? 'block' : 'none';
     }
 
     /**
-     * Apply quick filter
-     * @param {Object} filterValues - Filter values to apply
+     * Update active filters display
      */
-    applyQuickFilter(filterValues) {
-        Object.assign(this.mobileFilters, filterValues);
-        this.applyFilters();
-    }
-
-    /**
-     * Apply current filters
-     */
-    applyFilters() {
-        const taskManager = window.madlabApp?.components?.get('tasks');
-        if (!taskManager) return;
+    updateActiveFilters() {
+        const container = this.bottomSheet.querySelector('.active-filters-container');
+        container.innerHTML = '';
         
-        // Update task manager filters
-        Object.entries(this.mobileFilters).forEach(([key, value]) => {
-            if (value) {
-                taskManager.updateFilter(key, value);
+        // Add active filter chips
+        Object.entries(this.filters).forEach(([key, value]) => {
+            if (value && key !== 'search') {
+                const chip = document.createElement('div');
+                chip.className = 'active-filter-chip';
+                chip.innerHTML = `
+                    <span>${this.getFilterDisplayName(key, value)}</span>
+                    <button class="remove-filter" data-filter="${key}">×</button>
+                `;
+                
+                container.appendChild(chip);
             }
         });
+        
+        // Add search filter if present
+        if (this.filters.search) {
+            const chip = document.createElement('div');
+            chip.className = 'active-filter-chip';
+            chip.innerHTML = `
+                <span>"${this.filters.search}"</span>
+                <button class="remove-filter" data-filter="search">×</button>
+            `;
+            
+            container.appendChild(chip);
+        }
+        
+        // Bind remove buttons
+        container.querySelectorAll('.remove-filter').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filterKey = e.target.dataset.filter;
+                this.removeFilter(filterKey);
+            });
+        });
+        
+        // Show/hide section
+        const section = container.closest('.active-filters-section');
+        section.style.display = container.children.length > 0 ? 'block' : 'none';
     }
 
     /**
-     * Handle search change
+     * Get display name for filter
      */
-    onSearchChange() {
-        this.applyFilters();
+    getFilterDisplayName(key, value) {
+        const displayNames = {
+            team: {
+                'Aldo': 'Aldo',
+                'Nuri': 'Nuri',
+                'Luis': 'Luis',
+                'Silvia': 'Silvia',
+                'Caro': 'Caro',
+                'All': 'Equipo Completo'
+            },
+            difficulty: {
+                '1': 'Nivel 1',
+                '2': 'Nivel 2',
+                '3': 'Nivel 3',
+                '4': 'Nivel 4',
+                '5': 'Nivel 5'
+            },
+            phase: {
+                '1': 'Fase 1',
+                '2': 'Fase 2',
+                '3': 'Fase 3',
+                '4': 'Fase 4',
+                '5': 'Fase 5'
+            },
+            duration: {
+                'short': 'Corta (≤2h)',
+                'medium': 'Media (2-5h)',
+                'long': 'Larga (>5h)'
+            }
+        };
+        
+        return displayNames[key]?.[value] || value;
+    }
+
+    /**
+     * Remove specific filter
+     */
+    removeFilter(filterKey) {
+        this.filters[filterKey] = '';
+        
+        // Update UI
+        if (filterKey === 'search') {
+            const searchInput = this.bottomSheet.querySelector('.mobile-search-input');
+            searchInput.value = '';
+            const clearBtn = searchInput.parentNode.querySelector('.search-clear-btn');
+            clearBtn.style.display = 'none';
+        } else {
+            const container = this.bottomSheet.querySelector(`[data-filter-type="${filterKey}"]`);
+            container.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            // Activate "All" option
+            const allChip = container.querySelector('[data-value=""]');
+            if (allChip) {
+                allChip.classList.add('active');
+            }
+        }
+        
+        this.updateActiveFilters();
+        this.updateFilterCount();
+    }
+
+    /**
+     * Update filter count in trigger
+     */
+    updateFilterCount() {
+        const count = Object.values(this.filters).filter(v => v !== '').length;
+        const trigger = document.getElementById('mobile-filter-trigger');
+        
+        if (trigger) {
+            const countElement = trigger.querySelector('.active-count');
+            countElement.textContent = count;
+            countElement.style.display = count > 0 ? 'inline' : 'none';
+            
+            trigger.classList.toggle('has-filters', count > 0);
+        }
     }
 
     /**
      * Clear all filters
      */
     clearAllFilters() {
-        // Reset mobile filters
-        this.mobileFilters = {
-            search: '',
-            assignee: '',
-            difficulty: '',
-            phase: '',
-            duration: ''
-        };
-        
-        // Clear UI elements
-        const searchInput = this.elements.content?.querySelector('.mobile-search-input');
-        if (searchInput) searchInput.value = '';
-        
-        // Remove active states
-        this.elements.content?.querySelectorAll('.active').forEach(element => {
-            element.classList.remove('active');
+        Object.keys(this.filters).forEach(key => {
+            this.filters[key] = '';
         });
         
-        // Clear task manager filters
-        const taskManager = window.madlabApp?.components?.get('tasks');
-        if (taskManager) {
-            taskManager.clearFilters();
-        }
+        // Reset UI
+        this.bottomSheet.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.classList.remove('active');
+        });
         
-        console.log('🧹 Mobile filters cleared');
+        // Activate all "All" options
+        this.bottomSheet.querySelectorAll('[data-value=""]').forEach(chip => {
+            chip.classList.add('active');
+        });
+        
+        // Clear search
+        const searchInput = this.bottomSheet.querySelector('.mobile-search-input');
+        searchInput.value = '';
+        const clearBtn = searchInput.parentNode.querySelector('.search-clear-btn');
+        clearBtn.style.display = 'none';
+        
+        this.updateActiveFilters();
+        this.updateFilterCount();
     }
 
     /**
-     * Update filters from external changes
-     * @param {Object} filters - Current filters
+     * Apply filters
      */
-    updateFromExternalFilters(filters) {
-        Object.assign(this.mobileFilters, filters);
+    applyFilters() {
+        // Emit filter change event
+        window.dispatchEvent(new CustomEvent('mobilefiltersapplied', {
+            detail: { filters: { ...this.filters } }
+        }));
         
-        // Update UI to reflect changes
-        if (this.elements.content) {
-            const searchInput = this.elements.content.querySelector('.mobile-search-input');
-            if (searchInput) searchInput.value = filters.search || '';
+        // Apply to desktop filters for consistency
+        this.syncToDesktopFilters();
+        
+        // Close sheet
+        this.close();
+        
+        // Show success feedback
+        this.showApplyFeedback();
+    }
+
+    /**
+     * Sync filters to desktop interface
+     */
+    syncToDesktopFilters() {
+        const desktopFilters = document.querySelector('.filters');
+        if (!desktopFilters) return;
+        
+        // Sync search
+        const searchBox = desktopFilters.querySelector('#searchBox');
+        if (searchBox) {
+            searchBox.value = this.filters.search;
+        }
+        
+        // Sync select elements
+        Object.entries(this.filters).forEach(([key, value]) => {
+            if (key === 'search') return;
             
-            // Update other filter UI elements...
-        }
-    }
-
-    /**
-     * Get translations helper
-     * @param {string} lang - Language code
-     * @returns {Object} Translations
-     */
-    getTranslations(lang) {
-        const languageManager = window.madlabApp?.components?.get('language');
-        return languageManager ? languageManager.getTranslations(lang) : {};
-    }
-
-    /**
-     * Bind mobile filter events
-     */
-    bindEvents() {
-        // Create filter trigger button if it doesn't exist
-        this.createFilterTrigger();
-        
-        // Listen for responsive changes
-        this.subscribeToState('viewport', (viewport) => {
-            if (viewport.isMobile && !this.elements.bottomSheet) {
-                this.createBottomSheet();
-            } else if (!viewport.isMobile && this.bottomSheet.isOpen) {
-                this.closeBottomSheet();
+            const selectId = key + 'Filter';
+            const select = document.getElementById(selectId);
+            if (select) {
+                select.value = value;
             }
         });
+        
+        // Trigger filter update in TaskManager
+        if (window.madlabApp?.components?.get('tasks')) {
+            window.madlabApp.components.get('tasks').applyFilters();
+        }
     }
 
     /**
-     * Create filter trigger button for mobile
+     * Show apply feedback
      */
-    createFilterTrigger() {
-        const existingTrigger = document.querySelector('.mobile-filter-trigger');
-        if (existingTrigger) return;
+    showApplyFeedback() {
+        const feedback = document.createElement('div');
+        feedback.className = 'filter-apply-feedback';
+        feedback.textContent = '✓ Filtros aplicados';
         
-        const filtersContainer = document.querySelector('.filters');
-        if (!filtersContainer) return;
+        document.body.appendChild(feedback);
         
-        const trigger = this.createElement('button', {
-            className: 'mobile-filter-trigger btn btn-primary'
-        }, '🔍 Filters');
+        setTimeout(() => {
+            feedback.classList.add('visible');
+        }, 100);
         
-        trigger.addEventListener('click', () => {
-            this.openBottomSheet();
+        setTimeout(() => {
+            feedback.classList.remove('visible');
+            setTimeout(() => {
+                if (document.body.contains(feedback)) {
+                    document.body.removeChild(feedback);
+                }
+            }, 300);
+        }, 2000);
+    }
+
+    /**
+     * Open bottom sheet
+     */
+    open() {
+        this.isOpen = true;
+        this.overlay.style.display = 'block';
+        
+        // Force reflow
+        this.overlay.offsetHeight;
+        
+        // Add active classes
+        this.overlay.classList.add('active');
+        this.bottomSheet.classList.add('active');
+        
+        // Snap to default position
+        setTimeout(() => {
+            this.snapTo(this.config.currentSnapPoint);
+        }, 50);
+        
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+        
+        // Emit event
+        window.dispatchEvent(new CustomEvent('mobilefiltersopen'));
+        
+        // Focus first input for accessibility
+        const firstInput = this.bottomSheet.querySelector('input');
+        if (firstInput) {
+            setTimeout(() => firstInput.focus(), 300);
+        }
+    }
+
+    /**
+     * Close bottom sheet
+     */
+    close() {
+        this.isOpen = false;
+        
+        this.overlay.classList.remove('active');
+        this.bottomSheet.classList.remove('active');
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+        
+        setTimeout(() => {
+            this.overlay.style.display = 'none';
+        }, this.config.animationDuration);
+        
+        // Emit event
+        window.dispatchEvent(new CustomEvent('mobilefiltersclose'));
+    }
+
+    /**
+     * Snap to specific point
+     */
+    snapTo(snapPoint) {
+        this.config.currentSnapPoint = snapPoint;
+        const height = window.innerHeight * snapPoint;
+        this.setSheetHeight(height);
+    }
+
+    /**
+     * Set sheet height
+     */
+    setSheetHeight(height) {
+        this.sheetHeight = Math.max(
+            this.config.minHeight,
+            Math.min(height, this.config.maxHeight)
+        );
+        
+        this.bottomSheet.style.height = `${this.sheetHeight}px`;
+        this.bottomSheet.style.transform = `translateY(${window.innerHeight - this.sheetHeight}px)`;
+    }
+
+    /**
+     * Handle resize
+     */
+    handleResize() {
+        if (this.isOpen) {
+            this.config.maxHeight = window.innerHeight * 0.85;
+            this.snapTo(this.config.currentSnapPoint);
+        }
+    }
+
+    /**
+     * Get current filters
+     */
+    getCurrentFilters() {
+        return { ...this.filters };
+    }
+
+    /**
+     * Set filters programmatically
+     */
+    setFilters(newFilters) {
+        Object.assign(this.filters, newFilters);
+        this.updateUI();
+    }
+
+    /**
+     * Update UI to reflect current filters
+     */
+    updateUI() {
+        // Update chips
+        Object.entries(this.filters).forEach(([key, value]) => {
+            if (key === 'search') {
+                const searchInput = this.bottomSheet.querySelector('.mobile-search-input');
+                if (searchInput) {
+                    searchInput.value = value;
+                }
+            } else {
+                const container = this.bottomSheet.querySelector(`[data-filter-type="${key}"]`);
+                if (container) {
+                    container.querySelectorAll('.filter-chip').forEach(chip => {
+                        chip.classList.toggle('active', chip.dataset.value === value);
+                    });
+                }
+            }
         });
         
-        filtersContainer.appendChild(trigger);
-        this.elements.trigger = trigger;
+        this.updateActiveFilters();
+        this.updateFilterCount();
     }
 
     /**
-     * Initialize on mount
+     * Unmount and cleanup
      */
-    onMount() {
-        const viewport = this.state.getState('viewport');
-        if (viewport?.isMobile) {
-            this.createBottomSheet();
+    unmount() {
+        window.removeEventListener('resize', this.handleResize);
+        
+        if (this.overlay) {
+            this.overlay.remove();
         }
         
-        console.log('📱 MobileFilterManager initialized');
+        this.removeMobileFilterTrigger();
+        
+        // Restore desktop filters
+        const desktopFilters = document.querySelector('.filters');
+        if (desktopFilters) {
+            desktopFilters.style.display = '';
+        }
+        
+        console.log('📱 MobileFilterManager unmounted');
     }
 
     /**
-     * Cleanup on unmount
+     * Get component status
      */
-    onUnmount() {
-        if (this.elements.bottomSheet) {
-            this.elements.bottomSheet.remove();
-        }
-        
-        if (this.elements.backdrop) {
-            this.elements.backdrop.remove();
-        }
-        
-        if (this.elements.trigger) {
-            this.elements.trigger.remove();
-        }
-        
-        document.body.classList.remove('bottom-sheet-open');
+    getStatus() {
+        return {
+            mounted: this.mounted,
+            isOpen: this.isOpen,
+            currentSnapPoint: this.config.currentSnapPoint,
+            activeFilters: Object.values(this.filters).filter(v => v !== '').length
+        };
     }
 }
-
-export default MobileFilterManager;

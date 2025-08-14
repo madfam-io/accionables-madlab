@@ -43,78 +43,132 @@ export class ExportManager extends Component {
         const currentLang = this.state.getState('currentLang');
         const t = translations[currentLang] || translations.es;
         const viewport = this.state.getState('viewport');
+        const responsiveInfo = this.getResponsiveInfo();
 
         // Create modal overlay
         const overlay = this.createElement('div', {
-            className: 'modal-overlay',
+            className: 'modal-overlay export-modal-overlay',
             id: 'exportModalOverlay'
         });
 
-        // Create modal content with responsive classes
-        const modalClasses = ['modal'];
-        if (viewport?.isMobile) {
-            modalClasses.push('modal-mobile');
+        // Create modal content with enhanced responsive classes
+        const modalClasses = ['modal', 'export-modal'];
+        if (responsiveInfo?.isMobile) {
+            modalClasses.push('modal-mobile', 'modal-slide-up');
         }
-        if (viewport?.orientation === 'landscape' && viewport?.isMobile) {
+        if (responsiveInfo?.isTablet) {
+            modalClasses.push('modal-tablet');
+        }
+        if (responsiveInfo?.orientation === 'landscape' && responsiveInfo?.isMobile) {
             modalClasses.push('modal-landscape');
+        }
+        if (responsiveInfo?.currentBreakpoint) {
+            modalClasses.push(`modal-${responsiveInfo.currentBreakpoint}`);
         }
 
         const modal = this.createElement('div', {
-            className: modalClasses.join(' ')
+            className: modalClasses.join(' '),
+            'data-modal-type': 'export'
         });
 
-        // Modal header
+        // Enhanced modal header with mobile-specific elements
         const header = this.createElement('div', {
-            className: 'modal-header'
+            className: 'modal-header export-modal-header'
+        });
+        
+        // Add mobile drag handle for bottom sheet behavior
+        if (responsiveInfo?.isMobile) {
+            const dragHandle = this.createElement('div', {
+                className: 'modal-drag-handle'
+            });
+            header.appendChild(dragHandle);
+        }
+        
+        const titleContainer = this.createElement('div', {
+            className: 'modal-title-container'
         });
         
         const title = this.createElement('h3', {
             className: 'modal-title'
         }, currentLang === 'es' ? 'Exportar Tareas' : 'Export Tasks');
         
+        const subtitle = this.createElement('p', {
+            className: 'modal-subtitle'
+        }, currentLang === 'es' 
+            ? 'Selecciona las opciones de exportación'
+            : 'Select export options');
+        
         const closeBtn = this.createElement('button', {
-            className: 'modal-close'
+            className: 'modal-close',
+            'aria-label': currentLang === 'es' ? 'Cerrar modal' : 'Close modal',
+            'data-touch-target': 'large'
         }, '×');
 
-        header.appendChild(title);
+        titleContainer.appendChild(title);
+        if (responsiveInfo?.isMobile) {
+            titleContainer.appendChild(subtitle);
+        }
+        
+        header.appendChild(titleContainer);
         header.appendChild(closeBtn);
 
-        // Modal body
+        // Enhanced modal body with mobile optimizations
         const body = this.createElement('div', {
-            className: 'modal-body'
+            className: `modal-body export-modal-body ${responsiveInfo?.isMobile ? 'modal-body-mobile' : ''}`,
+            'data-scrollable': 'true'
         });
 
-        // Export format selection
-        const formatSection = this.createFormatSection(currentLang);
-        body.appendChild(formatSection);
+        // Create progressive disclosure for mobile
+        if (responsiveInfo?.isMobile) {
+            this.createMobileOptimizedSections(body, currentLang, responsiveInfo);
+        } else {
+            this.createDesktopSections(body, currentLang);
+        }
 
-        // Export scope selection
-        const scopeSection = this.createScopeSection(currentLang);
-        body.appendChild(scopeSection);
-
-        // Field selection
-        const fieldsSection = this.createFieldsSection(currentLang);
-        body.appendChild(fieldsSection);
-
-        // Language selection
-        const langSection = this.createLanguageSection(currentLang);
-        body.appendChild(langSection);
-
-        // Modal footer
+        // Enhanced modal footer with mobile optimizations
         const footer = this.createElement('div', {
-            className: 'modal-footer'
+            className: `modal-footer export-modal-footer ${responsiveInfo?.isMobile ? 'modal-footer-mobile' : ''}`,
+            'data-safe-area': 'bottom'
+        });
+
+        // Add progress indicator for mobile
+        if (responsiveInfo?.isMobile) {
+            const progressContainer = this.createElement('div', {
+                className: 'export-progress-container'
+            });
+            
+            const progressBar = this.createElement('div', {
+                className: 'export-progress-bar',
+                'aria-hidden': 'true'
+            });
+            
+            const progressFill = this.createElement('div', {
+                className: 'export-progress-fill'
+            });
+            
+            progressBar.appendChild(progressFill);
+            progressContainer.appendChild(progressBar);
+            footer.appendChild(progressContainer);
+        }
+
+        const buttonContainer = this.createElement('div', {
+            className: 'modal-button-container'
         });
 
         const cancelBtn = this.createElement('button', {
-            className: 'btn btn-secondary'
+            className: `btn btn-secondary ${responsiveInfo?.isMobile ? 'btn-mobile' : ''}`,
+            'data-touch-target': responsiveInfo?.isMobile ? 'large' : 'default'
         }, currentLang === 'es' ? 'Cancelar' : 'Cancel');
 
         const exportBtn = this.createElement('button', {
-            className: 'btn btn-primary'
+            className: `btn btn-primary btn-export ${responsiveInfo?.isMobile ? 'btn-mobile' : ''}`,
+            'data-touch-target': responsiveInfo?.isMobile ? 'large' : 'default',
+            'data-export-action': 'true'
         }, currentLang === 'es' ? 'Exportar' : 'Export');
 
-        footer.appendChild(cancelBtn);
-        footer.appendChild(exportBtn);
+        buttonContainer.appendChild(cancelBtn);
+        buttonContainer.appendChild(exportBtn);
+        footer.appendChild(buttonContainer);
 
         // Assemble modal
         modal.appendChild(header);
@@ -130,33 +184,46 @@ export class ExportManager extends Component {
             if (e.target === overlay) this.closeModal();
         });
 
-        // Add touch gesture support for mobile
-        if (viewport?.isMobile) {
-            this.addMobileGestureSupport(modal, overlay);
+        // Enhanced touch gesture and interaction support
+        if (responsiveInfo?.isMobile) {
+            this.addEnhancedMobileGestureSupport(modal, overlay);
+            this.addMobileFormOptimizations(modal);
+            this.addMobileAccessibilityEnhancements(modal);
         }
 
         // Add keyboard navigation
         this.addKeyboardNavigation(modal);
 
-        // Add to DOM
-        document.body.appendChild(overlay);
-
-        // Add mobile-specific classes to body
-        if (viewport?.isMobile) {
-            document.body.classList.add('modal-open-mobile');
+        // Add swipe-to-dismiss for mobile
+        if (responsiveInfo?.isMobile) {
+            this.addSwipeToDismiss(modal, overlay);
         }
 
-        // Enhanced focus management for mobile
-        setTimeout(() => {
-            if (viewport?.isMobile) {
-                // On mobile, focus the first interactive element that's not an input (to avoid keyboard)
-                const firstButton = modal.querySelector('button:not(.modal-close)');
-                if (firstButton) firstButton.focus();
-            } else {
-                const firstInput = modal.querySelector('input, select, button');
-                if (firstInput) firstInput.focus();
-            }
-        }, 100);
+        // Add responsive observers
+        this.addResponsiveObservers(modal, overlay);
+
+        // Add to DOM with animation preparation
+        document.body.appendChild(overlay);
+        
+        // Enhanced body classes for different device types
+        document.body.classList.add('modal-open');
+        if (responsiveInfo?.isMobile) {
+            document.body.classList.add('modal-open-mobile');
+        }
+        if (responsiveInfo?.isTablet) {
+            document.body.classList.add('modal-open-tablet');
+        }
+
+        // Add safe area support for mobile devices
+        if (responsiveInfo?.isMobile) {
+            this.addSafeAreaSupport(modal);
+        }
+
+        // Enhanced focus management with device detection
+        this.setupModalFocus(modal, responsiveInfo);
+        
+        // Trigger entrance animation
+        this.animateModalEntrance(modal, overlay, responsiveInfo);
     }
 
     /**
@@ -779,10 +846,49 @@ export class ExportManager extends Component {
     }
 
     /**
-     * Cleanup when component unmounts
+     * Enhanced cleanup when component unmounts
      */
     onUnmount() {
         this.removeModal();
+        
+        // Clean up responsive listeners
+        window.removeEventListener('breakpointchange', this.handleBreakpointChange);
+        window.removeEventListener('orientationchange', this.handleOrientationChange);
+        
+        // Clean up any remaining toasts
+        const toasts = document.querySelectorAll('.export-success-toast');
+        toasts.forEach(toast => toast.remove());
+        
+        // Clean up modal touch state
+        if (this.modalTouchState) {
+            this.modalTouchState = null;
+        }
+    }
+    
+    /**
+     * Mount component with mobile optimizations
+     */
+    mount() {
+        super.mount();
+        this.bindEvents();
+        
+        console.log('📤 ExportManager mounted with mobile-native modal support');
+    }
+    
+    /**
+     * Get component status
+     */
+    getStatus() {
+        const modal = document.getElementById('exportModalOverlay');
+        const responsiveInfo = this.getResponsiveInfo();
+        
+        return {
+            mounted: this.mounted,
+            modalOpen: !!modal,
+            isMobile: responsiveInfo?.isMobile || false,
+            currentBreakpoint: responsiveInfo?.currentBreakpoint || 'md',
+            orientation: responsiveInfo?.orientation || 'portrait'
+        };
     }
 }
 

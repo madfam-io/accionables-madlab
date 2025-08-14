@@ -842,6 +842,207 @@ export class TaskManager extends Component {
             teamStats: this.getTeamStats()
         };
     }
+
+    /**
+     * Create optimized task elements for performance
+     * @param {Array} tasks - Tasks to create elements for
+     * @param {string} lang - Current language
+     * @returns {Array} Array of task elements
+     */
+    createOptimizedTaskElements(tasks, lang) {
+        return tasks.map(task => {
+            const taskElement = this.createElement('div', {
+                className: 'task-card',
+                dataset: { 
+                    taskId: task.id,
+                    lazy: 'content' 
+                }
+            });
+
+            // Add click handler for mobile interactions
+            this.addEventListener(taskElement, 'click', () => {
+                this.handleTaskClick(task);
+            });
+
+            // Use lazy loading for task content
+            taskElement.innerHTML = this.createOptimizedTaskHTML(task, lang);
+            
+            return taskElement;
+        });
+    }
+
+    /**
+     * Create optimized HTML for task card
+     * @param {Object} task - Task data
+     * @param {string} lang - Current language
+     * @returns {string} HTML string
+     */
+    createOptimizedTaskHTML(task, lang) {
+        const taskName = task.name[lang] || task.name.es;
+        const assigneeColor = getAssigneeColor(task.assignedTo);
+        const assigneeInitials = getAssigneeInitials(task.assignedTo);
+        
+        return `
+            <div class="task-header">
+                <div class="task-main-info">
+                    <div class="task-id">${task.id}</div>
+                    <div class="task-name">${taskName}</div>
+                    <div class="task-meta">
+                        <span><strong>${task.assignedTo}</strong></span>
+                        <span>⏱️ ${task.duration}h</span>
+                        <span>📊 ${lang === 'es' ? 'Nivel' : 'Level'} ${task.difficulty}</span>
+                    </div>
+                </div>
+                <div class="task-visual-indicators">
+                    <div class="assignee-badge" style="background-color: ${assigneeColor}">
+                        ${assigneeInitials}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Enable lazy loading for task elements
+     */
+    enableLazyLoadingForTasks() {
+        const performanceManager = window.madlabApp?.components?.get('performance');
+        if (performanceManager) {
+            // Update lazy observer to watch new task cards
+            performanceManager.observeLazyElements();
+            
+            // Check if virtual scrolling should be enabled
+            performanceManager.checkVirtualScrollingTrigger();
+        }
+    }
+
+    /**
+     * Apply mobile filters (called from MobileFilterManager)
+     * @param {Object} filters - Filter object from mobile interface
+     */
+    applyMobileFilters(filters) {
+        // Convert mobile filter format to standard format
+        const standardFilters = {
+            search: filters.search || '',
+            assignee: filters.team || '',
+            difficulty: filters.difficulty || '',
+            phase: filters.phase || '',
+            duration: filters.duration || ''
+        };
+
+        // Update state and apply filters
+        this.state.setState({ filters: standardFilters });
+        this.applyFilters();
+
+        // Update desktop filter UI to stay in sync
+        this.updateFilterUI('search', standardFilters.search);
+        this.updateFilterUI('assignee', standardFilters.assignee);
+        this.updateFilterUI('difficulty', standardFilters.difficulty);
+        this.updateFilterUI('phase', standardFilters.phase);
+        this.updateFilterUI('duration', standardFilters.duration);
+    }
+
+    /**
+     * Handle mobile touch interactions
+     */
+    setupMobileTouchHandlers() {
+        // Listen for touch gesture events
+        window.addEventListener('gesturedoubletap', (e) => {
+            const taskCard = e.detail.element.closest('.task-card');
+            if (taskCard) {
+                this.toggleTaskDetails(taskCard);
+            }
+        });
+
+        window.addEventListener('gesturelongpress', (e) => {
+            const taskCard = e.detail.element.closest('.task-card');
+            if (taskCard) {
+                this.showMobileTaskActions(taskCard, e.detail.pos);
+            }
+        });
+    }
+
+    /**
+     * Toggle task details on mobile
+     * @param {HTMLElement} taskCard - Task card element
+     */
+    toggleTaskDetails(taskCard) {
+        const details = taskCard.querySelector('.task-details');
+        if (details) {
+            const isCollapsed = details.classList.contains('collapsed');
+            details.classList.toggle('collapsed', !isCollapsed);
+            
+            // Add animation
+            if (!isCollapsed) {
+                details.style.maxHeight = '0';
+                setTimeout(() => {
+                    details.style.maxHeight = '';
+                }, 300);
+            } else {
+                details.style.maxHeight = details.scrollHeight + 'px';
+                setTimeout(() => {
+                    details.style.maxHeight = '';
+                }, 300);
+            }
+        }
+    }
+
+    /**
+     * Show mobile task actions
+     * @param {HTMLElement} taskCard - Task card element
+     * @param {Object} pos - Position for action menu
+     */
+    showMobileTaskActions(taskCard, pos) {
+        const taskId = taskCard.dataset.taskId;
+        const task = this.getAllTasks().find(t => t.id === taskId);
+        
+        if (!task) return;
+
+        // Emit event for mobile context menu
+        window.dispatchEvent(new CustomEvent('showtaskactions', {
+            detail: {
+                task,
+                position: pos,
+                element: taskCard
+            }
+        }));
+    }
+
+    /**
+     * Enhanced mount with mobile optimizations
+     */
+    mount() {
+        super.mount();
+        this.bindEvents();
+        this.setupMobileTouchHandlers();
+        this.onMount();
+        
+        // Setup responsive listeners
+        window.addEventListener('breakpointchange', (e) => {
+            const { current } = e.detail;
+            this.handleBreakpointChange(current);
+        });
+    }
+
+    /**
+     * Handle breakpoint changes for responsive optimizations
+     * @param {string} breakpoint - Current breakpoint
+     */
+    handleBreakpointChange(breakpoint) {
+        const isMobile = ['xs', 'sm'].includes(breakpoint);
+        
+        // Update state for optimizations
+        this.state.setState({
+            viewport: {
+                ...this.state.getState('viewport'),
+                isMobile,
+                breakpoint
+            }
+        });
+
+        // Re-render tasks with appropriate optimization level
+        this.updateTaskDisplay();
+    }
 }
 
 export default TaskManager;
