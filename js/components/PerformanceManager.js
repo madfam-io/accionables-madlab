@@ -60,8 +60,38 @@ export class PerformanceManager extends Component {
         this.handleIntersection = this.handleIntersection.bind(this);
         this.handleMutation = this.handleMutation.bind(this);
         this.handleScroll = this.handleScroll.bind(this);
-        this.measurePerformance = this.measurePerformance.bind(this);
         this.throttledScroll = this.throttle(this.handleScroll, 16); // 60fps
+    }
+
+    /**
+     * Throttle function for performance
+     */
+    throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        };
+    }
+
+    /**
+     * Debounce function for performance
+     */
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     }
 
     /**
@@ -106,6 +136,11 @@ export class PerformanceManager extends Component {
      */
     setupMutationObserver() {
         if (!('MutationObserver' in window)) return;
+        
+        if (!this.container) {
+            console.warn('PerformanceManager: No container element provided, skipping mutation observer setup');
+            return;
+        }
 
         this.mutationObserver = new MutationObserver(this.handleMutation);
         this.mutationObserver.observe(this.container, {
@@ -373,6 +408,11 @@ export class PerformanceManager extends Component {
     observeLazyElements() {
         if (!this.intersectionObserver) return;
         
+        if (!this.container) {
+            console.warn('PerformanceManager: No container element provided, skipping lazy element observation');
+            return;
+        }
+        
         const lazyElements = this.container.querySelectorAll('[data-lazy]');
         lazyElements.forEach(element => {
             this.observeLazyElement(element);
@@ -404,6 +444,11 @@ export class PerformanceManager extends Component {
      * Check if virtual scrolling should be triggered
      */
     checkVirtualScrollingTrigger() {
+        if (!this.container) {
+            console.warn('PerformanceManager: No container element provided, skipping virtual scrolling check');
+            return;
+        }
+        
         const taskCards = this.container.querySelectorAll('.task-card');
         const threshold = 50; // Enable virtual scrolling for 50+ items
         
@@ -686,37 +731,6 @@ export class PerformanceManager extends Component {
                 img.setAttribute('decoding', 'async');
             }
         });
-    }
-
-    /**
-     * Throttle function for performance
-     */
-    throttle(func, limit) {
-        let inThrottle;
-        return function() {
-            const args = arguments;
-            const context = this;
-            if (!inThrottle) {
-                func.apply(context, args);
-                inThrottle = true;
-                setTimeout(() => inThrottle = false, limit);
-            }
-        };
-    }
-
-    /**
-     * Debounce function for performance
-     */
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
     }
 
     /**

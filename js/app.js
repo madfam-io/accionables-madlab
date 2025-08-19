@@ -12,6 +12,7 @@ import { ResponsiveManager } from './components/ResponsiveManager.js';
 import { TouchGestureManager } from './components/TouchGestureManager.js';
 import { PerformanceManager } from './components/PerformanceManager.js';
 import { MobileFilterManager } from './components/MobileFilterManager.js';
+import { ViewManager } from './components/ViewManager.js';
 
 /**
  * Main MADLAB Application Class
@@ -75,16 +76,23 @@ export class MadlabApp {
      * Initialize all components
      */
     async initializeComponents() {
-        // Responsive Manager (first - provides viewport state for others)
-        const responsiveManager = new ResponsiveManager(document.body, this.state);
-        this.components.set('responsive', responsiveManager);
+        try {
+            // Responsive Manager (first - provides viewport state for others)
+            const responsiveManager = new ResponsiveManager(document.body, this.state);
+            this.components.set('responsive', responsiveManager);
+            
+            // Mount ResponsiveManager first to initialize viewport state
+            responsiveManager.mount();
+            console.log('✅ ResponsiveManager pre-mounted for state initialization');
 
         // Touch Gesture Manager (second - requires viewport state)
-        const touchGestureManager = new TouchGestureManager(document.body, this.state);
+        const touchContainer = document.querySelector('#tasksContainer') || document.body;
+        const touchGestureManager = new TouchGestureManager(touchContainer, this.state);
         this.components.set('touchGestures', touchGestureManager);
 
         // Performance Manager (third - optimizes rendering for other components)
-        const performanceManager = new PerformanceManager(document.body, this.state);
+        const performanceContainer = document.querySelector('#tasksContainer') || document.body;
+        const performanceManager = new PerformanceManager(performanceContainer, this.state);
         this.components.set('performance', performanceManager);
 
         // Theme Manager
@@ -116,11 +124,20 @@ export class MadlabApp {
         const mobileFilterManager = new MobileFilterManager(document.body, this.state);
         this.components.set('mobileFilters', mobileFilterManager);
 
+        // View Manager (handles grid/list view toggle)
+        const viewContainer = document.querySelector('.view-controls') || document.body;
+        const viewManager = new ViewManager(viewContainer, this.state);
+        this.components.set('view', viewManager);
+
         // Initialize global functions for backward compatibility
         this.setupGlobalFunctions();
         
         // Setup component communication
         this.setupComponentCommunication();
+        } catch (error) {
+            console.error('❌ Error during component initialization:', error);
+            throw error;
+        }
     }
 
     /**
@@ -129,6 +146,12 @@ export class MadlabApp {
     mountComponents() {
         this.components.forEach((component, name) => {
             try {
+                // Skip ResponsiveManager as it's already mounted
+                if (name === 'responsive') {
+                    console.log(`⏭️ ${name} component already mounted`);
+                    return;
+                }
+                console.log(`🔧 Mounting ${name} component...`);
                 component.mount();
                 console.log(`✅ ${name} component mounted`);
             } catch (error) {
@@ -367,7 +390,7 @@ export class MadlabApp {
         
         // Update task manager for mobile optimizations
         const taskManager = this.components.get('tasks');
-        if (taskManager && viewport.isMobile) {
+        if (taskManager && viewport && viewport.isMobile) {
             // Apply mobile-specific task optimizations
             this.enableMobileTaskOptimizations();
         } else {

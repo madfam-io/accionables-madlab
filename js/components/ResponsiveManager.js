@@ -42,13 +42,17 @@ export class ResponsiveManager extends Component {
         this.handleResize = this.handleResize.bind(this);
         this.handleOrientationChange = this.handleOrientationChange.bind(this);
         this.detectTouch = this.detectTouch.bind(this);
+        
+        // Initialize viewport immediately to prevent undefined access
+        this.updateViewportSync();
     }
 
     /**
      * Initialize the responsive manager
      */
     mount() {
-        this.updateViewport();
+        // Don't call updateViewport again since we already called updateViewportSync in constructor
+        // this.updateViewport();
         this.setupMediaQueries();
         this.bindEvents();
         this.detectDeviceCapabilities();
@@ -131,6 +135,37 @@ export class ResponsiveManager extends Component {
         document.documentElement.classList.remove('no-touch');
         
         this.emitCapabilityChange();
+    }
+
+    /**
+     * Update viewport information synchronously (for initialization)
+     */
+    updateViewportSync() {
+        this.viewport.width = window.innerWidth || 1024;
+        this.viewport.height = window.innerHeight || 768;
+        this.viewport.ratio = this.viewport.width / this.viewport.height;
+        this.viewport.orientation = this.viewport.width > this.viewport.height ? 'landscape' : 'portrait';
+        this.viewport.pixelRatio = window.devicePixelRatio || 1;
+        
+        // Set initial breakpoint
+        let newBreakpoint = 'xs';
+        Object.entries(this.breakpoints).forEach(([name, width]) => {
+            if (this.viewport.width >= width) {
+                newBreakpoint = name;
+            }
+        });
+        this.currentBreakpoint = newBreakpoint;
+        
+        // Update state immediately
+        this.state.setState({
+            responsive: {
+                breakpoint: this.currentBreakpoint,
+                viewport: this.viewport,
+                isMobile: this.isMobile(),
+                isTablet: this.isTablet(),
+                isDesktop: this.isDesktop()
+            }
+        });
     }
 
     /**
@@ -297,6 +332,10 @@ export class ResponsiveManager extends Component {
      * Device type detection methods
      */
     isMobile() {
+        // Fallback if currentBreakpoint is not set
+        if (!this.currentBreakpoint) {
+            return window.innerWidth < 768;
+        }
         return ['xs', 'sm'].includes(this.currentBreakpoint);
     }
 

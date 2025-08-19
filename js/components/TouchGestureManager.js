@@ -60,11 +60,16 @@ export class TouchGestureManager extends Component {
      * Initialize touch gesture manager
      */
     mount() {
-        this.bindEvents();
-        this.createPullToRefreshIndicator();
-        this.enableTouchCallout();
-        
-        console.log('👆 TouchGestureManager initialized');
+        try {
+            this.bindEvents();
+            this.createPullToRefreshIndicator();
+            this.enableTouchCallout();
+            
+            console.log('👆 TouchGestureManager initialized');
+        } catch (error) {
+            console.error('❌ Failed to initialize TouchGestureManager:', error);
+            throw error;
+        }
     }
 
     /**
@@ -72,6 +77,11 @@ export class TouchGestureManager extends Component {
      */
     bindEvents() {
         // Use passive listeners for better performance
+        if (!this.container) {
+            console.warn('TouchGestureManager: No container element provided, skipping event binding');
+            return;
+        }
+        
         this.container.addEventListener('touchstart', this.handleTouchStart, { passive: false });
         this.container.addEventListener('touchmove', this.handleTouchMove, { passive: false });
         this.container.addEventListener('touchend', this.handleTouchEnd, { passive: true });

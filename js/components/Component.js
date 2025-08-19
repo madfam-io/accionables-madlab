@@ -17,13 +17,17 @@ export class Component {
     mount() {
         if (this.mounted) return;
         
+        console.log(`🔧 Component.mount() called for ${this.constructor.name}`);
+        
         try {
             this.render();
             this.bindEvents();
             this.mounted = true;
+            console.log(`🔧 About to call onMount() for ${this.constructor.name}`);
             this.onMount();
+            console.log(`✅ Component.mount() completed for ${this.constructor.name}`);
         } catch (error) {
-            console.error(`Error mounting component:`, error);
+            console.error(`❌ Error mounting component ${this.constructor.name}:`, error);
         }
     }
 

@@ -3,8 +3,9 @@
 // ==========================================================================
 
 import { Component } from './Component.js';
+import { TaskRenderer } from './TaskRenderer.js';
 import { tasksData } from '../data/tasks.js';
-import { getAssigneeColor, getAssigneeInitials } from '../utils/helpers.js';
+import { getAssigneeColor, getAssigneeInitials, getTaskStatus, getCurrentProjectWeek, formatWeekWithDates } from '../utils/helpers.js';
 
 export class TaskManager extends Component {
     constructor(element, state) {
@@ -13,8 +14,12 @@ export class TaskManager extends Component {
         this.subscribeToState('currentLang', () => this.update());
         
         // Initialize tasks data
+        console.log('🎯 TaskManager constructor - setting tasks data:', !!tasksData, Object.keys(tasksData || {}).length);
         this.state.setState({ tasks: tasksData });
         this.debounceTimer = null;
+        
+        // Initialize task renderer
+        this.taskRenderer = new TaskRenderer(this);
     }
 
     /**
@@ -79,15 +84,23 @@ export class TaskManager extends Component {
      * Apply filters to tasks
      */
     applyFilters() {
-        const { tasks, filters } = this.state.getState();
+        const state = this.state.getState();
+        const { tasks, filters = {} } = state;
+        
+        console.log('🔍 TaskManager.applyFilters() called');
+        console.log('Tasks available:', !!tasks, tasks ? Object.keys(tasks).length : 0);
+        console.log('Filters available:', !!filters, filters);
+        
         if (!tasks) {
+            console.warn('⚠️ No tasks available in state, skipping filter application');
             return;
         }
 
         const allTasks = this.getAllTasks();
+        console.log('All tasks count:', allTasks.length);
         
         const filteredTasks = allTasks.filter(task => {
-            return Object.entries(filters).every(([key, value]) => {
+            return Object.entries(filters || {}).every(([key, value]) => {
                 if (!value) return true;
                 
                 switch (key) {
@@ -111,8 +124,12 @@ export class TaskManager extends Component {
         });
 
         this.state.setState({ filteredTasks });
+        console.log('Filtered tasks count:', filteredTasks.length);
+        
         this.updateTaskDisplay();
         this.updateFilterChips();
+        
+        console.log('✅ TaskManager.applyFilters() completed');
     }
 
     /**
@@ -144,6 +161,11 @@ export class TaskManager extends Component {
 
         // Group filtered tasks by phase
         const tasksByPhase = this.groupTasksByPhase(filteredTasks);
+        
+        console.log('Tasks grouped by phase:', Object.keys(tasksByPhase).map(phase => ({
+            phase,
+            taskCount: tasksByPhase[phase].length
+        })));
         
         // Check if we should use performance optimizations
         const shouldOptimize = viewport?.isMobile || filteredTasks.length > 20;
@@ -248,22 +270,31 @@ export class TaskManager extends Component {
         const performanceManager = window.madlabApp?.components?.get('performance');
         if (!performanceManager) return;
         
-        // Get all task cards that need lazy loading
-        const taskCards = document.querySelectorAll('.task-card.lazy-load-candidate');
-        
-        if (taskCards.length > 0) {
-            performanceManager.enableLazyLoading(taskCards);
+        try {
+            // Get all task cards that need lazy loading
+            const taskCards = document.querySelectorAll('.task-card.lazy-load-candidate');
             
-            // Remove candidate class to avoid re-processing
-            taskCards.forEach(card => {
-                card.classList.remove('lazy-load-candidate');
-            });
+            if (taskCards.length > 0) {
+                // Use the correct PerformanceManager method
+                taskCards.forEach(card => {
+                    performanceManager.observeLazyElement(card);
+                });
+                
+                // Remove candidate class to avoid re-processing
+                taskCards.forEach(card => {
+                    card.classList.remove('lazy-load-candidate');
+                });
+            }
+            
+            // Also enable image lazy loading if any images exist
+            const images = document.querySelectorAll('.task-card img[data-src]');
+            if (images.length > 0) {
+                images.forEach(img => {
+                    performanceManager.observeLazyElement(img);
+                });
         }
-        
-        // Also enable image lazy loading if any images exist
-        const images = document.querySelectorAll('.task-card img[data-src]');
-        if (images.length > 0) {
-            performanceManager.enableImageLazyLoading(images);
+        } catch (error) {
+            console.warn('Failed to enable lazy loading for tasks:', error);
         }
     }
 
@@ -289,11 +320,19 @@ export class TaskManager extends Component {
      * @param {string} lang - Current language
      */
     updatePhaseSection(phaseNum, tasks, lang) {
+        console.log(`📋 Updating phase ${phaseNum} with ${tasks.length} tasks`);
+        
         const phaseElement = document.querySelector(`[data-phase="${phaseNum}"]`);
-        if (!phaseElement) return;
+        if (!phaseElement) {
+            console.warn(`⚠️ Phase element not found for phase ${phaseNum}`);
+            return;
+        }
 
         const tasksContainer = phaseElement.querySelector('.phase-content');
-        if (!tasksContainer) return;
+        if (!tasksContainer) {
+            console.warn(`⚠️ Tasks container not found for phase ${phaseNum}`);
+            return;
+        }
 
         // Clear existing tasks
         tasksContainer.innerHTML = '';
@@ -316,6 +355,8 @@ export class TaskManager extends Component {
 
         // Show phase if it has tasks
         phaseElement.style.display = tasks.length > 0 ? 'block' : 'none';
+        
+        console.log(`✅ Phase ${phaseNum} update completed - ${Object.keys(tasksBySection).length} sections, display: ${phaseElement.style.display}`);
     }
 
     /**
@@ -336,7 +377,7 @@ export class TaskManager extends Component {
 
         // Tasks
         tasks.forEach(task => {
-            const taskElement = this.createTaskElement(task, lang);
+            const taskElement = this.taskRenderer.createTaskElement(task, lang);
             section.appendChild(taskElement);
         });
 
@@ -350,9 +391,16 @@ export class TaskManager extends Component {
      * @returns {HTMLElement} Task element
      */
     createTaskElement(task, lang) {
+        // Get task status based on current week
+        const taskStatus = getTaskStatus(task.weekEstimate);
+        
         const taskCard = this.createElement('div', {
-            className: 'task-card',
-            dataset: { taskId: task.id }
+            className: `task-card task-${taskStatus}`,
+            dataset: { 
+                taskId: task.id,
+                taskStatus: taskStatus,
+                weekEstimate: task.weekEstimate || ''
+            }
         });
 
         // Task header
@@ -464,11 +512,17 @@ export class TaskManager extends Component {
         const duration = this.createElement('span', {}, 
             `⏱️ ${task.duration}h`);
         
+        // Week status badge
+        const weekBadge = this.createWeekStatusBadge(task, lang);
+        
         // Difficulty with dots
         const difficultyContainer = this.createDifficultyDisplay(task.difficulty);
         
         meta.appendChild(assigneeInfo);
         meta.appendChild(duration);
+        if (weekBadge) {
+            meta.appendChild(weekBadge);
+        }
         meta.appendChild(difficultyContainer);
         
         return meta;
@@ -500,6 +554,59 @@ export class TaskManager extends Component {
         container.appendChild(label);
         container.appendChild(stars);
         return container;
+    }
+
+    /**
+     * Create week status badge
+     * @param {Object} task - Task data
+     * @param {string} lang - Current language
+     * @returns {HTMLElement|null} Week status badge element
+     */
+    createWeekStatusBadge(task, lang) {
+        if (!task.weekEstimate) return null;
+        
+        const taskStatus = getTaskStatus(task.weekEstimate);
+        const formattedWeek = formatWeekWithDates(task.weekEstimate, 2025);
+        
+        let badgeIcon = '';
+        let statusText = '';
+        
+        switch (taskStatus) {
+            case 'current':
+                badgeIcon = '🔥';
+                statusText = lang === 'es' ? 'EN CURSO' : 'IN PROGRESS';
+                break;
+            case 'past':
+                badgeIcon = '✅';
+                statusText = lang === 'es' ? 'COMPLETADA' : 'COMPLETED';
+                break;
+            case 'future':
+                badgeIcon = '📅';
+                statusText = lang === 'es' ? 'PENDIENTE' : 'UPCOMING';
+                break;
+        }
+        
+        const badge = this.createElement('div', {
+            className: `week-status-badge week-status-${taskStatus}`
+        });
+        
+        const iconSpan = this.createElement('span', {
+            className: 'week-badge-icon'
+        }, badgeIcon);
+        
+        const weekSpan = this.createElement('span', {
+            className: 'week-badge-week'
+        }, formattedWeek);
+        
+        const statusSpan = this.createElement('span', {
+            className: 'week-badge-status'
+        }, statusText);
+        
+        badge.appendChild(iconSpan);
+        badge.appendChild(weekSpan);
+        badge.appendChild(statusSpan);
+        
+        return badge;
     }
 
     /**
@@ -822,8 +929,44 @@ export class TaskManager extends Component {
      * Initialize tasks on component mount
      */
     onMount() {
+        console.log('🎯 TaskManager.onMount() called');
+        
+        // Ensure state is properly initialized
+        const state = this.state.getState();
+        console.log('Initial state check:', {
+            hasTasks: !!state.tasks,
+            hasFilters: !!state.filters,
+            tasksCount: state.tasks ? Object.keys(state.tasks).length : 0
+        });
+        
+        // Initialize view classes
+        this.initializeViewClasses();
+        
         // Apply initial filters to show all tasks
         this.applyFilters();
+    }
+
+    /**
+     * Initialize view classes on phase content elements
+     */
+    initializeViewClasses() {
+        const phaseContents = document.querySelectorAll('.phase-content');
+        const currentView = this.state.getState('currentView') || 'grid';
+        
+        phaseContents.forEach(phaseContent => {
+            phaseContent.classList.add(`view-${currentView}`);
+        });
+        
+        console.log(`📋 Initialized view classes: view-${currentView}`);
+        
+        // Force update display if tasks exist but no filtered tasks
+        setTimeout(() => {
+            const currentState = this.state.getState();
+            if (currentState.tasks && (!currentState.filteredTasks || currentState.filteredTasks.length === 0)) {
+                console.log('⚠️ Tasks exist but no filtered tasks - forcing re-filter');
+                this.applyFilters();
+            }
+        }, 100);
     }
 
     /**
@@ -851,21 +994,48 @@ export class TaskManager extends Component {
      */
     createOptimizedTaskElements(tasks, lang) {
         return tasks.map(task => {
+            const taskStatus = getTaskStatus(task.weekEstimate);
             const taskElement = this.createElement('div', {
-                className: 'task-card',
+                className: `task-card task-${taskStatus}`,
                 dataset: { 
                     taskId: task.id,
+                    taskStatus: taskStatus,
+                    weekEstimate: task.weekEstimate || '',
                     lazy: 'content' 
                 }
             });
 
-            // Add click handler for mobile interactions
+            // Set phase color stripe
+            const phaseColors = {
+                '1': '#3b82f6', // Blue
+                '2': '#10b981', // Green
+                '3': '#f59e0b', // Yellow
+                '4': '#ef4444', // Red
+                '5': '#8b5cf6'  // Purple
+            };
+            const color = phaseColors[task.phase] || '#6b7280';
+            taskElement.style.setProperty('--phase-color', color);
+
+            // Add click handler for task interactions
             this.addEventListener(taskElement, 'click', () => {
                 this.handleTaskClick(task);
             });
 
-            // Use lazy loading for task content
+            // Use optimized HTML content
             taskElement.innerHTML = this.createOptimizedTaskHTML(task, lang);
+            
+            // Add dependency toggle functionality if present
+            const toggleBtn = taskElement.querySelector('.details-toggle');
+            if (toggleBtn) {
+                this.addEventListener(toggleBtn, 'click', (e) => {
+                    e.stopPropagation();
+                    const detailsContainer = toggleBtn.closest('.task-details');
+                    detailsContainer.classList.toggle('collapsed');
+                    toggleBtn.textContent = detailsContainer.classList.contains('collapsed')
+                        ? (lang === 'es' ? 'Mostrar dependencias' : 'Show dependencies')
+                        : (lang === 'es' ? 'Ocultar dependencias' : 'Hide dependencies');
+                });
+            }
             
             return taskElement;
         });
@@ -881,24 +1051,85 @@ export class TaskManager extends Component {
         const taskName = task.name[lang] || task.name.es;
         const assigneeColor = getAssigneeColor(task.assignedTo);
         const assigneeInitials = getAssigneeInitials(task.assignedTo);
+        const taskStatus = getTaskStatus(task.weekEstimate);
+        const formattedWeek = formatWeekWithDates(task.weekEstimate, 2025);
+        
+        // Get status text and icon
+        let badgeIcon = '';
+        let statusText = '';
+        switch (taskStatus) {
+            case 'current':
+                badgeIcon = '🔥';
+                statusText = lang === 'es' ? 'EN CURSO' : 'IN PROGRESS';
+                break;
+            case 'past':
+                badgeIcon = '✅';
+                statusText = lang === 'es' ? 'COMPLETADA' : 'COMPLETED';
+                break;
+            case 'future':
+                badgeIcon = '📅';
+                statusText = lang === 'es' ? 'PENDIENTE' : 'UPCOMING';
+                break;
+        }
+        
+        // Dependencies text
+        const depText = typeof task.dependencies === 'object' 
+            ? task.dependencies[lang] || task.dependencies.es
+            : task.dependencies;
+        const hasDependencies = depText && depText !== 'None' && depText !== 'Ninguna';
+        
+        // Duration bar calculation
+        const maxDuration = 12;
+        const percentage = Math.min((parseFloat(task.duration) / maxDuration) * 100, 100);
+        
+        // Difficulty stars
+        let difficultyStars = '';
+        for (let i = 1; i <= 5; i++) {
+            difficultyStars += `<div class="difficulty-star ${i <= task.difficulty ? 'filled' : ''}"></div>`;
+        }
         
         return `
             <div class="task-header">
                 <div class="task-main-info">
                     <div class="task-id">${task.id}</div>
                     <div class="task-name">${taskName}</div>
-                    <div class="task-meta">
-                        <span><strong>${task.assignedTo}</strong></span>
-                        <span>⏱️ ${task.duration}h</span>
-                        <span>📊 ${lang === 'es' ? 'Nivel' : 'Level'} ${task.difficulty}</span>
-                    </div>
                 </div>
                 <div class="task-visual-indicators">
                     <div class="assignee-badge" style="background-color: ${assigneeColor}">
                         ${assigneeInitials}
                     </div>
+                    <div class="duration-bar">
+                        <div class="duration-fill" style="width: ${percentage}%"></div>
+                    </div>
                 </div>
             </div>
+            <div class="task-meta">
+                <div class="task-meta-left">
+                    <div class="task-meta-row">
+                        <span class="assignee-info">👤 ${task.assignedTo}</span>
+                        <span>⏱️ ${task.duration}h</span>
+                    </div>
+                    <div class="task-meta-row">
+                        <div class="difficulty-container">
+                            <span>⭐</span>
+                            <div class="difficulty-stars">${difficultyStars}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="task-meta-right">
+                    <div class="week-status-badge week-status-${taskStatus}">
+                        <span class="week-badge-icon">${badgeIcon}</span>
+                        <span class="week-badge-week">${formattedWeek}</span>
+                        <span class="week-badge-status">${statusText}</span>
+                    </div>
+                </div>
+            </div>
+            ${hasDependencies ? `
+            <div class="task-details collapsed">
+                <button class="details-toggle">${lang === 'es' ? 'Mostrar dependencias' : 'Show dependencies'}</button>
+                <div class="details-content">${depText}</div>
+            </div>
+            ` : ''}
         `;
     }
 
@@ -908,11 +1139,24 @@ export class TaskManager extends Component {
     enableLazyLoadingForTasks() {
         const performanceManager = window.madlabApp?.components?.get('performance');
         if (performanceManager) {
+            // Set container for performance manager if not set
+            if (!performanceManager.container) {
+                performanceManager.container = document.getElementById('tasksContainer');
+            }
+            
             // Update lazy observer to watch new task cards
-            performanceManager.observeLazyElements();
+            try {
+                performanceManager.observeLazyElements();
+            } catch (error) {
+                console.warn('Failed to enable lazy loading optimization:', error);
+            }
             
             // Check if virtual scrolling should be enabled
-            performanceManager.checkVirtualScrollingTrigger();
+            try {
+                performanceManager.checkVirtualScrollingTrigger();
+            } catch (error) {
+                console.warn('Failed to check virtual scrolling trigger:', error);
+            }
         }
     }
 
@@ -1012,16 +1256,24 @@ export class TaskManager extends Component {
      * Enhanced mount with mobile optimizations
      */
     mount() {
-        super.mount();
-        this.bindEvents();
-        this.setupMobileTouchHandlers();
-        this.onMount();
-        
-        // Setup responsive listeners
-        window.addEventListener('breakpointchange', (e) => {
-            const { current } = e.detail;
-            this.handleBreakpointChange(current);
-        });
+        console.log('🎯 TaskManager.mount() called');
+        try {
+            super.mount();
+            console.log('✅ TaskManager super.mount() completed');
+            this.bindEvents();
+            this.setupMobileTouchHandlers();
+            // Don't call this.onMount() again - super.mount() already calls it
+            
+            // Setup responsive listeners
+            window.addEventListener('breakpointchange', (e) => {
+                const { current } = e.detail;
+                this.handleBreakpointChange(current);
+            });
+            console.log('✅ TaskManager.mount() completed successfully');
+        } catch (error) {
+            console.error('❌ TaskManager.mount() failed:', error);
+            throw error;
+        }
     }
 
     /**

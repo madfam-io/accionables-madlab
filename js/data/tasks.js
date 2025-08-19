@@ -20,7 +20,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "2.0",
                         difficulty: 2,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 33"
                     },
                     {
                         id: "1.1.2",
@@ -31,7 +32,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "1.0",
                         difficulty: 1,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 33"
                     },
                     {
                         id: "1.1.3",
@@ -42,7 +44,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "1.5",
                         difficulty: 2,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 33"
                     },
                     {
                         id: "1.1.4",
@@ -53,7 +56,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "1.1.1"
+                        dependencies: "1.1.1",
+                        weekEstimate: "Week 33"
                     },
                     {
                         id: "1.1.5",
@@ -64,7 +68,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "1.1.3"
+                        dependencies: "1.1.3",
+                        weekEstimate: "Week 33"
                     }
                 ]
             },
@@ -83,7 +88,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "8.0",
                         difficulty: 3,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 34"
                     },
                     {
                         id: "1.2.2",
@@ -94,7 +100,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "1.2.1"
+                        dependencies: "1.2.1",
+                        weekEstimate: "Week 34"
                     },
                     {
                         id: "1.2.3",
@@ -105,7 +112,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "6.0",
                         difficulty: 2,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 34"
                     },
                     {
                         id: "1.2.4",
@@ -116,7 +124,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "1.2.3"
+                        dependencies: "1.2.3",
+                        weekEstimate: "Week 34"
                     },
                     {
                         id: "1.2.5",
@@ -127,7 +136,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "7.0",
                         difficulty: 4,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 34"
                     }
                 ]
             },
@@ -146,7 +156,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 35"
                     },
                     {
                         id: "1.3.2",
@@ -157,7 +168,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "8.0",
                         difficulty: 4,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 35"
                     },
                     {
                         id: "1.3.3",
@@ -168,7 +180,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "1.3.1"
+                        dependencies: "1.3.1",
+                        weekEstimate: "Week 35"
                     },
                     {
                         id: "1.3.4",
@@ -179,7 +192,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "5.0",
                         difficulty: 4,
-                        dependencies: "1.3.3"
+                        dependencies: "1.3.3",
+                        weekEstimate: "Week 35"
                     },
                     {
                         id: "1.3.5",
@@ -190,7 +204,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "1.3.4"
+                        dependencies: "1.3.4",
+                        weekEstimate: "Week 35"
                     }
                 ]
             },
@@ -209,7 +224,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 36"
                     },
                     {
                         id: "1.4.2",
@@ -220,7 +236,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "4.0",
                         difficulty: 2,
-                        dependencies: "1.4.1"
+                        dependencies: "1.4.1",
+                        weekEstimate: "Week 36"
                     },
                     {
                         id: "1.4.3",
@@ -231,7 +248,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "1.4.2"
+                        dependencies: "1.4.2",
+                        weekEstimate: "Week 36"
                     },
                     {
                         id: "1.4.4",
@@ -242,7 +260,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "4.0",
                         difficulty: 4,
-                        dependencies: "1.4.3"
+                        dependencies: "1.4.3",
+                        weekEstimate: "Week 36"
                     },
                     {
                         id: "1.4.5",
@@ -253,7 +272,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "3.0",
                         difficulty: 3,
-                        dependencies: "1.4.4"
+                        dependencies: "1.4.4",
+                        weekEstimate: "Week 36"
                     }
                 ]
             },
@@ -272,7 +292,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "8.0",
                         difficulty: 3,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 36"
                     },
                     {
                         id: "1.5.2",
@@ -283,7 +304,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "8.0",
                         difficulty: 3,
-                        dependencies: "1.5.1"
+                        dependencies: "1.5.1",
+                        weekEstimate: "Week 36"
                     },
                     {
                         id: "1.5.3",
@@ -294,7 +316,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 36"
                     },
                     {
                         id: "1.5.4",
@@ -305,7 +328,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "1.5.2"
+                        dependencies: "1.5.2",
+                        weekEstimate: "Week 36"
                     },
                     {
                         id: "1.5.5",
@@ -316,7 +340,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "1.5.3"
+                        dependencies: "1.5.3",
+                        weekEstimate: "Week 36"
                     }
                 ]
             }
@@ -343,7 +368,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "1.3.3"
+                        dependencies: "1.3.3",
+                        weekEstimate: "Week 37"
                     },
                     {
                         id: "2.1.2",
@@ -354,7 +380,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "2.1.1"
+                        dependencies: "2.1.1",
+                        weekEstimate: "Week 37"
                     },
                     {
                         id: "2.1.3",
@@ -365,7 +392,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "2.1.1"
+                        dependencies: "2.1.1",
+                        weekEstimate: "Week 37"
                     },
                     {
                         id: "2.1.4",
@@ -376,7 +404,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "5.0",
                         difficulty: 2,
-                        dependencies: "2.1.2"
+                        dependencies: "2.1.2",
+                        weekEstimate: "Week 37"
                     },
                     {
                         id: "2.1.5",
@@ -387,7 +416,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "2.1.4"
+                        dependencies: "2.1.4",
+                        weekEstimate: "Week 37"
                     }
                 ]
             },
@@ -406,7 +436,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "1.3.3"
+                        dependencies: "1.3.3",
+                        weekEstimate: "Week 37"
                     },
                     {
                         id: "2.2.2",
@@ -417,7 +448,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "6.0",
                         difficulty: 4,
-                        dependencies: "2.2.1"
+                        dependencies: "2.2.1",
+                        weekEstimate: "Week 38"
                     },
                     {
                         id: "2.2.3",
@@ -428,7 +460,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "8.0",
                         difficulty: 4,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 38"
                     },
                     {
                         id: "2.2.4",
@@ -439,7 +472,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "5.0",
                         difficulty: 2,
-                        dependencies: "2.2.2"
+                        dependencies: "2.2.2",
+                        weekEstimate: "Week 38"
                     },
                     {
                         id: "2.2.5",
@@ -450,7 +484,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "2.2.4"
+                        dependencies: "2.2.4",
+                        weekEstimate: "Week 38"
                     }
                 ]
             },
@@ -469,7 +504,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "1.3.3"
+                        dependencies: "1.3.3",
+                        weekEstimate: "Week 38"
                     },
                     {
                         id: "2.3.2",
@@ -480,7 +516,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "4.0",
                         difficulty: 2,
-                        dependencies: "2.3.1"
+                        dependencies: "2.3.1",
+                        weekEstimate: "Week 38"
                     },
                     {
                         id: "2.3.3",
@@ -491,7 +528,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "4.0",
                         difficulty: 2,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 38"
                     },
                     {
                         id: "2.3.4",
@@ -502,7 +540,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "5.0",
                         difficulty: 2,
-                        dependencies: "2.3.2"
+                        dependencies: "2.3.2",
+                        weekEstimate: "Week 38"
                     },
                     {
                         id: "2.3.5",
@@ -513,7 +552,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "2.3.4"
+                        dependencies: "2.3.4",
+                        weekEstimate: "Week 38"
                     }
                 ]
             },
@@ -532,7 +572,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "10.0",
                         difficulty: 4,
-                        dependencies: "2.1.1, 2.2.1, 2.3.1"
+                        dependencies: "2.1.1, 2.2.1, 2.3.1",
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "2.4.2",
@@ -543,7 +584,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "2.4.1"
+                        dependencies: "2.4.1",
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "2.4.3",
@@ -554,7 +596,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "2.4.4",
@@ -565,7 +608,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "2.4.1, 2.4.2, 2.4.3"
+                        dependencies: "2.4.1, 2.4.2, 2.4.3",
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "2.4.5",
@@ -576,7 +620,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "2.4.4"
+                        dependencies: "2.4.4",
+                        weekEstimate: "Week 39"
                     }
                 ]
             },
@@ -595,7 +640,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "8.0",
                         difficulty: 3,
-                        dependencies: "2.1.5, 2.2.5, 2.3.5"
+                        dependencies: "2.1.5, 2.2.5, 2.3.5",
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "2.5.2",
@@ -606,7 +652,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "4.0",
                         difficulty: 2,
-                        dependencies: "2.5.1"
+                        dependencies: "2.5.1",
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "2.5.3",
@@ -617,7 +664,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "3.0",
                         difficulty: 3,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "2.5.4",
@@ -628,7 +676,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "2.5.1, 2.5.2"
+                        dependencies: "2.5.1, 2.5.2",
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "2.5.5",
@@ -639,7 +688,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "1.3.5"
+                        dependencies: "1.3.5",
+                        weekEstimate: "Week 39"
                     }
                 ]
             }
@@ -666,7 +716,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "1.5.5, 2.5.1"
+                        dependencies: "1.5.5, 2.5.1",
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "3.1.2",
@@ -677,7 +728,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "3.1.1"
+                        dependencies: "3.1.1",
+                        weekEstimate: "Week 39"
                     },
                     {
                         id: "3.1.3",
@@ -688,7 +740,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "8.0",
                         difficulty: 3,
-                        dependencies: "3.1.2"
+                        dependencies: "3.1.2",
+                        weekEstimate: "Week 40"
                     },
                     {
                         id: "3.1.4",
@@ -699,7 +752,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "3.1.3"
+                        dependencies: "3.1.3",
+                        weekEstimate: "Week 40"
                     },
                     {
                         id: "3.1.5",
@@ -710,7 +764,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "5.0",
                         difficulty: 4,
-                        dependencies: "3.1.4"
+                        dependencies: "3.1.4",
+                        weekEstimate: "Week 40"
                     }
                 ]
             },
@@ -729,7 +784,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "4.0",
                         difficulty: 1,
-                        dependencies: "2.1.5, 2.2.5, 2.3.5"
+                        dependencies: "2.1.5, 2.2.5, 2.3.5",
+                        weekEstimate: "Week 40"
                     },
                     {
                         id: "3.2.2",
@@ -740,7 +796,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "1.4.2"
+                        dependencies: "1.4.2",
+                        weekEstimate: "Week 40"
                     },
                     {
                         id: "3.2.3",
@@ -751,7 +808,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "4.0",
                         difficulty: 2,
-                        dependencies: "3.2.1, 3.2.2"
+                        dependencies: "3.2.1, 3.2.2",
+                        weekEstimate: "Week 40"
                     },
                     {
                         id: "3.2.4",
@@ -762,7 +820,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "3.2.2"
+                        dependencies: "3.2.2",
+                        weekEstimate: "Week 40"
                     },
                     {
                         id: "3.2.5",
@@ -773,7 +832,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "3.2.3"
+                        dependencies: "3.2.3",
+                        weekEstimate: "Week 40"
                     }
                 ]
             },
@@ -803,7 +863,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "3.0",
                         difficulty: 3,
-                        dependencies: "3.3.1"
+                        dependencies: "3.3.1",
+                        weekEstimate: "Week 40"
                     },
                     {
                         id: "3.3.3",
@@ -814,7 +875,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "3.0",
                         difficulty: 3,
-                        dependencies: "3.3.1"
+                        dependencies: "3.3.1",
+                        weekEstimate: "Week 40"
                     },
                     {
                         id: "3.3.4",
@@ -825,7 +887,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "2.0",
                         difficulty: 2,
-                        dependencies: "3.3.1"
+                        dependencies: "3.3.1",
+                        weekEstimate: "Week 40"
                     },
                     {
                         id: "3.3.5",
@@ -836,7 +899,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "1.5",
                         difficulty: 1,
-                        dependencies: "3.3.4"
+                        dependencies: "3.3.4",
+                        weekEstimate: "Week 40"
                     }
                 ]
             }
@@ -863,7 +927,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "2.0",
                         difficulty: 2,
-                        dependencies: "3.2.4"
+                        dependencies: "3.2.4",
+                        weekEstimate: "Week 41"
                     },
                     {
                         id: "4.1.2",
@@ -874,7 +939,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "3.0",
                         difficulty: 4,
-                        dependencies: "4.1.1"
+                        dependencies: "4.1.1",
+                        weekEstimate: "Week 41"
                     },
                     {
                         id: "4.1.3",
@@ -885,7 +951,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "3.0",
                         difficulty: 3,
-                        dependencies: "4.1.2"
+                        dependencies: "4.1.2",
+                        weekEstimate: "Week 41"
                     },
                     {
                         id: "4.1.4",
@@ -896,7 +963,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "4.1.2"
+                        dependencies: "4.1.2",
+                        weekEstimate: "Week 41"
                     },
                     {
                         id: "4.1.5",
@@ -907,7 +975,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "2.0",
                         difficulty: 3,
-                        dependencies: "4.1.2"
+                        dependencies: "4.1.2",
+                        weekEstimate: "Week 41"
                     }
                 ]
             },
@@ -926,7 +995,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "4.1.3, 4.1.5"
+                        dependencies: "4.1.3, 4.1.5",
+                        weekEstimate: "Week 41"
                     },
                     {
                         id: "4.2.2",
@@ -937,7 +1007,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "4.2.1"
+                        dependencies: "4.2.1",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.2.3",
@@ -948,7 +1019,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "4.2.2"
+                        dependencies: "4.2.2",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.2.4",
@@ -959,7 +1031,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "8.0",
                         difficulty: 3,
-                        dependencies: "4.2.3"
+                        dependencies: "4.2.3",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.2.5",
@@ -970,7 +1043,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "4.2.3"
+                        dependencies: "4.2.3",
+                        weekEstimate: "Week 42"
                     }
                 ]
             },
@@ -989,7 +1063,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "8.0",
                         difficulty: 3,
-                        dependencies: "4.1.4"
+                        dependencies: "4.1.4",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.3.2",
@@ -1000,7 +1075,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "4.0",
                         difficulty: 2,
-                        dependencies: "4.1.5"
+                        dependencies: "4.1.5",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.3.3",
@@ -1011,7 +1087,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "4.2.1"
+                        dependencies: "4.2.1",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.3.4",
@@ -1022,7 +1099,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "4.3.1, 4.3.2"
+                        dependencies: "4.3.1, 4.3.2",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.3.5",
@@ -1033,7 +1111,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "4.3.4"
+                        dependencies: "4.3.4",
+                        weekEstimate: "Week 42"
                     }
                 ]
             },
@@ -1052,7 +1131,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "4.2.3"
+                        dependencies: "4.2.3",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.4.2",
@@ -1063,7 +1143,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "2.0",
                         difficulty: 2,
-                        dependencies: "4.4.1"
+                        dependencies: "4.4.1",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.4.3",
@@ -1074,7 +1155,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "6.0",
                         difficulty: 4,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.4.4",
@@ -1085,7 +1167,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "4.4.3"
+                        dependencies: "4.4.3",
+                        weekEstimate: "Week 42"
                     },
                     {
                         id: "4.4.5",
@@ -1096,7 +1179,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 42"
                     }
                 ]
             }
@@ -1123,7 +1207,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "6.0",
                         difficulty: 2,
-                        dependencies: "4.2.4"
+                        dependencies: "4.2.4",
+                        weekEstimate: "Week 43"
                     },
                     {
                         id: "5.1.2",
@@ -1134,7 +1219,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "5.0",
                         difficulty: 2,
-                        dependencies: "5.1.1"
+                        dependencies: "5.1.1",
+                        weekEstimate: "Week 43"
                     },
                     {
                         id: "5.1.3",
@@ -1145,7 +1231,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 43"
                     },
                     {
                         id: "5.1.4",
@@ -1156,7 +1243,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "4.2.5"
+                        dependencies: "4.2.5",
+                        weekEstimate: "Week 43"
                     },
                     {
                         id: "5.1.5",
@@ -1167,7 +1255,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "3.0",
                         difficulty: 3,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 43"
                     }
                 ]
             },
@@ -1186,7 +1275,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "10.0",
                         difficulty: 4,
-                        dependencies: "4.3.3"
+                        dependencies: "4.3.3",
+                        weekEstimate: "Week 43"
                     },
                     {
                         id: "5.2.2",
@@ -1197,7 +1287,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "8.0",
                         difficulty: 3,
-                        dependencies: "5.2.1"
+                        dependencies: "5.2.1",
+                        weekEstimate: "Week 43"
                     },
                     {
                         id: "5.2.3",
@@ -1208,7 +1299,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "8.0",
                         difficulty: 5,
-                        dependencies: "5.2.2"
+                        dependencies: "5.2.2",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.2.4",
@@ -1219,7 +1311,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "5.2.3"
+                        dependencies: "5.2.3",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.2.5",
@@ -1230,7 +1323,8 @@ export const tasksData = {
                         assignedTo: "Caro",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "5.2.4"
+                        dependencies: "5.2.4",
+                        weekEstimate: "Week 44"
                     }
                 ]
             },
@@ -1249,7 +1343,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "4.0",
                         difficulty: 3,
-                        dependencies: "4.3.4"
+                        dependencies: "4.3.4",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.3.2",
@@ -1260,7 +1355,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "3.0",
                         difficulty: 3,
-                        dependencies: "4.3.3"
+                        dependencies: "4.3.3",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.3.3",
@@ -1271,7 +1367,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "2.0",
                         difficulty: 2,
-                        dependencies: "4.3.5"
+                        dependencies: "4.3.5",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.3.4",
@@ -1282,7 +1379,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.3.5",
@@ -1293,7 +1391,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "6.0",
                         difficulty: 4,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 44"
                     }
                 ]
             },
@@ -1312,7 +1411,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "8.0",
                         difficulty: 3,
-                        dependencies: "All previous"
+                        dependencies: "All previous",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.4.2",
@@ -1323,7 +1423,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "6.0",
                         difficulty: 3,
-                        dependencies: "5.4.1"
+                        dependencies: "5.4.1",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.4.3",
@@ -1334,7 +1435,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "6.0",
                         difficulty: 4,
-                        dependencies: "4.4.5"
+                        dependencies: "4.4.5",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.4.4",
@@ -1345,7 +1447,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "5.0",
                         difficulty: 3,
-                        dependencies: "5.4.3"
+                        dependencies: "5.4.3",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.4.5",
@@ -1356,7 +1459,8 @@ export const tasksData = {
                         assignedTo: "Aldo",
                         duration: "3.0",
                         difficulty: 3,
-                        dependencies: "All previous"
+                        dependencies: "All previous",
+                        weekEstimate: "Week 44"
                     }
                 ]
             },
@@ -1375,7 +1479,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "3.0",
                         difficulty: 2,
-                        dependencies: "5.1.2"
+                        dependencies: "5.1.2",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.5.2",
@@ -1386,7 +1491,8 @@ export const tasksData = {
                         assignedTo: "Nuri",
                         duration: "1.0",
                         difficulty: 2,
-                        dependencies: {es: "Ninguna", en: "None"}
+                        dependencies: {es: "Ninguna", en: "None"},
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.5.3",
@@ -1397,7 +1503,8 @@ export const tasksData = {
                         assignedTo: "Luis",
                         duration: "3.0",
                         difficulty: 5,
-                        dependencies: "5.5.1, 5.5.2"
+                        dependencies: "5.5.1, 5.5.2",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.5.4",
@@ -1408,7 +1515,8 @@ export const tasksData = {
                         assignedTo: "Silvia",
                         duration: "2.0",
                         difficulty: 2,
-                        dependencies: "5.5.3"
+                        dependencies: "5.5.3",
+                        weekEstimate: "Week 44"
                     },
                     {
                         id: "5.5.5",
@@ -1419,7 +1527,8 @@ export const tasksData = {
                         assignedTo: "All",
                         duration: "2.0",
                         difficulty: 1,
-                        dependencies: "5.5.3"
+                        dependencies: "5.5.3",
+                        weekEstimate: "Week 44"
                     }
                 ]
             }

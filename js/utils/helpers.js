@@ -346,6 +346,155 @@ export function updateURL(params, replace = false) {
     window.history[method]({}, '', url);
 }
 
+// ==========================================================================
+// Date and Week Calculation Utilities
+// ==========================================================================
+
+/**
+ * Get the current week number of the year (ISO week)
+ * @param {Date} [date] - Date to calculate week for (defaults to current date)
+ * @returns {number} Week number (1-53)
+ */
+export function getCurrentWeek(date = new Date()) {
+    // Copy date so we don't modify original
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    // Set to nearest Thursday: current date + 4 - current day number
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    // Get first day of year
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    // Calculate full weeks to nearest Thursday
+    const weekNumber = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return weekNumber;
+}
+
+/**
+ * Get the current date in ISO format (YYYY-MM-DD)
+ * @param {Date} [date] - Date to format (defaults to current date)
+ * @returns {string} Date in ISO format
+ */
+export function getCurrentDate(date = new Date()) {
+    return date.toISOString().split('T')[0];
+}
+
+/**
+ * Parse week estimate string and return week number
+ * @param {string} weekEstimate - Week estimate string (e.g., "Week 34")
+ * @returns {number} Week number or null if invalid
+ */
+export function parseWeekEstimate(weekEstimate) {
+    if (!weekEstimate || typeof weekEstimate !== 'string') return null;
+    const match = weekEstimate.match(/Week\s+(\d+)/i);
+    return match ? parseInt(match[1], 10) : null;
+}
+
+/**
+ * Get the current project week (MADLAB project specific)
+ * Project started Aug 11, 2025 = Week 33
+ * @param {Date} [date] - Date to calculate week for (defaults to current date)
+ * @returns {number} Project week number (33-44)
+ */
+export function getCurrentProjectWeek(date = new Date()) {
+    // Project start date: August 11, 2025 (Week 33)
+    const projectStart = new Date('2025-08-11');
+    const projectStartWeek = 33;
+    
+    // Calculate weeks since project start
+    const diffTime = date.getTime() - projectStart.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const weeksSinceStart = Math.floor(diffDays / 7);
+    
+    return projectStartWeek + weeksSinceStart;
+}
+
+/**
+ * Get task status based on current week vs task week estimate
+ * @param {string} taskWeekEstimate - Task week estimate (e.g., "Week 34")
+ * @param {number} [currentWeek] - Current week number (defaults to current project week)
+ * @returns {string} Status: 'past', 'current', or 'future'
+ */
+export function getTaskStatus(taskWeekEstimate, currentWeek = getCurrentProjectWeek()) {
+    const taskWeek = parseWeekEstimate(taskWeekEstimate);
+    if (!taskWeek) return 'future'; // Default to future if can't parse
+    
+    if (taskWeek < currentWeek) {
+        return 'past';
+    } else if (taskWeek === currentWeek) {
+        return 'current';
+    } else {
+        return 'future';
+    }
+}
+
+/**
+ * Get week range dates for a given week number
+ * @param {number} weekNumber - Week number (1-53)
+ * @param {number} [year] - Year (defaults to current year)
+ * @returns {Object} Object with start and end dates
+ */
+export function getWeekRange(weekNumber, year = new Date().getFullYear()) {
+    // January 1st of the given year
+    const jan1 = new Date(year, 0, 1);
+    // Find the first Monday of the year (ISO week starts on Monday)
+    const daysToMonday = (8 - jan1.getDay()) % 7;
+    const firstMonday = new Date(year, 0, 1 + daysToMonday);
+    
+    // Calculate the Monday of the specified week
+    const mondayOfWeek = new Date(firstMonday);
+    mondayOfWeek.setDate(firstMonday.getDate() + (weekNumber - 1) * 7);
+    
+    // Calculate the Friday of the same week
+    const fridayOfWeek = new Date(mondayOfWeek);
+    fridayOfWeek.setDate(mondayOfWeek.getDate() + 4);
+    
+    return {
+        start: mondayOfWeek,
+        end: fridayOfWeek,
+        startFormatted: mondayOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        endFormatted: fridayOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    };
+}
+
+/**
+ * Format week display with date range
+ * @param {string} weekEstimate - Week estimate string (e.g., "Week 34")
+ * @param {number} [year] - Year (defaults to current year)
+ * @returns {string} Formatted week with date range
+ */
+export function formatWeekWithDates(weekEstimate, year = new Date().getFullYear()) {
+    const weekNumber = parseWeekEstimate(weekEstimate);
+    if (!weekNumber) return weekEstimate;
+    
+    const range = getWeekRange(weekNumber, year);
+    return `${weekEstimate} (${range.startFormatted} - ${range.endFormatted})`;
+}
+
+/**
+ * Check if a task should be highlighted as current
+ * @param {Object} task - Task object with weekEstimate property
+ * @returns {boolean} True if task should be highlighted
+ */
+export function isCurrentTask(task) {
+    return getTaskStatus(task.weekEstimate) === 'current';
+}
+
+/**
+ * Check if a task is in the past (completed)
+ * @param {Object} task - Task object with weekEstimate property
+ * @returns {boolean} True if task is in the past
+ */
+export function isPastTask(task) {
+    return getTaskStatus(task.weekEstimate) === 'past';
+}
+
+/**
+ * Check if a task is in the future
+ * @param {Object} task - Task object with weekEstimate property
+ * @returns {boolean} True if task is in the future
+ */
+export function isFutureTask(task) {
+    return getTaskStatus(task.weekEstimate) === 'future';
+}
+
 export default {
     debounce,
     throttle,
@@ -365,5 +514,15 @@ export default {
     isValidEmail,
     createElement,
     parseURLParams,
-    updateURL
+    updateURL,
+    getCurrentWeek,
+    getCurrentProjectWeek,
+    getCurrentDate,
+    parseWeekEstimate,
+    getTaskStatus,
+    getWeekRange,
+    formatWeekWithDates,
+    isCurrentTask,
+    isPastTask,
+    isFutureTask
 };

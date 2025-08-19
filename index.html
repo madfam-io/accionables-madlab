@@ -6,6 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#6366f1">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <title>MADLAB - Panel de Proyecto</title>
     
     <!-- CSS Modules -->
@@ -25,6 +26,18 @@
                     <button class="btn btn-secondary" id="langToggleBtn">
                         <span id="langToggle">English</span>
                     </button>
+                    <!-- View Toggle Controls -->
+                    <div class="view-controls hide-mobile">
+                        <button class="btn btn-outline view-toggle active" id="gridViewBtn" data-view="grid" title="Vista de cuadrícula">
+                            <span>📊</span>
+                            <span data-es="Cuadrícula" data-en="Grid">Cuadrícula</span>
+                        </button>
+                        <button class="btn btn-outline view-toggle" id="listViewBtn" data-view="list" title="Vista de lista">
+                            <span>📋</span>
+                            <span data-es="Lista" data-en="List">Lista</span>
+                        </button>
+                    </div>
+                    
                     <!-- Collapse/Expand All Controls -->
                     <div class="phase-controls">
                         <button class="btn btn-outline" id="collapseAllBtn" title="Colapsar todas las fases">
@@ -214,7 +227,7 @@
     </div>
 
     <!-- JavaScript Modules -->
-    <script type="module" src="js/app.js"></script>
+    <script type="module" src="/js/app.js"></script>
     
     <!-- Additional Scripts for Enhanced Features -->
     <script>

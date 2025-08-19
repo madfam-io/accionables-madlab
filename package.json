@@ -1,0 +1,35 @@
+{
+  "name": "madlab-spa",
+  "version": "1.0.0",
+  "description": "MADLAB - Collaborative Educational Project Dashboard",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.ts",
+    "format": "prettier --write src/**/*.{js,ts,css,html}"
+  },
+  "dependencies": {
+    "@vitejs/plugin-legacy": "^5.4.1"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.0",
+    "@vitejs/plugin-legacy": "^5.4.1",
+    "terser": "^5.31.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "education",
+    "spa",
+    "dashboard",
+    "project-management",
+    "gamification"
+  ],
+  "author": "MADLAB Team",
+  "license": "MIT"
+}
