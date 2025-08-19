@@ -28,13 +28,27 @@ export class TaskRenderer {
             }
         });
 
-        // Task header
+        // Create main content container for consistent layout
+        const taskContent = this.component.createElement('div', {
+            className: 'task-content'
+        });
+
+        // Task header (ID, name, assignee badge)
         const taskHeader = this.createTaskHeader(task, lang);
+        
+        // Task metadata (duration, week status, difficulty) 
         const taskMeta = this.createTaskMeta(task, lang);
+        
+        // Task details (dependencies) - consistent positioning
         const taskDetails = this.createTaskDetails(task, lang);
 
-        taskCard.appendChild(taskHeader);
-        taskCard.appendChild(taskMeta);
+        // Assemble the card structure
+        taskContent.appendChild(taskHeader);
+        taskContent.appendChild(taskMeta);
+        
+        taskCard.appendChild(taskContent);
+        
+        // Add details at bottom for consistent positioning
         if (taskDetails) {
             taskCard.appendChild(taskDetails);
         }
@@ -126,27 +140,37 @@ export class TaskRenderer {
     createTaskMeta(task, lang) {
         const meta = this.component.createElement('div', { className: 'task-meta' });
         
+        // Left section - Core task info
+        const metaLeft = this.component.createElement('div', { className: 'task-meta-left' });
+        
         // Assignee info
         const assigneeInfo = this.component.createElement('span', {
             className: 'assignee-info'
         }, `👤 ${task.assignedTo}`);
         
         // Duration
-        const duration = this.component.createElement('span', {}, 
-            `⏱️ ${task.duration}h`);
-        
-        // Week status badge
-        const weekBadge = this.createWeekStatusBadge(task, lang);
+        const duration = this.component.createElement('span', {
+            className: 'task-duration'
+        }, `⏱️ ${task.duration}h`);
         
         // Difficulty with dots
         const difficultyContainer = this.createDifficultyDisplay(task.difficulty);
         
-        meta.appendChild(assigneeInfo);
-        meta.appendChild(duration);
+        metaLeft.appendChild(assigneeInfo);
+        metaLeft.appendChild(duration);
+        metaLeft.appendChild(difficultyContainer);
+        
+        // Right section - Week status (prominently positioned)
+        const metaRight = this.component.createElement('div', { className: 'task-meta-right' });
+        
+        // Week status badge
+        const weekBadge = this.createWeekStatusBadge(task, lang);
         if (weekBadge) {
-            meta.appendChild(weekBadge);
+            metaRight.appendChild(weekBadge);
         }
-        meta.appendChild(difficultyContainer);
+        
+        meta.appendChild(metaLeft);
+        meta.appendChild(metaRight);
         
         return meta;
     }
@@ -253,7 +277,15 @@ export class TaskRenderer {
 
         const toggleBtn = this.component.createElement('button', {
             className: 'details-toggle'
-        }, lang === 'es' ? 'Mostrar dependencias' : 'Show dependencies');
+        });
+        
+        // Add icon and text content
+        const icon = this.component.createElement('span', {}, '▶️');
+        const text = this.component.createElement('span', {}, 
+            lang === 'es' ? 'Mostrar dependencias' : 'Show dependencies');
+        
+        toggleBtn.appendChild(icon);
+        toggleBtn.appendChild(text);
 
         const content = this.component.createElement('div', {
             className: 'details-content'
@@ -266,7 +298,10 @@ export class TaskRenderer {
         this.component.addEventListener(toggleBtn, 'click', (e) => {
             e.stopPropagation();
             detailsContainer.classList.toggle('collapsed');
-            toggleBtn.textContent = detailsContainer.classList.contains('collapsed')
+            
+            const isCollapsed = detailsContainer.classList.contains('collapsed');
+            icon.textContent = isCollapsed ? '▶️' : '🔽';
+            text.textContent = isCollapsed
                 ? (lang === 'es' ? 'Mostrar dependencias' : 'Show dependencies')
                 : (lang === 'es' ? 'Ocultar dependencias' : 'Hide dependencies');
         });

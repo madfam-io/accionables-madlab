@@ -9,7 +9,7 @@ export class ViewManager extends Component {
         super(element, state);
         
         // Initialize view state
-        this.currentView = this.getStoredView() || 'grid';
+        this.currentView = this.getStoredView() || 'list';
         this.state.setState({ currentView: this.currentView });
         
         // Subscribe to language changes for button text updates
@@ -23,6 +23,11 @@ export class ViewManager extends Component {
         this.bindViewToggleEvents();
         this.applyView(this.currentView);
         this.updateButtonStates();
+        
+        // Ensure default view is applied to body immediately
+        document.body.classList.remove('view-grid', 'view-list');
+        document.body.classList.add(`view-${this.currentView}`);
+        
         console.log('📋 ViewManager initialized with view:', this.currentView);
     }
 
@@ -32,10 +37,10 @@ export class ViewManager extends Component {
      */
     getStoredView() {
         try {
-            return localStorage.getItem('madlab-view-preference') || 'grid';
+            return localStorage.getItem('madlab-view-preference') || 'list';
         } catch (error) {
             console.warn('Failed to read view preference from localStorage:', error);
-            return 'grid';
+            return 'list';
         }
     }
 
