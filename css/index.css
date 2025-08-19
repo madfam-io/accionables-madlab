@@ -1,0 +1,39 @@
+/**
+ * @fileoverview Main CSS entry point for MADLAB application
+ * @module css/index
+ * @author MADLAB Team
+ * @since 1.0.0
+ * @description Imports all CSS modules in the correct order for optimal styling cascade.
+ *              This file serves as the single entry point for all application styles.
+ */
+
+/* ==========================================================================
+   CSS Modules Import Order
+   ========================================================================== */
+
+/* Base Styles (Variables, Themes, Base) */
+@import './variables.css';
+@import './themes.css';
+@import './base.css';
+
+/* Component Styles */
+@import './components/header.css';
+@import './components/buttons.css';
+@import './components/theme-switcher.css';
+@import './components/hero.css';
+@import './components/forms.css';
+@import './components/phases.css';
+@import './components/tasks.css';
+
+/**
+ * Import order rationale:
+ * 1. Variables - CSS custom properties used throughout
+ * 2. Themes - Theme-specific color schemes
+ * 3. Base - Global element styling and resets
+ * 4. Components - Specific component styles in dependency order
+ * 
+ * Components are ordered by:
+ * - Layout importance (header first)
+ * - Dependency relationships (buttons before complex components)
+ * - Specificity requirements (general to specific)
+ */
