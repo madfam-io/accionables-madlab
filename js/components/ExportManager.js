@@ -14,6 +14,52 @@ export class ExportManager extends Component {
     }
 
     /**
+     * Get responsive information from ResponsiveManager
+     * @returns {Object|null} Responsive information or null if not available
+     */
+    getResponsiveInfo() {
+        try {
+            // Access ResponsiveManager through the global app instance
+            const responsiveManager = window.madlabApp?.components?.get('responsive');
+            if (responsiveManager && typeof responsiveManager.getResponsiveInfo === 'function') {
+                return responsiveManager.getResponsiveInfo();
+            }
+            
+            // Fallback to basic responsive info if ResponsiveManager not available
+            const viewport = {
+                width: window.innerWidth || 1024,
+                height: window.innerHeight || 768,
+                orientation: (window.innerWidth > window.innerHeight) ? 'landscape' : 'portrait'
+            };
+            
+            const isMobile = viewport.width < 768;
+            const isTablet = viewport.width >= 768 && viewport.width < 992;
+            const isDesktop = viewport.width >= 992;
+            
+            return {
+                currentBreakpoint: isMobile ? 'sm' : isTablet ? 'md' : 'lg',
+                viewport,
+                isMobile,
+                isTablet,
+                isDesktop,
+                orientation: viewport.orientation
+            };
+        } catch (error) {
+            console.warn('ExportManager: Error getting responsive info:', error);
+            
+            // Return safe defaults
+            return {
+                currentBreakpoint: 'md',
+                viewport: { width: 1024, height: 768, orientation: 'landscape' },
+                isMobile: false,
+                isTablet: false,
+                isDesktop: true,
+                orientation: 'landscape'
+            };
+        }
+    }
+
+    /**
      * Open export modal
      */
     openModal() {
@@ -90,17 +136,15 @@ export class ExportManager extends Component {
         
         const title = this.createElement('h3', {
             className: 'modal-title'
-        }, currentLang === 'es' ? 'Exportar Tareas' : 'Export Tasks');
+        }, t.exportTasks);
         
         const subtitle = this.createElement('p', {
             className: 'modal-subtitle'
-        }, currentLang === 'es' 
-            ? 'Selecciona las opciones de exportación'
-            : 'Select export options');
+        }, t.selectExportOptions);
         
         const closeBtn = this.createElement('button', {
             className: 'modal-close',
-            'aria-label': currentLang === 'es' ? 'Cerrar modal' : 'Close modal',
+            'aria-label': t.closeModal,
             'data-touch-target': 'large'
         }, '×');
 
@@ -158,13 +202,13 @@ export class ExportManager extends Component {
         const cancelBtn = this.createElement('button', {
             className: `btn btn-secondary ${responsiveInfo?.isMobile ? 'btn-mobile' : ''}`,
             'data-touch-target': responsiveInfo?.isMobile ? 'large' : 'default'
-        }, currentLang === 'es' ? 'Cancelar' : 'Cancel');
+        }, t.cancel);
 
         const exportBtn = this.createElement('button', {
             className: `btn btn-primary btn-export ${responsiveInfo?.isMobile ? 'btn-mobile' : ''}`,
             'data-touch-target': responsiveInfo?.isMobile ? 'large' : 'default',
             'data-export-action': 'true'
-        }, currentLang === 'es' ? 'Exportar' : 'Export');
+        }, t.export);
 
         buttonContainer.appendChild(cancelBtn);
         buttonContainer.appendChild(exportBtn);
@@ -230,13 +274,14 @@ export class ExportManager extends Component {
      * Create format selection section
      */
     createFormatSection(currentLang) {
+        const t = translations[currentLang] || translations.es;
         const section = this.createElement('div', {
             className: 'export-section'
         });
 
         const label = this.createElement('label', {
             className: 'section-label'
-        }, currentLang === 'es' ? 'Formato de Exportación' : 'Export Format');
+        }, t.exportFormat);
 
         const options = this.createElement('div', {
             className: 'radio-group'
@@ -245,7 +290,7 @@ export class ExportManager extends Component {
         const formats = [
             { value: 'csv', label: 'CSV (Excel)', icon: '📊' },
             { value: 'json', label: 'JSON (Desarrolladores)', icon: '🔧' },
-            { value: 'txt', label: currentLang === 'es' ? 'Texto Plano' : 'Plain Text', icon: '📄' }
+            { value: 'txt', label: t.plainText, icon: '📄' }
         ];
 
         formats.forEach((format, index) => {
@@ -281,13 +326,14 @@ export class ExportManager extends Component {
      * Create scope selection section
      */
     createScopeSection(currentLang) {
+        const t = translations[currentLang] || translations.es;
         const section = this.createElement('div', {
             className: 'export-section'
         });
 
         const label = this.createElement('label', {
             className: 'section-label'
-        }, currentLang === 'es' ? 'Alcance de Exportación' : 'Export Scope');
+        }, t.exportScope);
 
         const options = this.createElement('div', {
             className: 'radio-group'
@@ -299,16 +345,12 @@ export class ExportManager extends Component {
         const scopes = [
             { 
                 value: 'filtered', 
-                label: currentLang === 'es' 
-                    ? `Solo tareas filtradas (${filteredTasks.length})` 
-                    : `Filtered tasks only (${filteredTasks.length})`,
+                label: `${t.filteredTasksOnly} (${filteredTasks.length})`,
                 icon: '🔍'
             },
             { 
                 value: 'all', 
-                label: currentLang === 'es' 
-                    ? `Todas las tareas (${allTasks.length})` 
-                    : `All tasks (${allTasks.length})`,
+                label: `${t.allTasksExport} (${allTasks.length})`,
                 icon: '📋'
             }
         ];
@@ -346,19 +388,18 @@ export class ExportManager extends Component {
      * Create fields selection section
      */
     createFieldsSection(currentLang) {
+        const t = translations[currentLang] || translations.es;
         const section = this.createElement('div', {
             className: 'export-section'
         });
 
         const label = this.createElement('label', {
             className: 'section-label'
-        }, currentLang === 'es' ? 'Campos a Incluir' : 'Fields to Include');
+        }, t.fieldsToInclude);
 
         const fieldsGrid = this.createElement('div', {
             className: 'checkbox-grid'
         });
-
-        const t = translations[currentLang] || translations.es;
         const fields = [
             { key: 'id', label: t.taskId || 'ID', checked: true },
             { key: 'name', label: t.taskName || 'Name', checked: true },
@@ -403,13 +444,14 @@ export class ExportManager extends Component {
      * Create language selection section
      */
     createLanguageSection(currentLang) {
+        const t = translations[currentLang] || translations.es;
         const section = this.createElement('div', {
             className: 'export-section'
         });
 
         const label = this.createElement('label', {
             className: 'section-label'
-        }, currentLang === 'es' ? 'Idioma de Exportación' : 'Export Language');
+        }, t.exportLanguage);
 
         const select = this.createElement('select', {
             name: 'exportLanguage',
@@ -874,7 +916,134 @@ export class ExportManager extends Component {
         
         console.log('📤 ExportManager mounted with mobile-native modal support');
     }
-    
+
+    /**
+     * Create mobile-optimized sections (stub implementation)
+     * @param {Element} body - Modal body element
+     * @param {string} currentLang - Current language
+     * @param {Object} responsiveInfo - Responsive information
+     */
+    createMobileOptimizedSections(body, currentLang, responsiveInfo) {
+        // Fallback to desktop sections for now
+        this.createDesktopSections(body, currentLang);
+    }
+
+    /**
+     * Create desktop sections
+     * @param {Element} body - Modal body element
+     * @param {string} currentLang - Current language
+     */
+    createDesktopSections(body, currentLang) {
+        // Create all section types
+        body.appendChild(this.createFormatSection(currentLang));
+        body.appendChild(this.createScopeSection(currentLang));
+        body.appendChild(this.createFieldsSection(currentLang));
+        body.appendChild(this.createLanguageSection(currentLang));
+    }
+
+    /**
+     * Add enhanced mobile gesture support (stub implementation)
+     * @param {Element} modal - Modal element
+     * @param {Element} overlay - Overlay element
+     */
+    addEnhancedMobileGestureSupport(modal, overlay) {
+        // Use existing mobile gesture support
+        this.addMobileGestureSupport(modal, overlay);
+    }
+
+    /**
+     * Add mobile form optimizations (stub implementation)
+     * @param {Element} modal - Modal element
+     */
+    addMobileFormOptimizations(modal) {
+        // Add basic mobile form enhancements
+        const inputs = modal.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.setAttribute('data-mobile-optimized', 'true');
+        });
+    }
+
+    /**
+     * Add mobile accessibility enhancements (stub implementation)
+     * @param {Element} modal - Modal element
+     */
+    addMobileAccessibilityEnhancements(modal) {
+        // Add basic mobile accessibility features
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+    }
+
+    /**
+     * Add swipe to dismiss functionality (stub implementation)
+     * @param {Element} modal - Modal element
+     * @param {Element} overlay - Overlay element
+     */
+    addSwipeToDismiss(modal, overlay) {
+        // Use existing mobile gesture support which includes swipe
+        this.addMobileGestureSupport(modal, overlay);
+    }
+
+    /**
+     * Add responsive observers (stub implementation)
+     * @param {Element} modal - Modal element
+     * @param {Element} overlay - Overlay element
+     */
+    addResponsiveObservers(modal, overlay) {
+        // Add basic resize observer if available
+        if (window.ResizeObserver) {
+            const resizeObserver = new ResizeObserver(() => {
+                // Update modal on resize
+                const responsiveInfo = this.getResponsiveInfo();
+                modal.classList.toggle('modal-mobile', responsiveInfo.isMobile);
+                modal.classList.toggle('modal-tablet', responsiveInfo.isTablet);
+            });
+            resizeObserver.observe(modal);
+        }
+    }
+
+    /**
+     * Add safe area support (stub implementation)
+     * @param {Element} modal - Modal element
+     */
+    addSafeAreaSupport(modal) {
+        // Add safe area CSS classes
+        modal.classList.add('has-safe-area');
+    }
+
+    /**
+     * Setup modal focus management (stub implementation)
+     * @param {Element} modal - Modal element
+     * @param {Object} responsiveInfo - Responsive information
+     */
+    setupModalFocus(modal, responsiveInfo) {
+        // Focus on first focusable element
+        const firstFocusable = modal.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (firstFocusable) {
+            setTimeout(() => firstFocusable.focus(), 100);
+        }
+    }
+
+    /**
+     * Animate modal entrance (stub implementation)
+     * @param {Element} modal - Modal element
+     * @param {Element} overlay - Overlay element
+     * @param {Object} responsiveInfo - Responsive information
+     */
+    animateModalEntrance(modal, overlay, responsiveInfo) {
+        // Add entrance animation classes
+        requestAnimationFrame(() => {
+            overlay.classList.add('modal-entering');
+            modal.classList.add('modal-entering');
+            
+            setTimeout(() => {
+                overlay.classList.remove('modal-entering');
+                modal.classList.remove('modal-entering');
+                overlay.classList.add('modal-entered');
+                modal.classList.add('modal-entered');
+            }, 300);
+        });
+    }
+
     /**
      * Get component status
      */
