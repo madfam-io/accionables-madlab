@@ -14,6 +14,14 @@
     --warning: #f59e0b;
     --danger: #ef4444;
     --info: #3b82f6;
+    
+    /* RGB Values for alpha transparency */
+    --primary-rgb: 99, 102, 241;
+    --primary-dark-rgb: 79, 70, 229;
+    --secondary-rgb: 16, 185, 129;
+    --accent-rgb: 245, 158, 11;
+    --danger-rgb: 239, 68, 68;
+    --info-rgb: 59, 130, 246;
     --bg-light: #ffffff;
     --bg-dark: #111827;
     --text-light: #1f2937;

@@ -1,0 +1,309 @@
+/**
+ * @fileoverview Team grid and member card components for MADLAB application
+ * @module css/components/team
+ * @author MADLAB Team
+ * @since 1.0.0
+ * @description Team member visualization, task assignment colors, and responsive team layout.
+ */
+
+/* ==========================================================================
+   Team Grid Component
+   ========================================================================== */
+
+/**
+ * Team summary section separator
+ */
+.section-separator {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: var(--space-4xl) 0 var(--space-2xl) 0;
+}
+
+/**
+ * Team summary title
+ */
+.team-summary-title {
+    text-align: center;
+    color: var(--text);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: var(--space-2xl);
+}
+
+/**
+ * Team grid container with responsive layout
+ */
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-4xl);
+}
+
+/**
+ * Individual team member card
+ */
+.team-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--shadow-light);
+}
+
+.team-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px var(--shadow);
+    border-color: var(--team-color, var(--primary));
+}
+
+/**
+ * Team member name styling
+ */
+.team-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: var(--space-lg);
+    color: var(--team-color, var(--primary));
+}
+
+/**
+ * Team member statistics container
+ */
+.team-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: var(--space-lg);
+    margin-top: var(--space-lg);
+}
+
+.team-stat {
+    text-align: center;
+}
+
+.team-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--team-color, var(--primary));
+    line-height: 1;
+}
+
+.team-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: var(--space-xs);
+}
+
+/* ==========================================================================
+   Team Color Assignments
+   ========================================================================== */
+
+/**
+ * Aldo - CEO MADFAM, Tech Lead
+ */
+.team-aldo,
+.assignee-aldo,
+[data-assignee="Aldo"] {
+    --team-color: #6366f1;
+    --team-color-rgb: 99, 102, 241;
+    --team-bg: rgba(99, 102, 241, 0.1);
+}
+
+/**
+ * Nuri - Strategy Officer MADFAM
+ */
+.team-nuri,
+.assignee-nuri,
+[data-assignee="Nuri"] {
+    --team-color: #10b981;
+    --team-color-rgb: 16, 185, 129;
+    --team-bg: rgba(16, 185, 129, 0.1);
+}
+
+/**
+ * Luis - La Ciencia del Juego Representative
+ */
+.team-luis,
+.assignee-luis,
+[data-assignee="Luis"] {
+    --team-color: #f59e0b;
+    --team-color-rgb: 245, 158, 11;
+    --team-bg: rgba(245, 158, 11, 0.1);
+}
+
+/**
+ * Silvia - Marketing Guru
+ */
+.team-silvia,
+.assignee-silvia,
+[data-assignee="Silvia"] {
+    --team-color: #ef4444;
+    --team-color-rgb: 239, 68, 68;
+    --team-bg: rgba(239, 68, 68, 0.1);
+}
+
+/**
+ * Caro - Designer and Teacher
+ */
+.team-caro,
+.assignee-caro,
+[data-assignee="Caro"] {
+    --team-color: #8b5cf6;
+    --team-color-rgb: 139, 92, 246;
+    --team-bg: rgba(139, 92, 246, 0.1);
+}
+
+/**
+ * All Team - Collaborative tasks
+ */
+.team-all,
+.assignee-all,
+[data-assignee="All"] {
+    --team-color: #6b7280;
+    --team-color-rgb: 107, 114, 128;
+    --team-bg: rgba(107, 114, 128, 0.1);
+}
+
+/* ==========================================================================
+   Team Card Color Stripes
+   ========================================================================== */
+
+/**
+ * Colored stripe on left edge of team cards
+ */
+.team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, 
+        var(--team-color, var(--primary)), 
+        rgba(var(--team-color-rgb, 99, 102, 241), 0.7)
+    );
+    border-radius: 0 4px 4px 0;
+}
+
+/**
+ * Background color accent for team cards
+ */
+.team-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--team-bg, rgba(99, 102, 241, 0.05));
+    opacity: 0;
+    transition: opacity var(--transition);
+    z-index: -1;
+}
+
+.team-card:hover::after {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   Task Assignment Colors
+   ========================================================================== */
+
+/**
+ * Apply team colors to task cards based on assignee
+ */
+.task-card[data-assignee="Aldo"] {
+    --phase-color: #6366f1;
+    --phase-color-rgb: 99, 102, 241;
+}
+
+.task-card[data-assignee="Nuri"] {
+    --phase-color: #10b981;
+    --phase-color-rgb: 16, 185, 129;
+}
+
+.task-card[data-assignee="Luis"] {
+    --phase-color: #f59e0b;
+    --phase-color-rgb: 245, 158, 11;
+}
+
+.task-card[data-assignee="Silvia"] {
+    --phase-color: #ef4444;
+    --phase-color-rgb: 239, 68, 68;
+}
+
+.task-card[data-assignee="Caro"] {
+    --phase-color: #8b5cf6;
+    --phase-color-rgb: 139, 92, 246;
+}
+
+.task-card[data-assignee="All"] {
+    --phase-color: #6b7280;
+    --phase-color-rgb: 107, 114, 128;
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+
+/**
+ * Mobile optimizations for team grid
+ */
+@media (max-width: 768px) {
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-lg);
+    }
+
+    .team-card {
+        padding: var(--space-xl);
+    }
+
+    .team-name {
+        font-size: 1.25rem;
+    }
+
+    .team-stats {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .team-stat-value {
+        font-size: 1.1rem;
+    }
+}
+
+/**
+ * Extra small screens - single column
+ */
+@media (max-width: 480px) {
+    .team-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+    }
+
+    .team-card {
+        padding: var(--space-lg);
+    }
+
+    .team-summary-title {
+        font-size: 1.5rem;
+    }
+}
+
+/**
+ * Large screens - limit max columns
+ */
+@media (min-width: 1400px) {
+    .team-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
