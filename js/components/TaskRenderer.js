@@ -3,10 +3,20 @@
 // ==========================================================================
 
 import { getAssigneeColor, getAssigneeInitials, getTaskStatus, formatWeekWithDates } from '../utils/helpers.js';
+import { translations } from '../data/translations.js';
 
 export class TaskRenderer {
     constructor(component) {
         this.component = component;
+        this.tooltipManager = null; // Will be set by component manager
+    }
+
+    /**
+     * Set tooltip manager reference
+     * @param {TooltipManager} tooltipManager - Tooltip manager instance
+     */
+    setTooltipManager(tooltipManager) {
+        this.tooltipManager = tooltipManager;
     }
 
     /**
@@ -39,19 +49,15 @@ export class TaskRenderer {
         // Task metadata (duration, week status, difficulty) 
         const taskMeta = this.createTaskMeta(task, lang);
         
-        // Task details (dependencies) - consistent positioning
-        const taskDetails = this.createTaskDetails(task, lang);
+        // Task dependencies (always rendered for consistency)
+        const taskDependencies = this.createTaskDependencies(task, lang);
 
-        // Assemble the card structure
+        // Assemble the unified card structure
         taskContent.appendChild(taskHeader);
         taskContent.appendChild(taskMeta);
+        taskContent.appendChild(taskDependencies);
         
         taskCard.appendChild(taskContent);
-        
-        // Add details at bottom for consistent positioning
-        if (taskDetails) {
-            taskCard.appendChild(taskDetails);
-        }
 
         // Add click handler for task interaction
         this.component.addEventListener(taskCard, 'click', () => {
@@ -106,10 +112,17 @@ export class TaskRenderer {
         const color = getAssigneeColor(assignee);
         const initials = getAssigneeInitials(assignee);
         
-        return this.component.createElement('div', {
+        const badge = this.component.createElement('div', {
             className: 'assignee-badge',
             style: `background-color: ${color}`
         }, initials);
+
+        // Add tooltip
+        if (this.tooltipManager) {
+            this.tooltipManager.addTaskTooltip(badge, 'assignee', { name: assignee });
+        }
+        
+        return badge;
     }
 
     /**
@@ -128,6 +141,12 @@ export class TaskRenderer {
         });
         
         durationBar.appendChild(durationFill);
+
+        // Add tooltip
+        if (this.tooltipManager) {
+            this.tooltipManager.addTaskTooltip(durationBar, 'duration', { hours: duration });
+        }
+        
         return durationBar;
     }
 
@@ -200,6 +219,12 @@ export class TaskRenderer {
 
         container.appendChild(label);
         container.appendChild(stars);
+
+        // Add tooltip
+        if (this.tooltipManager) {
+            this.tooltipManager.addTaskTooltip(container, 'difficulty', { level: difficulty });
+        }
+
         return container;
     }
 
@@ -218,18 +243,20 @@ export class TaskRenderer {
         let badgeIcon = '';
         let statusText = '';
         
+        const t = translations[lang] || translations.es;
+        
         switch (taskStatus) {
             case 'current':
                 badgeIcon = '🔥';
-                statusText = lang === 'es' ? 'EN CURSO' : 'IN PROGRESS';
+                statusText = t.inProgress;
                 break;
             case 'past':
                 badgeIcon = '✅';
-                statusText = lang === 'es' ? 'COMPLETADA' : 'COMPLETED';
+                statusText = t.completed;
                 break;
             case 'future':
                 badgeIcon = '📅';
-                statusText = lang === 'es' ? 'PENDIENTE' : 'UPCOMING';
+                statusText = t.upcoming;
                 break;
         }
         
@@ -257,56 +284,280 @@ export class TaskRenderer {
     }
 
     /**
-     * Create task details section (dependencies)
+     * Create task dependencies section (always rendered for consistency)
      * @param {Object} task - Task data
      * @param {string} lang - Current language
-     * @returns {HTMLElement|null} Task details element
+     * @returns {HTMLElement} Task dependencies element (always)
      */
-    createTaskDetails(task, lang) {
+    createTaskDependencies(task, lang) {
+        const t = translations[lang] || translations.es;
         const depText = typeof task.dependencies === 'object' 
             ? task.dependencies[lang] || task.dependencies.es
             : task.dependencies;
         
-        if (!depText || depText === 'None' || depText === 'Ninguna') {
-            return null;
+        const hasDependencies = depText && depText !== 'None' && depText !== 'Ninguna';
+        
+        const dependenciesContainer = this.component.createElement('div', {
+            className: 'task-dependencies'
+        });
+
+        if (!hasDependencies) {
+            // No dependencies - show consistent empty state
+            const noDepsText = this.component.createElement('span', {
+                className: 'no-dependencies'
+            }, t.noDependencies);
+            
+            const noDepsIcon = this.component.createElement('span', {
+                className: 'no-deps-icon'
+            }, '✅');
+            
+            dependenciesContainer.appendChild(noDepsIcon);
+            dependenciesContainer.appendChild(noDepsText);
+        } else {
+            // Has dependencies - show clickable indicator
+            const dependencyIndicator = this.component.createElement('div', {
+                className: 'dependency-indicator clickable',
+                title: `${this.parseDependencyCount(depText)} blocking tasks`
+            });
+            
+            const icon = this.component.createElement('span', {
+                className: 'dependency-icon'
+            }, '🔗');
+            
+            const count = this.parseDependencyCount(depText);
+            const depsText = this.component.createElement('span', {
+                className: 'dependency-text'
+            }, count > 1 ? `${count} ${t.dependencyCountPlural}` : `1 ${t.dependencyCount}`);
+            
+            dependencyIndicator.appendChild(icon);
+            dependencyIndicator.appendChild(depsText);
+
+            // Click to show overlay
+            this.component.addEventListener(dependencyIndicator, 'click', (e) => {
+                e.stopPropagation();
+                this.showDependenciesOverlay(task, depText, lang, e.currentTarget);
+            });
+            
+            dependenciesContainer.appendChild(dependencyIndicator);
         }
 
-        const detailsContainer = this.component.createElement('div', {
-            className: 'task-details collapsed'
+        return dependenciesContainer;
+    }
+
+    /**
+     * Parse and count dependencies
+     * @param {string} depText - Dependencies text
+     * @returns {number} Number of dependencies
+     */
+    parseDependencyCount(depText) {
+        if (!depText) return 0;
+        // Count task IDs in format like "1.1.1, 1.1.2" or single "1.1.1"
+        const matches = depText.match(/\d+\.\d+\.\d+/g);
+        return matches ? matches.length : 1;
+    }
+
+    /**
+     * Show dependencies overlay relative to the task card
+     * @param {Object} task - Current task
+     * @param {string} depText - Dependencies text  
+     * @param {string} lang - Current language
+     * @param {HTMLElement} triggerElement - Element that triggered the overlay
+     */
+    showDependenciesOverlay(task, depText, lang, triggerElement) {
+        // Remove any existing overlay
+        const existingOverlay = document.querySelector('.dependencies-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+
+        // Find the task card container
+        const taskCard = triggerElement.closest('.task-card');
+        if (!taskCard) return;
+
+        // Create overlay
+        const overlay = this.component.createElement('div', {
+            className: 'dependencies-overlay'
         });
 
-        const toggleBtn = this.component.createElement('button', {
-            className: 'details-toggle'
+        // Create overlay content
+        const overlayContent = this.component.createElement('div', {
+            className: 'dependencies-overlay-content'
+        });
+
+        // Header
+        const header = this.component.createElement('div', {
+            className: 'overlay-header'
         });
         
-        // Add icon and text content
-        const icon = this.component.createElement('span', {}, '▶️');
-        const text = this.component.createElement('span', {}, 
-            lang === 'es' ? 'Mostrar dependencias' : 'Show dependencies');
+        const t = translations[lang] || translations.es;
+        const title = this.component.createElement('h3', {}, 
+            `${t.blockingTasksTitle} - ${task.id}`);
+        const closeBtn = this.component.createElement('button', {
+            className: 'overlay-close'
+        }, '✕');
+
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+
+        // Dependencies list
+        const dependenciesList = this.component.createElement('div', {
+            className: 'dependencies-list'
+        });
+
+        const blockingTasks = this.parseBlockingTasks(depText);
+        blockingTasks.forEach(taskId => {
+            const taskItem = this.createBlockingTaskItem(taskId, lang);
+            dependenciesList.appendChild(taskItem);
+        });
+
+        overlayContent.appendChild(header);
+        overlayContent.appendChild(dependenciesList);
+        overlay.appendChild(overlayContent);
+
+        // Add overlay to the task card (not body)
+        taskCard.style.position = 'relative';
+        taskCard.appendChild(overlay);
+
+        // Smart positioning based on available space
+        this.positionOverlaySmartly(overlay, taskCard);
+
+        // Event listeners
+        this.component.addEventListener(closeBtn, 'click', () => overlay.remove());
+        this.component.addEventListener(overlay, 'click', (e) => {
+            if (e.target === overlay) overlay.remove();
+        });
+
+        // ESC key to close
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+                overlay.remove();
+                document.removeEventListener('keydown', handleEsc);
+            }
+        };
+        document.addEventListener('keydown', handleEsc);
+    }
+
+    /**
+     * Parse blocking task IDs from dependencies text
+     * @param {string} depText - Dependencies text
+     * @returns {Array} Array of task IDs
+     */
+    parseBlockingTasks(depText) {
+        if (!depText) return [];
         
-        toggleBtn.appendChild(icon);
-        toggleBtn.appendChild(text);
+        // Extract task IDs in format like "1.1.1", "1.2.3", etc.
+        const matches = depText.match(/\d+\.\d+\.\d+/g);
+        return matches || [];
+    }
 
-        const content = this.component.createElement('div', {
-            className: 'details-content'
-        }, depText);
+    /**
+     * Create blocking task item for overlay
+     * @param {string} taskId - Task ID 
+     * @param {string} lang - Current language
+     * @returns {HTMLElement} Task item element
+     */
+    createBlockingTaskItem(taskId, lang) {
+        const t = translations[lang] || translations.es;
+        const taskItem = this.component.createElement('div', {
+            className: 'blocking-task-item'
+        });
 
-        detailsContainer.appendChild(toggleBtn);
-        detailsContainer.appendChild(content);
+        const taskIcon = this.component.createElement('span', {
+            className: 'task-icon'
+        }, '📋');
 
-        // Toggle functionality
-        this.component.addEventListener(toggleBtn, 'click', (e) => {
+        const taskInfo = this.component.createElement('div', {
+            className: 'task-info'
+        });
+
+        const taskIdElement = this.component.createElement('div', {
+            className: 'task-id-display'
+        }, taskId);
+
+        const taskStatus = this.component.createElement('div', {
+            className: 'task-status-display'
+        }, t.blocking);
+
+        const navigateBtn = this.component.createElement('button', {
+            className: 'navigate-task-btn'
+        }, t.goToTask);
+
+        taskInfo.appendChild(taskIdElement);
+        taskInfo.appendChild(taskStatus);
+
+        taskItem.appendChild(taskIcon);
+        taskItem.appendChild(taskInfo);
+        taskItem.appendChild(navigateBtn);
+
+        // Navigate to task functionality
+        this.component.addEventListener(navigateBtn, 'click', (e) => {
             e.stopPropagation();
-            detailsContainer.classList.toggle('collapsed');
-            
-            const isCollapsed = detailsContainer.classList.contains('collapsed');
-            icon.textContent = isCollapsed ? '▶️' : '🔽';
-            text.textContent = isCollapsed
-                ? (lang === 'es' ? 'Mostrar dependencias' : 'Show dependencies')
-                : (lang === 'es' ? 'Ocultar dependencias' : 'Hide dependencies');
+            this.navigateToTask(taskId);
+            document.querySelector('.dependencies-overlay')?.remove();
         });
 
-        return detailsContainer;
+        return taskItem;
+    }
+
+    /**
+     * Navigate to a specific task
+     * @param {string} taskId - Task ID to navigate to
+     */
+    navigateToTask(taskId) {
+        const targetElement = document.querySelector(`[data-task-id="${taskId}"]`);
+        if (targetElement) {
+            targetElement.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Highlight the target task
+            targetElement.classList.add('task-highlighted');
+            setTimeout(() => {
+                targetElement.classList.remove('task-highlighted');
+            }, 3000);
+        }
+    }
+
+    /**
+     * Smart positioning for card-relative overlay
+     * @param {HTMLElement} overlay - Overlay element
+     * @param {HTMLElement} taskCard - Task card container
+     */
+    positionOverlaySmartly(overlay, taskCard) {
+        const cardRect = taskCard.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        
+        // Calculate available space around the card
+        const spaceBelow = viewportHeight - (cardRect.bottom + 20);
+        const spaceAbove = cardRect.top - 20;
+        const spaceRight = viewportWidth - (cardRect.right + 20);
+        const spaceLeft = cardRect.left - 20;
+        
+        // Default position: below the card
+        let position = 'below';
+        
+        // If not enough space below, try above
+        if (spaceBelow < 200 && spaceAbove > spaceBelow) {
+            position = 'above';
+            overlay.classList.add('position-above');
+        }
+        // If not enough space above or below, try side positioning
+        else if (spaceBelow < 200 && spaceAbove < 200) {
+            if (spaceRight > 300) {
+                position = 'right';
+                overlay.classList.add('position-right');
+            } else if (spaceLeft > 300) {
+                position = 'left';
+                overlay.classList.add('position-left');
+            }
+        }
+        
+        // For mobile, always use below position with full width
+        if (window.innerWidth <= 768) {
+            overlay.classList.remove('position-above', 'position-right', 'position-left');
+        }
     }
 
     /**

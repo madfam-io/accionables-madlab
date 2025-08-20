@@ -12,32 +12,65 @@
    ========================================================================== */
 
 /**
- * Base task card with modern design and interaction states
+ * Unified task card with absolute consistency across all views
  */
 .task-card {
     background: var(--card);
-    padding: clamp(1rem, 2.5vw, 1.5rem);
-    border-radius: 12px;
+    padding: var(--space-xl);
+    border-radius: var(--radius-lg);
     border: 1px solid var(--border);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    min-height: 160px;
+    height: auto; /* Flexible height based on content */
+    min-height: 180px; /* Minimum height for consistency */
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 /**
- * Task content container for consistent layout across views
+ * Task content container - standardized layout sections
  */
 .task-content {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    flex: 1;
+    height: 100%;
+    gap: 0; /* Removed gap - each section manages its own spacing */
+}
+
+/**
+ * Standardized task sections with fixed heights and spacing
+ */
+.task-header {
+    min-height: 60px; /* Flexible header space */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.task-meta {
+    min-height: 45px; /* Flexible meta space */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.task-dependencies {
+    min-height: 30px; /* Consistent space for dependencies */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm);
+    background: rgba(var(--primary-rgb, 99, 102, 241), 0.03);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(var(--primary-rgb, 99, 102, 241), 0.1);
+    margin-top: auto;
 }
 
 /**
@@ -47,6 +80,101 @@
     transform: translateY(-4px) scale(1.01);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
     border-color: var(--primary);
+}
+
+/* ==========================================================================
+   Assignee Badge Component
+   ========================================================================== */
+
+/**
+ * Enhanced assignee badge with team colors and animations
+ */
+.assignee-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(36px, 4vw, 44px);
+    height: clamp(36px, 4vw, 44px);
+    border-radius: 50%;
+    font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--assignee-color, var(--primary)), rgba(99, 102, 241, 0.8));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 3px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.assignee-badge::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    transform: scale(0);
+    transition: transform 0.3s ease;
+}
+
+.assignee-badge:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.assignee-badge:hover::before {
+    transform: scale(1);
+}
+
+/* ==========================================================================
+   Duration Bar Component
+   ========================================================================== */
+
+/**
+ * Enhanced duration bar with visual progress indication
+ */
+.duration-bar {
+    width: clamp(60px, 8vw, 90px);
+    height: 10px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.duration-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 6px;
+    position: relative;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.duration-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
 
 .task-card:active {
@@ -73,64 +201,9 @@
    ========================================================================== */
 
 /**
- * Task cards in list view with horizontal layout
+ * Unified task card layout - identical in both grid and list views
+ * All cards maintain consistent dimensions and internal structure
  */
-.view-list .task-card {
-    min-height: 120px;
-    max-height: none;
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    gap: 2rem;
-    padding: 1.5rem 2rem;
-}
-
-.view-list .task-content {
-    flex-direction: row;
-    align-items: center;
-    gap: 2rem;
-    flex: 1;
-}
-
-.view-list .task-header {
-    flex: 1;
-    margin-bottom: 0;
-    min-width: 300px;
-}
-
-.view-list .task-meta {
-    flex: 0 0 auto;
-    grid-template-columns: auto auto;
-    gap: 1.5rem;
-    align-items: center;
-    margin-top: 0;
-}
-
-.view-list .task-meta-left {
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-}
-
-.view-list .task-meta-right {
-    align-items: center;
-}
-
-.view-list .week-status-badge {
-    min-width: 160px;
-    padding: 0.75rem 1rem;
-}
-
-.view-list .task-details {
-    flex: 0 0 auto;
-    margin-top: var(--space-sm);
-    margin-left: 0;
-    margin-bottom: 0;
-    align-self: stretch;
-    width: 100%;
-    border-top: 1px solid var(--border);
-    padding-top: var(--space-sm);
-}
 
 /* ==========================================================================
    Task Status Classes (Week-based highlighting)
@@ -528,5 +601,511 @@
     .week-status-badge {
         min-width: 130px;
         padding: 0.7rem 0.85rem;
+    }
+}
+
+/* ==========================================================================
+   Enhanced Task Dependencies Component
+   ========================================================================== */
+
+/**
+ * Task Dependencies Section - Always Present
+ */
+.task-dependencies {
+    min-height: 30px; /* Consistent space for dependencies */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm);
+    background: rgba(var(--primary-rgb, 99, 102, 241), 0.03);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(var(--primary-rgb, 99, 102, 241), 0.1);
+    margin-top: auto;
+}
+
+/**
+ * No dependencies state - subtle success indication
+ */
+.no-dependencies {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.no-deps-icon {
+    font-size: 0.9rem;
+    margin-right: var(--space-xs);
+}
+
+/**
+ * Has dependencies - clickable indicator
+ */
+.dependency-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.8rem;
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.dependency-indicator.clickable {
+    cursor: pointer;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    background: rgba(var(--primary-rgb, 99, 102, 241), 0.1);
+    border: 1px solid rgba(var(--primary-rgb, 99, 102, 241), 0.2);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dependency-indicator.clickable:hover {
+    background: rgba(var(--primary-rgb, 99, 102, 241), 0.2);
+    border-color: rgba(var(--primary-rgb, 99, 102, 241), 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(var(--primary-rgb, 99, 102, 241), 0.3);
+}
+
+
+/* ==========================================================================
+   Card-Relative Dependencies Overlay
+   ========================================================================== */
+
+/**
+ * Card-relative overlay container
+ */
+.dependencies-overlay {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    margin-top: var(--space-sm);
+    pointer-events: none;
+    animation: overlayFadeIn 0.2s ease-out;
+}
+
+/**
+ * Overlay content - contextual popover
+ */
+.dependencies-overlay-content {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 100%;
+    max-height: 300px;
+    overflow: hidden;
+    position: relative;
+    pointer-events: auto;
+    animation: overlaySlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/**
+ * Overlay positioning variants
+ */
+.dependencies-overlay.position-above {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: var(--space-sm);
+}
+
+.dependencies-overlay.position-right {
+    top: 0;
+    left: 100%;
+    right: auto;
+    width: 320px;
+    margin-top: 0;
+    margin-left: var(--space-sm);
+}
+
+.dependencies-overlay.position-left {
+    top: 0;
+    right: 100%;
+    left: auto;
+    width: 320px;
+    margin-top: 0;
+    margin-right: var(--space-sm);
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes overlaySlideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/**
+ * Overlay header
+ */
+.overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-xl);
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--card), rgba(var(--primary-rgb, 99, 102, 241), 0.03));
+}
+
+.overlay-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.overlay-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.overlay-close:hover {
+    background: rgba(var(--danger-rgb, 239, 68, 68), 0.1);
+    color: var(--danger);
+}
+
+/**
+ * Dependencies list container
+ */
+.dependencies-list {
+    padding: var(--space-lg);
+    max-height: 50vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/**
+ * Individual blocking task item
+ */
+.blocking-task-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: rgba(var(--primary-rgb, 99, 102, 241), 0.04);
+    border: 1px solid rgba(var(--primary-rgb, 99, 102, 241), 0.1);
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+}
+
+.blocking-task-item:hover {
+    background: rgba(var(--primary-rgb, 99, 102, 241), 0.08);
+    border-color: rgba(var(--primary-rgb, 99, 102, 241), 0.2);
+    transform: translateY(-1px);
+}
+
+.task-icon {
+    font-size: 1.2rem;
+    opacity: 0.7;
+}
+
+.task-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.task-id-display {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--primary);
+}
+
+.task-status-display {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.navigate-task-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: var(--space-xs) var(--space-md);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 32px;
+}
+
+.navigate-task-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(var(--primary-rgb, 99, 102, 241), 0.3);
+}
+
+/**
+ * Task highlighting animation for navigation
+ */
+.task-highlighted {
+    animation: taskHighlight 3s ease-out;
+}
+
+@keyframes taskHighlight {
+    0% { 
+        background: rgba(var(--primary-rgb, 99, 102, 241), 0.3);
+        transform: scale(1.02);
+    }
+    100% { 
+        background: var(--card);
+        transform: scale(1);
+    }
+}
+
+/* ==========================================================================
+   Unified Responsive Design - Content-First Approach
+   ========================================================================== */
+
+
+/* ==========================================================================
+   List View Horizontal Layout
+   ========================================================================== */
+
+/**
+ * List view cards - horizontal layout for desktop
+ */
+@media (min-width: 769px) {
+    .phase-content.view-list .task-card {
+        min-height: 120px; /* More compact for list view */
+    }
+    
+    /* Horizontal layout for list view */
+    .phase-content.view-list .task-content {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-lg);
+    }
+    
+    .phase-content.view-list .task-header {
+        flex: 2; /* Takes more space for name/ID */
+        min-height: auto;
+        margin-bottom: 0;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-md);
+    }
+    
+    .phase-content.view-list .task-main-info {
+        flex: 1;
+    }
+    
+    .phase-content.view-list .task-visual-indicators {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+    }
+    
+    .phase-content.view-list .task-meta {
+        flex: 3; /* Takes space for metadata */
+        min-height: auto;
+        margin-bottom: 0;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        gap: var(--space-lg);
+    }
+    
+    .phase-content.view-list .task-meta-left {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-lg);
+    }
+    
+    .phase-content.view-list .task-dependencies {
+        flex: 1; /* Fixed space for dependencies */
+        min-height: auto;
+        margin-top: 0;
+        align-self: stretch;
+    }
+    
+    .phase-content.view-list .assignee-badge {
+        width: 32px;
+        height: 32px;
+        font-size: 0.7rem;
+    }
+    
+    .phase-content.view-list .duration-bar {
+        width: 60px;
+        height: 6px;
+    }
+    
+    .phase-content.view-list .assignee-info,
+    .phase-content.view-list .task-duration {
+        font-size: 0.75rem;
+        padding: var(--space-xs) var(--space-sm);
+        white-space: nowrap;
+    }
+}
+
+/**
+ * Mobile optimizations
+ */
+@media (max-width: 768px) {
+    .task-card {
+        min-height: 140px; /* Compact on mobile */
+        padding: var(--space-lg);
+    }
+    
+    .task-header {
+        min-height: 40px;
+        margin-bottom: var(--space-xs);
+    }
+    
+    .task-meta {
+        min-height: 35px;
+        margin-bottom: var(--space-xs);
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+    }
+    
+    .task-meta-left {
+        flex-direction: column;
+        gap: var(--space-xs);
+        align-items: flex-start;
+    }
+    
+    .task-dependencies {
+        min-height: 25px;
+        padding: var(--space-xs);
+        font-size: 0.75rem;
+    }
+    
+    .no-dependencies,
+    .dependency-indicator {
+        font-size: 0.7rem;
+    }
+    
+    .dependency-indicator.clickable {
+        padding: 2px var(--space-xs);
+    }
+    
+    .assignee-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 0.65rem;
+    }
+    
+    .duration-bar {
+        width: 50px;
+        height: 6px;
+    }
+    
+    .assignee-info,
+    .task-duration {
+        font-size: 0.7rem;
+        padding: 2px var(--space-xs);
+    }
+    
+    /* Mobile overlay always below */
+    .dependencies-overlay {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 20px !important;
+        left: 20px !important;
+        right: 20px !important;
+        width: auto !important;
+        margin: 0 !important;
+        z-index: 1000;
+    }
+}
+
+/* ==========================================================================
+   Difficulty Display Component
+   ========================================================================== */
+
+/**
+ * Difficulty container with star icon and rectangles
+ */
+.difficulty-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/**
+ * Container for difficulty rectangle indicators
+ */
+.difficulty-stars {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+/**
+ * Individual difficulty rectangle (square indicator)
+ */
+.difficulty-star {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: rgba(var(--primary-rgb, 99, 102, 241), 0.2);
+    border: 1px solid rgba(var(--primary-rgb, 99, 102, 241), 0.3);
+    transition: all 0.2s ease;
+}
+
+/**
+ * Filled difficulty rectangle (active difficulty level)
+ */
+.difficulty-star.filled {
+    background: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 4px rgba(var(--primary-rgb, 99, 102, 241), 0.4);
+}
+
+/**
+ * Hover effects for difficulty indicators
+ */
+.difficulty-container:hover .difficulty-star {
+    transform: scale(1.1);
+}
+
+.difficulty-container:hover .difficulty-star.filled {
+    box-shadow: 0 0 6px rgba(var(--primary-rgb, 99, 102, 241), 0.6);
+}
+
+/* ==========================================================================
+   Mobile Difficulty Adjustments
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .difficulty-star {
+        width: 6px;
+        height: 6px;
+        border-radius: 1px;
+    }
+    
+    .difficulty-container {
+        font-size: 0.75rem;
+        gap: 4px;
     }
 }
