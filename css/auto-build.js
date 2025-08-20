@@ -33,7 +33,8 @@ class CSSAutoBuilder {
             'components/phases.css',
             'components/tasks.css',
             'components/team.css',
-            'components/tooltip.css'
+            'components/tooltip.css',
+            'components/modal.css'
         ];
     }
 
