@@ -115,7 +115,7 @@
  * Grid view layout for larger screens
  */
 .phase-content.view-grid {
-    display: grid !important;
+    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 1.5rem;
 }
@@ -133,7 +133,7 @@
  * Collapsed phase content (hidden)
  */
 .phase-content.collapsed {
-    display: none;
+    display: none !important;
 }
 
 /**

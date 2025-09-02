@@ -20,6 +20,9 @@ export const translations = {
         none: "Ninguna",
         showDetails: "Mostrar detalles",
         hideDetails: "Ocultar detalles",
+        showDependencies: "Mostrar dependencias",
+        hideDependencies: "Ocultar dependencias",
+        blockingTasks: "Tareas Bloqueantes",
         teamSummary: "Resumen del Equipo",
         showingAllTasks: "Mostrando todas las tareas",
         showing: "Mostrando",
@@ -40,6 +43,82 @@ export const translations = {
         },
         collapseAll: "Colapsar Todo",
         expandAll: "Expandir Todo",
+        
+        // Filter options
+        allPhases: "Todas las Fases",
+        allDuration: "Toda Duración",
+        allTeam: "Equipo Completo",
+        shortDuration: "Corta (≤2h)",
+        mediumDuration: "Media (2-5h)",
+        longDuration: "Larga (>5h)",
+        
+        // View controls
+        gridView: "Cuadrícula",
+        listView: "Lista",
+        gridViewTitle: "Vista de cuadrícula",
+        listViewTitle: "Vista de lista",
+        collapseTitle: "Colapsar todas las fases",
+        expandTitle: "Expandir todas las fases",
+        
+        // Theme controls
+        themeAuto: "Auto",
+        themeLight: "Claro",
+        themeDark: "Oscuro",
+        
+        // Export functionality
+        export: "Exportar",
+        exportTitle: "Exportar",
+        clear: "Limpiar",
+        clearTitle: "Limpiar filtros",
+        exportTasks: "Exportar Tareas",
+        selectExportOptions: "Selecciona las opciones de exportación",
+        closeModal: "Cerrar modal",
+        cancel: "Cancelar",
+        exportFormat: "Formato de Exportación",
+        exportScope: "Alcance de Exportación",
+        exportLanguage: "Idioma de Exportación",
+        fieldsToInclude: "Campos a Incluir",
+        filteredTasksOnly: "Solo tareas filtradas",
+        allTasksExport: "Todas las tareas",
+        plainText: "Texto Plano",
+        
+        // Task status
+        inProgress: "EN CURSO",
+        completed: "COMPLETADA",
+        upcoming: "PENDIENTE",
+        current: "ACTUAL",
+        past: "PASADA",
+        future: "FUTURA",
+        
+        // Dependencies
+        noDependencies: "Sin dependencias",
+        blocking: "Bloqueante",
+        goToTask: "Ir a tarea",
+        dependencyCount: "dependencia",
+        dependencyCountPlural: "dependencias",
+        blockingTasksTitle: "Tareas Bloqueantes",
+        
+        // Empty states and messages
+        noMatchingTasks: "No hay tareas que coincidan con los filtros actuales",
+        loadingTasks: "Cargando tareas...",
+        errorLoadingTasks: "Error al cargar las tareas",
+        
+        // Filter chips
+        searchFilter: "Búsqueda",
+        assigneeFilter: "Asignado",
+        difficultyFilter: "Dificultad",
+        phaseFilter: "Fase",
+        durationFilter: "Duración",
+        
+        // Duration labels for chips
+        shortLabel: "Corta",
+        mediumLabel: "Media",
+        longLabel: "Larga",
+        
+        // Accessibility
+        closeButtonLabel: "Cerrar",
+        removeFilterLabel: "Quitar filtro",
+        
         teamSummary: "Resumen del Equipo",
         tasks: "tareas",
         hours: "horas"
@@ -61,6 +140,9 @@ export const translations = {
         none: "None",
         showDetails: "Show details",
         hideDetails: "Hide details",
+        showDependencies: "Show dependencies",
+        hideDependencies: "Hide dependencies",
+        blockingTasks: "Blocking Tasks",
         teamSummary: "Team Summary",
         showingAllTasks: "Showing all tasks",
         showing: "Showing",
@@ -79,6 +161,84 @@ export const translations = {
             4: "Phase 4: Pilot & Iteration (Oct 6-20, 2025)",
             5: "Phase 5: Launch Ready (Oct 21-31, 2025)"
         },
+        collapseAll: "Collapse All",
+        expandAll: "Expand All",
+        
+        // Filter options
+        allPhases: "All Phases",
+        allDuration: "All Duration",
+        allTeam: "Entire Team",
+        shortDuration: "Short (≤2h)",
+        mediumDuration: "Medium (2-5h)",
+        longDuration: "Long (>5h)",
+        
+        // View controls
+        gridView: "Grid",
+        listView: "List",
+        gridViewTitle: "Grid view",
+        listViewTitle: "List view",
+        collapseTitle: "Collapse all phases",
+        expandTitle: "Expand all phases",
+        
+        // Theme controls
+        themeAuto: "Auto",
+        themeLight: "Light",
+        themeDark: "Dark",
+        
+        // Export functionality
+        export: "Export",
+        exportTitle: "Export",
+        clear: "Clear",
+        clearTitle: "Clear filters",
+        exportTasks: "Export Tasks",
+        selectExportOptions: "Select export options",
+        closeModal: "Close modal",
+        cancel: "Cancel",
+        exportFormat: "Export Format",
+        exportScope: "Export Scope",
+        exportLanguage: "Export Language",
+        fieldsToInclude: "Fields to Include",
+        filteredTasksOnly: "Filtered tasks only",
+        allTasksExport: "All tasks",
+        plainText: "Plain Text",
+        
+        // Task status
+        inProgress: "IN PROGRESS",
+        completed: "COMPLETED",
+        upcoming: "UPCOMING",
+        current: "CURRENT",
+        past: "PAST",
+        future: "FUTURE",
+        
+        // Dependencies
+        noDependencies: "No dependencies",
+        blocking: "Blocking",
+        goToTask: "Go to task",
+        dependencyCount: "dependency",
+        dependencyCountPlural: "dependencies",
+        blockingTasksTitle: "Blocking Tasks",
+        
+        // Empty states and messages
+        noMatchingTasks: "No tasks match the current filters",
+        loadingTasks: "Loading tasks...",
+        errorLoadingTasks: "Error loading tasks",
+        
+        // Filter chips
+        searchFilter: "Search",
+        assigneeFilter: "Assignee",
+        difficultyFilter: "Difficulty",
+        phaseFilter: "Phase",
+        durationFilter: "Duration",
+        
+        // Duration labels for chips
+        shortLabel: "Short",
+        mediumLabel: "Medium",
+        longLabel: "Long",
+        
+        // Accessibility
+        closeButtonLabel: "Close",
+        removeFilterLabel: "Remove filter",
+        
         teamSummary: "Team Summary",
         tasks: "tasks",
         hours: "hours"

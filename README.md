@@ -14,6 +14,40 @@ Transformar el aprendizaje de ciencia y tecnología en una experiencia memorable
 - **Enfoque**: Agua limpia, energía limpia y reciclaje
 - **Metodología**: Aprendizaje gamificado con experimentos prácticos
 
+## 📚 Documentación Completa
+
+### 🎯 Acceso Rápido a la Documentación
+- **[📖 Índice Completo](./docs/INDEX.md)** - Navegación completa de toda la documentación
+- **[🏗️ Arquitectura](./docs/architecture/README.md)** - Diseño del sistema y patrones
+- **[🧩 Componentes](./docs/components/README.md)** - Librería de componentes React
+- **[🔧 API Reference](./docs/api/README.md)** - Referencia completa de APIs
+- **[📖 Guías de Desarrollo](./docs/guides/README.md)** - Flujos de trabajo y mejores prácticas
+- **[🎓 Tutoriales](./docs/tutorials/README.md)** - Guías paso a paso
+- **[🚀 Despliegue](./docs/deployment/README.md)** - Guías de producción
+
+### 🚀 Inicio Rápido para Desarrolladores
+```bash
+# Clonar el repositorio
+git clone <repository-url>
+cd accionables-madlab
+
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
+npm run dev
+
+# Abrir http://localhost:5173
+```
+
+### 💻 Stack Tecnológico
+- **Frontend**: React 18 + TypeScript + Vite
+- **Estado**: Zustand con persistencia
+- **Estilos**: Tailwind CSS + CSS personalizado
+- **Iconos**: Lucide React
+- **Exportación**: PDF/CSV/JSON/TXT
+- **Despliegue**: Vercel (recomendado)
+
 ## 👥 Equipo
 
 ### Colaboración entre MADFAM y La Ciencia Del Juego

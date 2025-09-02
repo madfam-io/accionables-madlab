@@ -45,8 +45,6 @@ export class ExportManager extends Component {
                 orientation: viewport.orientation
             };
         } catch (error) {
-            console.warn('ExportManager: Error getting responsive info:', error);
-            
             // Return safe defaults
             return {
                 currentBreakpoint: 'md',
@@ -913,8 +911,6 @@ export class ExportManager extends Component {
     mount() {
         super.mount();
         this.bindEvents();
-        
-        console.log('📤 ExportManager mounted with mobile-native modal support');
     }
 
     /**

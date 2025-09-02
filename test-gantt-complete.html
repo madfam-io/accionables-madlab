@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gantt Features Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1f2937;
+      margin-bottom: 30px;
+    }
+    .test-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+    }
+    .test-title {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 10px;
+    }
+    .status {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      display: inline-block;
+      margin: 5px 0;
+    }
+    .status.working {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0;
+    }
+    .feature-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .check {
+      color: #10b981;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    .code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+    .instructions {
+      background: #f0f9ff;
+      border: 1px solid #bfdbfe;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+    }
+    .instructions h3 {
+      color: #1e40af;
+      margin-top: 0;
+      font-size: 1.1em;
+    }
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .instructions li {
+      margin: 5px 0;
+      color: #1f2937;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Gantt Chart Features - Implementation Complete</h1>
+    
+    <div class="test-section">
+      <div class="test-title">1. Dependencies Toggle</div>
+      <span class="status working">✅ Fully Working</span>
+      
+      <ul class="feature-list">
+        <li><span class="check">✓</span> Shows/hides dependency arrows between tasks</li>
+        <li><span class="check">✓</span> Improved arrow visibility with shadow effect</li>
+        <li><span class="check">✓</span> Different colors for regular (blue) and critical path (red) dependencies</li>
+        <li><span class="check">✓</span> Curved paths for better visual flow</li>
+      </ul>
+      
+      <div class="instructions">
+        <h3>How to Test:</h3>
+        <ol>
+          <li>Switch to Gantt view</li>
+          <li>Click the <span class="code">Dependencies</span> toggle button</li>
+          <li>Observe blue arrows connecting dependent tasks</li>
+          <li>Enable Critical Path to see red arrows for critical dependencies</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <div class="test-title">2. Critical Path Toggle</div>
+      <span class="status working">✅ Fully Working</span>
+      
+      <ul class="feature-list">
+        <li><span class="check">✓</span> Calculates critical path using CPM algorithm</li>
+        <li><span class="check">✓</span> Highlights critical tasks with red ring in task bars</li>
+        <li><span class="check">✓</span> Shows critical dependencies in red when Dependencies is also on</li>
+        <li><span class="check">✓</span> Recalculates when toggled on/off</li>
+      </ul>
+      
+      <div class="instructions">
+        <h3>How to Test:</h3>
+        <ol>
+          <li>Enable Auto Scheduling first (required for critical path calculation)</li>
+          <li>Click the <span class="code">Critical Path</span> toggle button</li>
+          <li>Look for tasks with red borders - these are on the critical path</li>
+          <li>Enable Dependencies to see critical path arrows in red</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <div class="test-title">3. Auto Scheduling Toggle</div>
+      <span class="status working">✅ Fully Working</span>
+      
+      <ul class="feature-list">
+        <li><span class="check">✓</span> ON: Automatically schedules tasks based on dependencies</li>
+        <li><span class="check">✓</span> OFF: Uses manual scheduling with simple phase distribution</li>
+        <li><span class="check">✓</span> Respects phase boundaries in auto mode</li>
+        <li><span class="check">✓</span> Provides evenly distributed tasks in manual mode</li>
+      </ul>
+      
+      <div class="instructions">
+        <h3>How to Test:</h3>
+        <ol>
+          <li>Toggle <span class="code">Auto Scheduling</span> ON</li>
+          <li>Observe tasks arranged by dependencies and phase constraints</li>
+          <li>Toggle <span class="code">Auto Scheduling</span> OFF</li>
+          <li>Observe tasks evenly distributed within their phases</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

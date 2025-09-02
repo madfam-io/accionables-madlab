@@ -19,7 +19,7 @@ export class ViewManager extends Component {
     /**
      * Component mount
      */
-    onMount() {
+    mount() {
         this.bindViewToggleEvents();
         this.applyView(this.currentView);
         this.updateButtonStates();
@@ -27,8 +27,6 @@ export class ViewManager extends Component {
         // Ensure default view is applied to body immediately
         document.body.classList.remove('view-grid', 'view-list');
         document.body.classList.add(`view-${this.currentView}`);
-        
-        console.log('📋 ViewManager initialized with view:', this.currentView);
     }
 
     /**
@@ -39,7 +37,7 @@ export class ViewManager extends Component {
         try {
             return localStorage.getItem('madlab-view-preference') || 'list';
         } catch (error) {
-            console.warn('Failed to read view preference from localStorage:', error);
+            // Silent fail in production
             return 'list';
         }
     }
@@ -52,7 +50,7 @@ export class ViewManager extends Component {
         try {
             localStorage.setItem('madlab-view-preference', view);
         } catch (error) {
-            console.warn('Failed to store view preference:', error);
+            // Silent fail in production
         }
     }
 
@@ -83,7 +81,7 @@ export class ViewManager extends Component {
     switchToView(view) {
         if (this.currentView === view) return;
 
-        console.log(`🔄 Switching view from ${this.currentView} to ${view}`);
+        // Switching view
         
         this.currentView = view;
         this.state.setState({ currentView: view });

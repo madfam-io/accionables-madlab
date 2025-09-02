@@ -46,3 +46,7 @@ coverage/
 
 # Service worker cache
 sw.js.map
+
+# Build files
+*.built.*
+*.backup.*

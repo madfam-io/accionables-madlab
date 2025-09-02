@@ -10,6 +10,7 @@
 import { AppState } from './state/AppState.js';
 import { ComponentManager } from './core/ComponentManager.js';
 import { EventManager } from './core/EventManager.js';
+import { performanceMonitor } from './utils/performance.js';
 
 /**
  * Main MADLAB Application Class

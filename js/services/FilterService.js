@@ -7,6 +7,8 @@
  *              assignee, difficulty, phase, and duration filters.
  */
 
+import { translations } from '../data/translations.js';
+
 /**
  * Service class for task filtering operations
  * Handles all filtering logic and filter combinations
@@ -206,12 +208,13 @@ export class FilterService {
      * @returns {Array<Object>} Filter chips data
      */
     generateFilterChips(filters, lang = 'es') {
+        const t = translations[lang] || translations.es;
         const chips = [];
         
         if (filters.search) {
             chips.push({
                 type: 'search',
-                label: lang === 'es' ? `Búsqueda: "${filters.search}"` : `Search: "${filters.search}"`,
+                label: `${t.searchFilter}: "${filters.search}"`,
                 value: filters.search
             });
         }
@@ -219,7 +222,7 @@ export class FilterService {
         if (filters.assignee) {
             chips.push({
                 type: 'assignee',
-                label: lang === 'es' ? `Asignado: ${filters.assignee}` : `Assignee: ${filters.assignee}`,
+                label: `${t.assigneeFilter}: ${filters.assignee}`,
                 value: filters.assignee
             });
         }
@@ -227,7 +230,7 @@ export class FilterService {
         if (filters.difficulty) {
             chips.push({
                 type: 'difficulty',
-                label: lang === 'es' ? `Dificultad: ${filters.difficulty}` : `Difficulty: ${filters.difficulty}`,
+                label: `${t.difficultyFilter}: ${filters.difficulty}`,
                 value: filters.difficulty
             });
         }
@@ -235,22 +238,21 @@ export class FilterService {
         if (filters.phase) {
             chips.push({
                 type: 'phase',
-                label: lang === 'es' ? `Fase: ${filters.phase}` : `Phase: ${filters.phase}`,
+                label: `${t.phaseFilter}: ${filters.phase}`,
                 value: filters.phase
             });
         }
         
         if (filters.duration) {
             const durationLabels = {
-                es: { short: 'Corta', medium: 'Media', long: 'Larga' },
-                en: { short: 'Short', medium: 'Medium', long: 'Long' }
+                short: t.shortLabel,
+                medium: t.mediumLabel,
+                long: t.longLabel
             };
             
             chips.push({
                 type: 'duration',
-                label: lang === 'es' ? 
-                    `Duración: ${durationLabels.es[filters.duration]}` : 
-                    `Duration: ${durationLabels.en[filters.duration]}`,
+                label: `${t.durationFilter}: ${durationLabels[filters.duration]}`,
                 value: filters.duration
             });
         }

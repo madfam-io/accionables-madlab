@@ -83,6 +83,14 @@ export class LanguageManager extends Component {
             }
         });
 
+        // Update title attributes
+        document.querySelectorAll(`[data-title-${currentLang}]`).forEach(element => {
+            const title = element.dataset[`title${currentLang.charAt(0).toUpperCase() + currentLang.slice(1)}`];
+            if (title) {
+                element.setAttribute('title', title);
+            }
+        });
+
         // Update specific elements by ID
         this.updateElementById('heroTitle', t.heroTitle);
         this.updateElementById('heroSubtitle', t.heroSubtitle);
@@ -133,17 +141,26 @@ export class LanguageManager extends Component {
             if (option) option.textContent = `${t.level} ${i}`;
         }
 
+        // Team "All" option
+        const teamAll = this.$('#teamFilter option[value="All"]');
+        if (teamAll) teamAll.textContent = t.allTeam;
+
         // Phase filter
         const phaseDefault = this.$('#phaseFilter option[value=""]');
-        if (phaseDefault) {
-            phaseDefault.textContent = this.state.getState('currentLang') === 'es' ? 'Todas las Fases' : 'All Phases';
-        }
+        if (phaseDefault) phaseDefault.textContent = t.allPhases;
 
         // Duration filter
         const durationDefault = this.$('#durationFilter option[value=""]');
-        if (durationDefault) {
-            durationDefault.textContent = this.state.getState('currentLang') === 'es' ? 'Toda Duración' : 'All Duration';
-        }
+        if (durationDefault) durationDefault.textContent = t.allDuration;
+        
+        // Duration specific options
+        const shortOption = this.$('#durationFilter option[value="short"]');
+        const mediumOption = this.$('#durationFilter option[value="medium"]');
+        const longOption = this.$('#durationFilter option[value="long"]');
+        
+        if (shortOption) shortOption.textContent = t.shortDuration;
+        if (mediumOption) mediumOption.textContent = t.mediumDuration;
+        if (longOption) longOption.textContent = t.longDuration;
 
         // Update phase options
         Object.entries(t.phases || {}).forEach(([phaseNum, phaseTitle]) => {

@@ -12,6 +12,7 @@ import { Component } from './Component.js';
 import { TaskRenderer } from './TaskRenderer.js';
 import { TaskService } from '../services/TaskService.js';
 import { FilterService } from '../services/FilterService.js';
+import { translations } from '../data/translations.js';
 
 /**
  * Task Manager Component
@@ -39,7 +40,6 @@ export class TaskManager extends Component {
         this.subscribeToState('currentLang', () => this.update());
         
         // Initialize tasks in state
-        console.log('🎯 TaskManager initialized with services');
         this.state.setState({ tasks: this.taskService.tasksData });
     }
 
@@ -47,7 +47,6 @@ export class TaskManager extends Component {
      * Component mount lifecycle
      */
     onMount() {
-        console.log('📋 TaskManager mounted, initializing display');
         this.updateTaskDisplay();
         this.bindFilterEvents();
     }
@@ -102,13 +101,9 @@ export class TaskManager extends Component {
         const { filters = {} } = state;
         const currentLang = state.currentLang || 'es';
         
-        console.log('🔍 Applying filters:', filters);
-        
         // Get all tasks and apply filters
         const allTasks = this.taskService.getAllTasks();
         const filteredTasks = this.filterService.applyFilters(allTasks, filters, currentLang);
-        
-        console.log(`📊 Filtered ${filteredTasks.length} of ${allTasks.length} tasks`);
         
         // Update display with filtered tasks
         this.updateTaskDisplay(filteredTasks);
@@ -171,7 +166,7 @@ export class TaskManager extends Component {
             this.createEmptyState(contentElement, lang);
         }
 
-        console.log(`📋 Updated phase ${phaseNum} with ${tasks.length} tasks`);
+        // Phase updated successfully
     }
 
     /**
@@ -180,17 +175,15 @@ export class TaskManager extends Component {
      * @param {string} lang - Current language
      */
     createEmptyState(container, lang) {
+        const t = translations[lang] || translations.es;
+        
         const emptyState = this.createElement('div', {
             className: 'empty-state'
         });
-        
-        const message = lang === 'es' 
-            ? 'No hay tareas que coincidan con los filtros actuales'
-            : 'No tasks match the current filters';
             
         emptyState.innerHTML = `
             <div class="empty-state-icon">📋</div>
-            <div class="empty-state-message">${message}</div>
+            <div class="empty-state-message">${t.noMatchingTasks}</div>
         `;
         
         container.appendChild(emptyState);
@@ -328,8 +321,6 @@ export class TaskManager extends Component {
      * @param {Object} task - Clicked task data
      */
     handleTaskClick(task) {
-        console.log('🎯 Task clicked:', task.id);
-        
         // Emit custom event for other components
         window.dispatchEvent(new CustomEvent('taskClick', {
             detail: { task }
