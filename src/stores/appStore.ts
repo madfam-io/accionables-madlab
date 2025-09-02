@@ -5,6 +5,7 @@ import { tasks as allTasks } from '../data/projectData';
 import { getSmartTaskProgress } from '../utils/progressHelpers';
 import { GroupingOption } from '../components/GroupingSelector';
 import { groupTasks } from '../utils/taskGrouping';
+import { getISOWeek } from '../utils/dateHelpers';
 
 export type Theme = 'auto' | 'light' | 'dark';
 export type Language = 'es' | 'en';
@@ -308,6 +309,7 @@ const manualScheduleProject = (tasks: Task[], projectStart: Date): GanttTask[] =
         ...task,
         startDate,
         endDate,
+        weekNumber: getISOWeek(startDate),
         progress: getSmartTaskProgress(task),
         criticalPath: false,
         predecessors: [...task.dependencies],
@@ -353,6 +355,7 @@ const scheduleProject = (tasks: Task[], projectStart: Date, showCriticalPath: bo
       ...task,
       startDate: new Date(projectStart),
       endDate: new Date(projectStart),
+      weekNumber: task.weekNumber, // Will be calculated after scheduling
       progress: getSmartTaskProgress(task),
       criticalPath: false,
       predecessors: [...task.dependencies],
@@ -457,6 +460,7 @@ const scheduleProject = (tasks: Task[], projectStart: Date, showCriticalPath: bo
       
       task.startDate = earliestStart;
       task.endDate = endDate;
+      task.weekNumber = getISOWeek(earliestStart);
       
       // Move current date forward for next task (step-wise)
       currentDate = new Date(endDate);

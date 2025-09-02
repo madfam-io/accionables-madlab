@@ -1,7 +1,7 @@
 import React from 'react';
-import { useAppStore, TimeScale, GroupBy } from '../../stores/appStore';
+import { useAppStore, TimeScale } from '../../stores/appStore';
 import { translations } from '../../data/translations';
-import { Calendar, ZoomIn, ZoomOut, BarChart3, Users, Layers, Eye, EyeOff } from 'lucide-react';
+import { Calendar, ZoomIn, ZoomOut, BarChart3, Eye, EyeOff, Users } from 'lucide-react';
 
 export const GanttHeader: React.FC = () => {
   const { 
@@ -16,9 +16,7 @@ export const GanttHeader: React.FC = () => {
     setGanttConfig({ timeScale });
   };
 
-  const handleGroupByChange = (groupBy: GroupBy) => {
-    setGanttConfig({ groupBy });
-  };
+  // Grouping is now controlled from UnifiedToolbar
 
   const handleZoomChange = (delta: number) => {
     const newZoom = Math.max(0.5, Math.min(3, ganttConfig.zoomLevel + delta));
@@ -78,20 +76,6 @@ export const GanttHeader: React.FC = () => {
           >
             <ZoomIn className="w-4 h-4" />
           </button>
-        </div>
-
-        {/* Group By Selector */}
-        <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          <select 
-            value={ganttConfig.groupBy}
-            onChange={(e) => handleGroupByChange(e.target.value as GroupBy)}
-            className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            <option value="phase">{t.byPhase}</option>
-            <option value="assignee">{t.byAssignee}</option>
-            <option value="none">{t.noGrouping}</option>
-          </select>
         </div>
 
         {/* Toggle Controls */}

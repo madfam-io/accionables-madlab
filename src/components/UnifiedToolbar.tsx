@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   Search, Filter, Layers, Download, X, ChevronDown, 
   Users, TrendingUp, Calendar, Grid, List, 
-  BarChart3, Settings, SlidersHorizontal 
+  BarChart3, Settings, SlidersHorizontal,
+  ChevronsDownUp, ChevronsUpDown
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { translations } from '../data/translations';
@@ -20,7 +21,10 @@ export const UnifiedToolbar: React.FC = () => {
     clearFilters,
     setGroupingOption,
     setViewMode,
-    filteredTasks
+    filteredTasks,
+    collapsedPhases,
+    collapseAll,
+    expandAll
   } = useAppStore();
   
   const t = translations[language];
@@ -284,6 +288,28 @@ export const UnifiedToolbar: React.FC = () => {
               <Download className="w-4 h-4" />
               <span className="hidden sm:inline">{language === 'es' ? 'Exportar' : 'Export'}</span>
             </button>
+
+            {/* Collapse/Expand All - Show when grouping by phase in any view */}
+            {groupingOption === 'phase' && (
+              <div className="flex gap-1 border-l border-gray-300 dark:border-gray-600 pl-2">
+                <button
+                  onClick={collapseAll}
+                  className="flex items-center gap-1 px-3 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-all"
+                  title={t.collapseAll}
+                >
+                  <ChevronsUpDown className="w-4 h-4" />
+                  <span className="hidden lg:inline text-sm">{t.collapseAll}</span>
+                </button>
+                <button
+                  onClick={expandAll}
+                  className="flex items-center gap-1 px-3 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-all"
+                  title={t.expandAll}
+                >
+                  <ChevronsDownUp className="w-4 h-4" />
+                  <span className="hidden lg:inline text-sm">{t.expandAll}</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Task Count */}

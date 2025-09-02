@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Header } from './components/Header';
-import { UnifiedToolbar } from './components/UnifiedToolbar';
+import { UnifiedToolbarV2 } from './components/UnifiedToolbarV2';
 import { StatsGrid } from './components/StatsGrid';
 import { PhaseSection } from './components/PhaseSection';
 import { TeamSummary } from './components/TeamSummary';
@@ -34,7 +34,7 @@ function App() {
         /* Gantt View - Full Height */
         <div className="h-[calc(100vh-theme(spacing.20))] flex flex-col">
           <div className="px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <UnifiedToolbar />
+            <UnifiedToolbarV2 />
           </div>
           <div className="flex-1">
             <GanttChart />
@@ -44,7 +44,7 @@ function App() {
         /* List/Grid View - Container Layout */
         <div className="container mx-auto px-4 py-6">
           <div className="mb-6">
-            <UnifiedToolbar />
+            <UnifiedToolbarV2 />
           </div>
           
           {/* Stats Grid */}
