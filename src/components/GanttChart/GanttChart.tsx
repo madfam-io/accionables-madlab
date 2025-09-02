@@ -8,10 +8,8 @@ export const GanttChart: React.FC = () => {
 
   // Auto-schedule tasks when component mounts or filtered tasks change
   useEffect(() => {
-    if (filteredTasks.length > 0 && ganttTasks.length === 0) {
-      scheduleGanttTasks();
-    }
-  }, [filteredTasks, ganttTasks.length, scheduleGanttTasks]);
+    scheduleGanttTasks();
+  }, [filteredTasks, scheduleGanttTasks]);
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-gray-900">

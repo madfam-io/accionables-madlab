@@ -2,10 +2,10 @@ import React from 'react';
 import { useAppStore } from '../stores/appStore';
 import { translations } from '../data/translations';
 import { UserSwitcher } from './UserSwitcher';
-import { Sun, Moon, Monitor, Globe, Grid, List, BarChart3 } from 'lucide-react';
+import { Sun, Moon, Monitor, Globe } from 'lucide-react';
 
 export const Header: React.FC = () => {
-  const { theme, language, viewMode, setTheme, setLanguage, setViewMode } = useAppStore();
+  const { theme, language, setTheme, setLanguage } = useAppStore();
   const t = translations[language];
 
   return (
@@ -31,43 +31,6 @@ export const Header: React.FC = () => {
             <UserSwitcher />
             
             <div className="flex items-center gap-3">
-            {/* View Mode Toggle */}
-            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded transition-colors ${
-                  viewMode === 'list'
-                    ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }`}
-                title={t.listViewTitle}
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded transition-colors ${
-                  viewMode === 'grid'
-                    ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }`}
-                title={t.gridViewTitle}
-              >
-                <Grid className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('gantt')}
-                className={`p-2 rounded transition-colors ${
-                  viewMode === 'gantt'
-                    ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }`}
-                title={t.ganttViewTitle}
-              >
-                <BarChart3 className="w-4 h-4" />
-              </button>
-            </div>
-
             {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}

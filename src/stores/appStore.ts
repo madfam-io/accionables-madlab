@@ -256,6 +256,7 @@ const calculateCriticalPath = (taskMap: Map<string, GanttTask>): Set<string> => 
 // Manual scheduling - uses step-wise distribution within phases
 const manualScheduleProject = (tasks: Task[], projectStart: Date): GanttTask[] => {
   const scheduled: GanttTask[] = [];
+  const taskMap = new Map<string, GanttTask>();
   
   // Define phase date constraints for default positioning
   const phaseConstraints: Record<number, { start: Date; end: Date }> = {
@@ -315,7 +316,18 @@ const manualScheduleProject = (tasks: Task[], projectStart: Date): GanttTask[] =
         color: getTaskColor(task)
       };
       
+      taskMap.set(task.id, ganttTask);
       scheduled.push(ganttTask);
+    });
+  });
+  
+  // Build successors relationships for proper dependency display
+  scheduled.forEach(task => {
+    task.dependencies.forEach(depId => {
+      const dependency = taskMap.get(depId);
+      if (dependency && !dependency.successors.includes(task.id)) {
+        dependency.successors.push(task.id);
+      }
     });
   });
   
@@ -455,13 +467,7 @@ const scheduleProject = (tasks: Task[], projectStart: Date, showCriticalPath: bo
         phaseLatestEnd = endDate;
       }
       
-      // Update successors
-      task.dependencies.forEach(depId => {
-        const dependency = taskMap.get(depId);
-        if (dependency) {
-          dependency.successors.push(task.id);
-        }
-      });
+      // Dependencies will be processed after all tasks are scheduled
       
       scheduled.push(task);
     });
@@ -469,7 +475,30 @@ const scheduleProject = (tasks: Task[], projectStart: Date, showCriticalPath: bo
   
   // Calculate critical path if enabled
   if (showCriticalPath) {
+    // Ensure all tasks in taskMap have their successors properly initialized
+    taskMap.forEach(task => {
+      if (!task.successors) {
+        task.successors = [];
+      }
+    });
+    
+    // Build successors relationships
+    taskMap.forEach(task => {
+      task.dependencies.forEach(depId => {
+        const dependency = taskMap.get(depId);
+        if (dependency && !dependency.successors.includes(task.id)) {
+          dependency.successors.push(task.id);
+        }
+      });
+    });
+    
     const criticalPathTasks = calculateCriticalPath(taskMap);
+    
+    console.log('Critical Path Calculation:', {
+      totalTasks: taskMap.size,
+      criticalTasks: criticalPathTasks.size,
+      criticalTaskIds: Array.from(criticalPathTasks)
+    });
     
     // Update critical path flag for each task
     scheduled.forEach(task => {
