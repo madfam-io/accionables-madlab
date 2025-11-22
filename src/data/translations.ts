@@ -1,4 +1,85 @@
-export const translations = {
+// Type definition for translations
+export type Language = 'es' | 'en';
+
+export interface Translations {
+  heroTitle: string;
+  heroSubtitle: string;
+  startDate: string;
+  searchPlaceholder: string;
+  allMembers: string;
+  allDifficulty: string;
+  allPhases: string;
+  allDuration: string;
+  allTeam: string;
+  shortDuration: string;
+  mediumDuration: string;
+  longDuration: string;
+  level: string;
+  tasks: string;
+  hours: string;
+  assignedTo: string;
+  duration: string;
+  difficulty: string;
+  dependencies: string;
+  none: string;
+  showDetails: string;
+  hideDetails: string;
+  showDependencies: string;
+  blockingTasks: string;
+  noDependencies: string;
+  teamSummary: string;
+  showingAllTasks: string;
+  showing: string;
+  of: string;
+  taskId: string;
+  taskName: string;
+  phase: string;
+  section: string;
+  collapseAll: string;
+  expandAll: string;
+  gridView: string;
+  listView: string;
+  gridViewTitle: string;
+  listViewTitle: string;
+  ganttViewTitle: string;
+  themeAuto: string;
+  themeLight: string;
+  themeDark: string;
+  export: string;
+  exporting: string;
+  exportTitle: string;
+  clear: string;
+  clearTitle: string;
+  exportTasks: string;
+  selectExportOptions: string;
+  closeModal: string;
+  cancel: string;
+  exportFormat: string;
+  exportScope: string;
+  exportLanguage: string;
+  fieldsToInclude: string;
+  filteredTasksOnly: string;
+  allTasksExport: string;
+  plainText: string;
+  projectTasks: string;
+  exportDate: string;
+  totalTasks: string;
+  days: string;
+  weeks: string;
+  months: string;
+  zoomIn: string;
+  zoomOut: string;
+  byPhase: string;
+  byAssignee: string;
+  noGrouping: string;
+  hideDependencies: string;
+  criticalPath: string;
+  autoScheduling: string;
+  progress: string;
+  timeline: string;
+}
+
+export const translations: Record<Language, Translations> = {
   es: {
     // Hero section
     heroTitle: "Lista de Tareas del Proyecto MADLAB",

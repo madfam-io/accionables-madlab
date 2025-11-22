@@ -1,13 +1,11 @@
 import React from 'react';
 import { Layers, Calendar, Users, TrendingUp } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
-import { translations } from '../data/translations';
 
 export type GroupingOption = 'phase' | 'week' | 'assignee' | 'difficulty' | 'none';
 
 export const GroupingSelector: React.FC = () => {
   const { language, groupingOption, setGroupingOption } = useAppStore();
-  const t = translations[language];
 
   const groupingOptions: { value: GroupingOption; label: string; icon: React.ReactNode }[] = [
     {

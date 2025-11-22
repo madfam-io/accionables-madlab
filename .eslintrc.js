@@ -5,8 +5,10 @@ module.exports = {
     node: true
   },
   extends: [
-    'eslint:recommended'
+    'eslint:recommended',
+    'plugin:jsx-a11y/recommended'
   ],
+  plugins: ['jsx-a11y'],
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: 'module'

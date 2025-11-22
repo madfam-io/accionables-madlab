@@ -14,7 +14,12 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "playwright:install": "playwright install --with-deps"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -32,6 +37,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -44,10 +50,12 @@
     "@vitest/ui": "^4.0.13",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.15.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
     "happy-dom": "^20.0.10",
     "jsdom": "^27.2.0",
+    "playwright": "^1.56.1",
     "postcss": "^8.4.49",
     "prettier": "^3.3.0",
     "tailwindcss": "^3.4.16",
