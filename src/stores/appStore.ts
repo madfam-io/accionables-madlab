@@ -22,6 +22,13 @@ interface Filters {
 export type TimeScale = 'days' | 'weeks' | 'months';
 export type GroupBy = 'phase' | 'assignee' | 'none';
 
+interface AccessibilityPreferences {
+  reduceMotion: boolean;
+  highContrast: boolean;
+  fontSize: 'normal' | 'large' | 'x-large';
+  announceChanges: boolean;
+}
+
 interface GanttConfig {
   timeScale: TimeScale;
   startDate: Date;
@@ -48,7 +55,10 @@ interface AppState {
   // Theme and language
   theme: Theme;
   language: Language;
-  
+
+  // Accessibility preferences
+  accessibilityPreferences: AccessibilityPreferences;
+
   // View settings
   viewMode: ViewMode;
   collapsedPhases: Set<number>;
@@ -75,6 +85,10 @@ interface AppState {
   // Actions
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
+  setAccessibilityPreference: <K extends keyof AccessibilityPreferences>(
+    key: K,
+    value: AccessibilityPreferences[K]
+  ) => void;
   setViewMode: (mode: ViewMode) => void;
   setGroupingOption: (option: GroupingOption) => void;
   togglePhase: (phase: number) => void;
@@ -519,6 +533,14 @@ export const useAppStore = create(
       // Initial state
       theme: 'auto',
       language: 'es',
+      accessibilityPreferences: {
+        reduceMotion: typeof window !== 'undefined'
+          ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          : false,
+        highContrast: false,
+        fontSize: 'normal',
+        announceChanges: true,
+      },
       viewMode: 'list',
       collapsedPhases: new Set(),
       groupingOption: 'phase' as GroupingOption,
@@ -568,7 +590,15 @@ export const useAppStore = create(
       },
       
       setLanguage: (language) => set({ language }),
-      
+
+      setAccessibilityPreference: (key, value) =>
+        set((state) => ({
+          accessibilityPreferences: {
+            ...state.accessibilityPreferences,
+            [key]: value,
+          },
+        })),
+
       setViewMode: (viewMode) => set({ viewMode }),
       
       setGroupingOption: (option) => set((state) => {

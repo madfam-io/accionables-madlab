@@ -2,6 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Skip Navigation Links - Accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #4f46e5;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  z-index: 100;
+  font-weight: 600;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid #818cf8;
+  outline-offset: 2px;
+}
+
+.dark .skip-link {
+  background: #6366f1;
+}
+
+.dark .skip-link:focus {
+  outline-color: #a5b4fc;
+}
+
+/* Screen Reader Only - Accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Accessibility Preferences - Reduced Motion */
+.reduce-motion,
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Accessibility Preferences - High Contrast */
+.high-contrast {
+  --tw-text-opacity: 1;
+  --tw-border-opacity: 1;
+}
+
+.high-contrast button,
+.high-contrast a,
+.high-contrast input,
+.high-contrast select {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.high-contrast .bg-gray-50 {
+  background-color: #fff !important;
+}
+
+.high-contrast .dark .bg-gray-900 {
+  background-color: #000 !important;
+}
+
+/* Accessibility Preferences - Font Size */
+.font-large {
+  font-size: 110%;
+}
+
+.font-large h1 { font-size: 2.5rem; }
+.font-large h2 { font-size: 2rem; }
+.font-large h3 { font-size: 1.75rem; }
+.font-large p, .font-large span { font-size: 1.1rem; }
+
+.font-x-large {
+  font-size: 125%;
+}
+
+.font-x-large h1 { font-size: 3rem; }
+.font-x-large h2 { font-size: 2.5rem; }
+.font-x-large h3 { font-size: 2rem; }
+.font-x-large p, .font-x-large span { font-size: 1.25rem; }
+
 /* Custom scrollbar */
 @layer utilities {
   .scrollbar-thin {

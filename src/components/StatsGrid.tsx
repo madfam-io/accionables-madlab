@@ -62,7 +62,13 @@ export const StatsGrid: React.FC = () => {
   }, [filteredTasks]);
   
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div
+      className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+      role="region"
+      aria-label={language === 'es' ? 'Estadísticas del proyecto' : 'Project statistics'}
+      aria-live="polite"
+      aria-atomic="false"
+    >
       <StatCard
         value={stats.totalTasks}
         label={language === 'es' ? 'Tareas Totales' : 'Total Tasks'}
