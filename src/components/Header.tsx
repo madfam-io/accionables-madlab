@@ -35,13 +35,14 @@ export const Header: React.FC = () => {
             <button
               onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
               className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              aria-label={`Switch language. Current: ${language.toUpperCase()}`}
             >
-              <Globe className="w-4 h-4" />
+              <Globe className="w-4 h-4" aria-hidden="true" />
               <span className="text-sm font-medium">{language.toUpperCase()}</span>
             </button>
 
             {/* Theme Selector */}
-            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1" role="group" aria-label="Theme selector">
               <button
                 onClick={() => setTheme('auto')}
                 className={`p-2 rounded transition-colors ${
@@ -50,8 +51,10 @@ export const Header: React.FC = () => {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                 }`}
                 title={t.themeAuto}
+                aria-label={t.themeAuto}
+                aria-pressed={theme === 'auto'}
               >
-                <Monitor className="w-4 h-4" />
+                <Monitor className="w-4 h-4" aria-hidden="true" />
               </button>
               <button
                 onClick={() => setTheme('light')}
@@ -61,8 +64,10 @@ export const Header: React.FC = () => {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                 }`}
                 title={t.themeLight}
+                aria-label={t.themeLight}
+                aria-pressed={theme === 'light'}
               >
-                <Sun className="w-4 h-4" />
+                <Sun className="w-4 h-4" aria-hidden="true" />
               </button>
               <button
                 onClick={() => setTheme('dark')}
@@ -72,8 +77,10 @@ export const Header: React.FC = () => {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                 }`}
                 title={t.themeDark}
+                aria-label={t.themeDark}
+                aria-pressed={theme === 'dark'}
               >
-                <Moon className="w-4 h-4" />
+                <Moon className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
             </div>

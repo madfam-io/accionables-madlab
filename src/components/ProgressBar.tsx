@@ -32,14 +32,21 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className={`bg-gray-200 dark:bg-gray-700 rounded-full ${sizeClasses[size]}`}>
-        <div 
+      <div
+        className={`bg-gray-200 dark:bg-gray-700 rounded-full ${sizeClasses[size]}`}
+        role="progressbar"
+        aria-valuenow={Math.round(percentage)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`Progress: ${Math.round(percentage)}%`}
+      >
+        <div
           className={`${getColor()} ${sizeClasses[size]} rounded-full transition-all duration-300 ease-out`}
           style={{ width: `${percentage}%` }}
         />
       </div>
       {showLabel && (
-        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1" aria-hidden="true">
           {Math.round(percentage)}%
         </div>
       )}

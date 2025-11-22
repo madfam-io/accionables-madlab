@@ -75,7 +75,7 @@ export function calculateTaskWeek(phase: number, taskIndex: number = 0, totalTas
  * Get week range dates for a given week number in 2025
  * For MADLAB project, we calculate based on project phases instead of ISO weeks
  */
-export function getWeekRange(weekNumber: number, year: number = 2025) {
+export function getWeekRange(weekNumber: number) {
   // For the MADLAB project, we map weeks directly to project timeline
   // Week 33 starts on Aug 11, 2025 (Monday, project start)
   const projectStartDate = new Date(2025, 7, 11); // Aug 11, 2025 (month is 0-indexed)
@@ -100,26 +100,26 @@ export function getWeekRange(weekNumber: number, year: number = 2025) {
 /**
  * Format week display with date range
  */
-export function formatWeekWithDates(weekNumber: number, year: number = 2025): string {
+export function formatWeekWithDates(weekNumber: number): string {
   if (!weekNumber) return '';
-  
-  const range = getWeekRange(weekNumber, year);
+
+  const range = getWeekRange(weekNumber);
   return `Week ${weekNumber} (${range.startFormatted} - ${range.endFormatted})`;
 }
 
 /**
  * Get the start date of a week
  */
-export function getWeekStart(weekNumber: number, year: number = 2025): Date {
-  const range = getWeekRange(weekNumber, year);
+export function getWeekStart(weekNumber: number): Date {
+  const range = getWeekRange(weekNumber);
   return range.start;
 }
 
 /**
  * Get the end date of a week
  */
-export function getWeekEnd(weekNumber: number, year: number = 2025): Date {
-  const range = getWeekRange(weekNumber, year);
+export function getWeekEnd(weekNumber: number): Date {
+  const range = getWeekRange(weekNumber);
   return range.end;
 }
 

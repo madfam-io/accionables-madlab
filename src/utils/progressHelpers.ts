@@ -3,7 +3,7 @@
  */
 
 import { Task, TaskStatus } from '../data/types';
-import { getTaskStatus, getWeekStart, getWeekEnd } from './dateHelpers';
+import { getTaskStatus } from './dateHelpers';
 
 /**
  * Get progress percentage based on manual status
@@ -42,7 +42,7 @@ export function getDateBasedProgress(startDate: Date, endDate: Date): number {
 /**
  * Smart progress calculation that combines temporal awareness with manual status
  */
-export function getSmartTaskProgress(task: Task, weekNumber?: number): number {
+export function getSmartTaskProgress(task: Task): number {
   // If manual status is set, always use it - this is the only source of progress
   if (task.manualStatus) {
     return getStatusBasedProgress(task.manualStatus);
