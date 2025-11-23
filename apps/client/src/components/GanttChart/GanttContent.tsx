@@ -10,7 +10,7 @@ interface GanttContentProps {
 }
 
 export const GanttContent: React.FC<GanttContentProps> = ({ ganttTasks }) => {
-  const { ganttConfig, collapsedPhases, groupingOption } = useAppStore();
+  const { collapsedPhases, groupingOption } = useAppStore();
 
   // Group tasks based on global grouping option from UnifiedToolbar
   const groupedTasks = useMemo(() => {

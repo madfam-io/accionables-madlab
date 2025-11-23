@@ -15,9 +15,7 @@ export const EnhancedTaskCard: React.FC<EnhancedTaskCardProps> = ({ task }) => {
 
   // Simplified version - no progress tracking for now
   const smartProgress = 0;
-  const isOverdue = false;
-  const isActuallyCompleted = false;
-  
+
   const getDifficultyColor = (difficulty: number) => {
     const colors = [
       'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',

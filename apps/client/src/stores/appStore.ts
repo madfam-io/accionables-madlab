@@ -1,10 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Task, TaskStatus } from '../data/types';
+import { Task } from '../data/types';
 import { GroupingOption } from '../components/GroupingSelector';
-import { groupTasks } from '../utils/taskGrouping';
-import { getISOWeek } from '../utils/dateHelpers';
-import { getSmartTaskProgress } from '../utils/progressHelpers';
 
 export type Theme = 'auto' | 'light' | 'dark';
 export type Language = 'es' | 'en';
@@ -253,6 +250,3 @@ export const useAppStore = create(
     }
   )
 );
-
-// Export Gantt scheduling utilities for use in Gantt components
-export { getISOWeek, getSmartTaskProgress };

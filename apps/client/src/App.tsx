@@ -214,7 +214,7 @@ function App() {
       )}
 
       {/* Loading Overlay */}
-      <LoadingOverlay />
+      <LoadingOverlay isLoading={isLoading} />
 
       {/* Screen Reader Announcer for Dynamic Updates */}
       <ScreenReaderAnnouncer />

@@ -1,17 +1,16 @@
 import React from 'react';
-import { useAppStore } from '../stores/appStore';
 
 interface LoadingOverlayProps {
   message?: string;
   progress?: number;
+  isLoading?: boolean;
 }
 
-export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ 
-  message = 'Loading...', 
-  progress 
+export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
+  message = 'Loading...',
+  progress,
+  isLoading = false
 }) => {
-  const { isLoading } = useAppStore();
-  
   if (!isLoading) {
     return null;
   }

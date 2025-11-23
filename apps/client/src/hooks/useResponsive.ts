@@ -142,7 +142,7 @@ export function useResponsive(): ResponsiveInfo {
     }
 
     // Set up matchMedia listeners for breakpoint changes
-    const mediaQueries = Object.entries(BREAKPOINTS).map(([name, width]) => {
+    const mediaQueries = Object.entries(BREAKPOINTS).map(([_name, width]) => {
       const mq = window.matchMedia(`(min-width: ${width}px)`);
       const handler = () => handleResize();
       mq.addEventListener('change', handler);

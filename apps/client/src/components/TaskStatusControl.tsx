@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../stores/appStore';
+import { useTasks, useUpdateTask } from '../hooks/useTasks';
 import { TaskStatus } from '../data/types';
 
 interface TaskStatusControlProps {
@@ -8,21 +9,21 @@ interface TaskStatusControlProps {
   compact?: boolean;
 }
 
-export const TaskStatusControl: React.FC<TaskStatusControlProps> = ({ 
-  taskId, 
+export const TaskStatusControl: React.FC<TaskStatusControlProps> = ({
+  taskId,
   currentProgress,
-  compact = false 
+  compact = false
 }) => {
-  const { 
-    updateTaskStatus, 
-    getTaskStatus, 
-    currentUser, 
-    tasks, 
-    language 
-  } = useAppStore();
-  
-  const task = tasks.find(t => t.id === taskId);
-  const currentStatus = getTaskStatus(taskId) || 'not_started';
+  const { currentUser, language } = useAppStore();
+
+  // Get tasks from React Query
+  const { data: tasks = [] } = useTasks();
+
+  // Get update mutation
+  const { mutate: updateTask } = useUpdateTask();
+
+  const task = tasks.find((t) => t.id === taskId);
+  const currentStatus = task?.manualStatus || 'not_started';
   
   if (!task) return null;
   
@@ -41,8 +42,22 @@ export const TaskStatusControl: React.FC<TaskStatusControlProps> = ({
   
   const handleStatusChange = (newStatus: TaskStatus) => {
     if (!canUpdate) return;
-    
-    updateTaskStatus(taskId, newStatus, `Updated by ${currentUser}`);
+
+    updateTask({
+      id: taskId,
+      updates: {
+        manualStatus: newStatus,
+        statusHistory: [
+          ...(task.statusHistory || []),
+          {
+            status: newStatus,
+            updatedAt: new Date(),
+            updatedBy: currentUser,
+            notes: `Updated by ${currentUser}`,
+          },
+        ],
+      },
+    });
   };
   
   if (compact) {
