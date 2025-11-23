@@ -39,6 +39,7 @@ MADLAB is committed to making our educational project dashboard accessible to al
 ## Component-Specific Accessibility
 
 ### Header Component
+{% raw %}
 ```tsx
 // Language Toggle
 <button
@@ -59,8 +60,10 @@ MADLAB is committed to making our educational project dashboard accessible to al
   </button>
 </div>
 ```
+{% endraw %}
 
 ### Progress Bar Component
+{% raw %}
 ```tsx
 <div
   role="progressbar"
@@ -72,6 +75,7 @@ MADLAB is committed to making our educational project dashboard accessible to al
   <div style={{ width: `${percentage}%` }} />
 </div>
 ```
+{% endraw %}
 
 ---
 
@@ -162,6 +166,7 @@ Tests include:
 ### Interactive Elements
 
 #### Buttons
+{% raw %}
 ```tsx
 // Good: Descriptive label
 <button aria-label="Delete task">
@@ -173,8 +178,10 @@ Tests include:
   <Trash2 />
 </button>
 ```
+{% endraw %}
 
 #### Links
+{% raw %}
 ```tsx
 // Good: Descriptive text
 <a href="/help">Learn more about MADLAB</a>
@@ -182,8 +189,10 @@ Tests include:
 // Bad: Non-descriptive
 <a href="/help">Click here</a>
 ```
+{% endraw %}
 
 #### Forms
+{% raw %}
 ```tsx
 // Good: Associated label
 <label htmlFor="search">Search tasks</label>
@@ -192,6 +201,7 @@ Tests include:
 // Bad: No label
 <input type="text" placeholder="Search" />
 ```
+{% endraw %}
 
 ---
 
