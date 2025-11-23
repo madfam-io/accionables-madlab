@@ -2,6 +2,8 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import { healthRoutes } from './routes/health.js';
+import { projectRoutes } from './routes/projects.js';
+import { taskRoutes } from './routes/tasks.js';
 import { closeDatabaseConnection } from './config/database.js';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -49,6 +51,8 @@ fastify.get('/', async (request, reply) => {
 
 // Register routes
 await fastify.register(healthRoutes, { prefix: '/api' });
+await fastify.register(projectRoutes, { prefix: '/api' });
+await fastify.register(taskRoutes, { prefix: '/api' });
 
 // Graceful shutdown
 const signals = ['SIGINT', 'SIGTERM'];

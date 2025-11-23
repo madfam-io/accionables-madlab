@@ -22,7 +22,10 @@ export const taskStatusEnum = pgEnum('task_status', [
 ]);
 
 export const taskDifficultyEnum = pgEnum('task_difficulty', [
-  '1', '2', '3', '4', '5'
+  'easy',
+  'medium',
+  'hard',
+  'expert'
 ]);
 
 // ============================================================================
@@ -38,11 +41,13 @@ export const users = pgTable('users', {
   januaId: varchar('janua_id', { length: 255 }).notNull().unique(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   name: varchar('name', { length: 255 }).notNull(),
-  avatar: text('avatar'),
+  displayName: varchar('display_name', { length: 255 }),
+  avatarUrl: text('avatar_url'),
 
   // Metadata
   role: varchar('role', { length: 50 }).default('member'),
   isActive: boolean('is_active').default(true).notNull(),
+  metadata: jsonb('metadata'),
 
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -65,10 +70,11 @@ export const projects = pgTable('projects', {
   // Status and dates
   status: projectStatusEnum('status').default('planning').notNull(),
   startDate: timestamp('start_date'),
+  targetEndDate: timestamp('target_end_date'),
   endDate: timestamp('end_date'),
 
-  // Ownership
-  createdBy: uuid('created_by').references(() => users.id).notNull(),
+  // Ownership (nullable to allow system-created projects)
+  createdBy: uuid('created_by').references(() => users.id),
 
   // Metadata (flexible JSON storage for future extensibility)
   metadata: jsonb('metadata'),
@@ -86,6 +92,9 @@ export const tasks = pgTable('tasks', {
 
   // Project relationship
   projectId: uuid('project_id').references(() => projects.id).notNull(),
+
+  // Legacy migration support
+  legacyId: varchar('legacy_id', { length: 50 }).unique(),
 
   // Task details
   title: varchar('title', { length: 255 }).notNull(),
@@ -124,6 +133,9 @@ export const tasks = pgTable('tasks', {
     priority?: 'low' | 'medium' | 'high' | 'critical';
     manualStatus?: string;
     notes?: string;
+    section?: string;
+    sectionEn?: string;
+    statusHistory?: Array<{ status: string; timestamp: string; note?: string }>;
     [key: string]: any;
   }>(),
 

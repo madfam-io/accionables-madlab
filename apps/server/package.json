@@ -12,6 +12,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "seed": "tsx src/scripts/seed.ts",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit"
   },
