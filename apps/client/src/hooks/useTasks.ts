@@ -101,7 +101,7 @@ export function useUpdateTask() {
     },
 
     // If mutation fails, use the context to roll back
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       if (context?.previousTasks) {
         queryClient.setQueryData(taskKeys.lists(), context.previousTasks);
       }
@@ -149,7 +149,7 @@ export function useBulkUpdateTasks() {
       return { previousTasks };
     },
 
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       if (context?.previousTasks) {
         queryClient.setQueryData(taskKeys.lists(), context.previousTasks);
       }
@@ -187,7 +187,7 @@ export function useDeleteTask() {
       return { previousTasks };
     },
 
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       if (context?.previousTasks) {
         queryClient.setQueryData(taskKeys.lists(), context.previousTasks);
       }

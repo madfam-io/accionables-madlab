@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useAppStore } from '../stores/appStore';
+import React, { useState, useMemo } from 'react';
+import { useAppStore, filterTasks } from '../stores/appStore';
+import { useTasks } from '../hooks/useTasks';
 import { translations } from '../data/translations';
 import { teamMembers } from '../config/constants';
 import { EnhancedExportModal } from './EnhancedExportModal';
@@ -8,16 +9,20 @@ import { useDebouncedCallback } from '../hooks/useDebounce';
 import { Search, X, Download, Maximize2, Minimize2 } from 'lucide-react';
 
 export const FilterBar: React.FC = () => {
-  const { 
-    language, 
-    filters, 
-    filteredTasks,
-    tasks,
-    setFilter, 
+  const {
+    language,
+    filters,
+    setFilter,
     clearFilters,
     collapseAll,
-    expandAll 
+    expandAll
   } = useAppStore();
+
+  // Get tasks from React Query
+  const { data: tasks = [] } = useTasks();
+
+  // Calculate filtered tasks locally
+  const filteredTasks = useMemo(() => filterTasks(tasks, filters), [tasks, filters]);
   const t = translations[language];
   const [showExportModal, setShowExportModal] = useState(false);
   

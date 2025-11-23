@@ -1,31 +1,36 @@
-import React, { useState } from 'react';
-import { 
-  Search, Filter, Layers, Download, X, ChevronDown, 
-  Users, TrendingUp, Calendar, Grid, List, 
-  BarChart3, Settings, SlidersHorizontal,
+import React, { useState, useMemo } from 'react';
+import {
+  Search, Layers, Download, X,
+  Users, TrendingUp, Calendar, Grid, List,
+  BarChart3, SlidersHorizontal,
   ChevronsDownUp, ChevronsUpDown
 } from 'lucide-react';
-import { useAppStore } from '../stores/appStore';
+import { useAppStore, filterTasks } from '../stores/appStore';
+import { useTasks } from '../hooks/useTasks';
 import { translations } from '../data/translations';
 import { GroupingOption } from './GroupingSelector';
 import { teamMembers } from '../config/constants';
 import { useEnhancedTasks } from '../hooks/useEnhancedTasks';
 
 export const UnifiedToolbar: React.FC = () => {
-  const { 
-    language, 
-    filters, 
+  const {
+    language,
+    filters,
     groupingOption,
     viewMode,
-    setFilter, 
+    setFilter,
     clearFilters,
     setGroupingOption,
     setViewMode,
-    filteredTasks,
-    collapsedPhases,
     collapseAll,
     expandAll
   } = useAppStore();
+
+  // Get tasks from React Query
+  const { data: tasks = [] } = useTasks();
+
+  // Calculate filtered tasks locally
+  const filteredTasks = useMemo(() => filterTasks(tasks, filters), [tasks, filters]);
   
   const t = translations[language];
   const [isExpanded, setIsExpanded] = useState(false);

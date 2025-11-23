@@ -1,6 +1,4 @@
 // Type definition for translations
-export type Language = 'es' | 'en';
-
 export interface Translations {
   heroTitle: string;
   heroSubtitle: string;
@@ -79,7 +77,10 @@ export interface Translations {
   timeline: string;
 }
 
-export const translations: Record<Language, Translations> = {
+// Define Language type for translations object
+type LanguageKey = 'es' | 'en';
+
+export const translations: Record<LanguageKey, Translations> = {
   es: {
     // Hero section
     heroTitle: "Lista de Tareas del Proyecto MADLAB",

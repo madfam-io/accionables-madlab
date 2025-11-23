@@ -1,12 +1,19 @@
-import { useEffect, useRef } from 'react';
-import { useAppStore } from '../stores/appStore';
+import { useEffect, useRef, useMemo } from 'react';
+import { useAppStore, filterTasks } from '../stores/appStore';
+import { useTasks } from '../hooks/useTasks';
 
 /**
  * ScreenReaderAnnouncer - Invisible component for announcing changes to screen readers
  * Uses ARIA live regions to announce filter changes, view changes, and other updates
  */
 export const ScreenReaderAnnouncer: React.FC = () => {
-  const { filteredTasks, viewMode, groupingOption, language, filters } = useAppStore();
+  const { viewMode, groupingOption, language, filters } = useAppStore();
+
+  // Get tasks from React Query
+  const { data: tasks = [] } = useTasks();
+
+  // Calculate filtered tasks locally
+  const filteredTasks = useMemo(() => filterTasks(tasks, filters), [tasks, filters]);
   const previousFiltersRef = useRef(filters);
   const previousViewModeRef = useRef(viewMode);
   const previousGroupingRef = useRef(groupingOption);

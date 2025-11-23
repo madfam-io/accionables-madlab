@@ -86,7 +86,7 @@ export function useUpdateProject() {
       return { previousProjects };
     },
 
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       if (context?.previousProjects) {
         queryClient.setQueryData(projectKeys.list(), context.previousProjects);
       }
@@ -124,7 +124,7 @@ export function useDeleteProject() {
       return { previousProjects };
     },
 
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       if (context?.previousProjects) {
         queryClient.setQueryData(projectKeys.list(), context.previousProjects);
       }

@@ -146,7 +146,7 @@ function extractNumber(str: string): number {
  * Helper to get enhanced tasks data without using hooks
  * This is a simplified version for grouping purposes
  */
-function getEnhancedTasksData(tasks: Task[], language: 'es' | 'en') {
+function getEnhancedTasksData(tasks: Task[], _language: 'es' | 'en') {
   // Group tasks by phase for scheduling
   const tasksByPhase = new Map<number, Task[]>();
   

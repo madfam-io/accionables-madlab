@@ -215,7 +215,6 @@ export const scheduleProject = (tasks: Task[], projectStart: Date, showCriticalP
     const phaseRange = PHASE_CONSTRAINTS[phase];
     if (!phaseRange || phaseTasks.length === 0) continue;
 
-    const phaseDurationDays = Math.ceil((phaseRange.end.getTime() - phaseRange.start.getTime()) / (1000 * 60 * 60 * 24));
     let currentDate = new Date(phaseRange.start);
 
     phaseTasks.forEach((task) => {
@@ -285,7 +284,7 @@ export const scheduleProject = (tasks: Task[], projectStart: Date, showCriticalP
 /**
  * Manual scheduling with step-wise distribution within phases
  */
-export const manualScheduleProject = (tasks: Task[], projectStart: Date): GanttTask[] => {
+export const manualScheduleProject = (tasks: Task[], _projectStart: Date): GanttTask[] => {
   const scheduled: GanttTask[] = [];
   const taskMap = new Map<string, GanttTask>();
 

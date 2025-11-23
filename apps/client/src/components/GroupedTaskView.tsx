@@ -22,7 +22,7 @@ export const GroupedTaskView: React.FC<GroupedTaskViewProps> = ({ groupedTasks }
     setCollapsedGroups(newCollapsed);
   };
 
-  const getGroupIcon = (groupName: string) => {
+  const getGroupIcon = (_groupName: string) => {
     if (groupingOption === 'phase') return <Layers className="w-4 h-4" />;
     if (groupingOption === 'week') return <Calendar className="w-4 h-4" />;
     if (groupingOption === 'assignee') return <Users className="w-4 h-4" />;

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, Keyboard } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
-import { translations } from '../data/translations';
 
 interface ShortcutGroup {
   title: string;
@@ -14,7 +13,6 @@ interface ShortcutGroup {
 export const KeyboardShortcutsHelp: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { language } = useAppStore();
-  const t = translations[language];
 
   // Listen for ? key to open help
   useEffect(() => {

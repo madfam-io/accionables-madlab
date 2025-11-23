@@ -112,7 +112,7 @@ describe('dateHelpers', () => {
 
   describe('getWeekRange', () => {
     it('should return correct range for week 33 (project start)', () => {
-      const range = getWeekRange(33, 2025);
+      const range = getWeekRange(33);
 
       expect(range.start.getFullYear()).toBe(2025);
       expect(range.start.getMonth()).toBe(7); // August
@@ -120,7 +120,7 @@ describe('dateHelpers', () => {
     });
 
     it('should calculate 7-day range', () => {
-      const range = getWeekRange(33, 2025);
+      const range = getWeekRange(33);
       const daysDiff = Math.round(
         (range.end.getTime() - range.start.getTime()) / (1000 * 60 * 60 * 24)
       );
@@ -129,7 +129,7 @@ describe('dateHelpers', () => {
     });
 
     it('should have formatted dates', () => {
-      const range = getWeekRange(33, 2025);
+      const range = getWeekRange(33);
 
       expect(range.startFormatted).toBeDefined();
       expect(range.endFormatted).toBeDefined();
@@ -140,7 +140,7 @@ describe('dateHelpers', () => {
 
   describe('formatWeekWithDates', () => {
     it('should format week with date range', () => {
-      const formatted = formatWeekWithDates(33, 2025);
+      const formatted = formatWeekWithDates(33);
 
       expect(formatted).toContain('Week 33');
       expect(formatted).toContain('Aug');
@@ -154,7 +154,7 @@ describe('dateHelpers', () => {
 
   describe('getWeekStart and getWeekEnd', () => {
     it('should return start date for week', () => {
-      const start = getWeekStart(33, 2025);
+      const start = getWeekStart(33);
 
       expect(start.getFullYear()).toBe(2025);
       expect(start.getMonth()).toBe(7);
@@ -162,8 +162,8 @@ describe('dateHelpers', () => {
     });
 
     it('should return end date for week', () => {
-      const end = getWeekEnd(33, 2025);
-      const start = getWeekStart(33, 2025);
+      const end = getWeekEnd(33);
+      const start = getWeekStart(33);
 
       const daysDiff = Math.round(
         (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)

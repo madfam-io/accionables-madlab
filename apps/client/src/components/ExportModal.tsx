@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useAppStore } from '../stores/appStore';
+import React, { useState, useMemo } from 'react';
+import { useAppStore, filterTasks } from '../stores/appStore';
+import { useTasks } from '../hooks/useTasks';
 import { translations } from '../data/translations';
 import { exportTasks, ExportOptions } from '../utils/exportUtils';
 import { X, Download, FileText, Database, File, Printer } from 'lucide-react';
@@ -10,7 +11,13 @@ interface ExportModalProps {
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
-  const { language, filteredTasks, tasks } = useAppStore();
+  const { language, filters } = useAppStore();
+
+  // Get tasks from React Query
+  const { data: tasks = [] } = useTasks();
+
+  // Calculate filtered tasks locally
+  const filteredTasks = useMemo(() => filterTasks(tasks, filters), [tasks, filters]);
   const t = translations[language];
 
   const [options, setOptions] = useState<ExportOptions>({

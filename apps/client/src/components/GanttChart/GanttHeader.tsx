@@ -4,11 +4,10 @@ import { translations } from '../../data/translations';
 import { Calendar, ZoomIn, ZoomOut, BarChart3, Eye, EyeOff, Users } from 'lucide-react';
 
 export const GanttHeader: React.FC = () => {
-  const { 
-    language, 
-    ganttConfig, 
-    setGanttConfig,
-    scheduleGanttTasks 
+  const {
+    language,
+    ganttConfig,
+    setGanttConfig
   } = useAppStore();
   const t = translations[language];
 
@@ -29,15 +28,13 @@ export const GanttHeader: React.FC = () => {
 
   const toggleCriticalPath = () => {
     setGanttConfig({ showCriticalPath: !ganttConfig.showCriticalPath });
-    // Recalculate to update critical path highlighting
-    scheduleGanttTasks();
+    // The GanttChart component will react to ganttConfig changes automatically
   };
 
   const toggleAutoScheduling = () => {
     const newAutoScheduling = !ganttConfig.autoScheduling;
     setGanttConfig({ autoScheduling: newAutoScheduling });
-    // Re-schedule tasks with new mode (auto or manual)
-    scheduleGanttTasks();
+    // The GanttChart component will react to ganttConfig changes automatically
   };
 
   return (
