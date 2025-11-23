@@ -29,49 +29,49 @@ Complete documentation index for the MADLAB educational project. This index prov
 
 ### 📖 Developer Guides
 - **[Guides Overview](./guides/README.md)** - Developer workflow guides
-- **[Getting Started](./guides/getting-started.md)** - Setup and installation
-- **[Implementation Roadmap](./guides/implementation-roadmap.md)** - Step-by-step implementation
-- **[Feature Parity Complete](./guides/feature-parity-complete.md)** - Dynamic feature restoration milestone
-- **[Vite Development](./guides/vite-development.md)** - Vite-specific development setup
-- **[Development Workflow](./guides/development-workflow.md)** - Daily development practices
-- **[Contributing Guidelines](./guides/contributing.md)** - How to contribute *(coming soon)*
-- **[Performance Optimization](./guides/performance.md)** - Performance best practices *(coming soon)*
+- **[Frontend Integration Guide](./guides/FRONTEND_INTEGRATION_GUIDE.md)** - Complete frontend integration
+- **[Accessibility Guide](./guides/ACCESSIBILITY.md)** - Accessibility standards and best practices
+
+### 💻 Development Documentation
+- **[Development Overview](./development/README.md)** - Implementation guides
+- **[Business Logic Implementation](./development/BUSINESS_LOGIC_IMPLEMENTATION.md)** - Core business logic
+- **[Real Progress Implementation](./development/REAL_PROGRESS_IMPLEMENTATION.md)** - Progress tracking system
+- **[Testing Guide](./development/TESTING.md)** - Testing strategies and best practices
 
 ### 🎓 Step-by-Step Tutorials
 - **[Tutorials Overview](./tutorials/README.md)** - Hands-on learning guides
 - **[Adding New Tasks](./tutorials/adding-tasks.md)** - Task management tutorial
-- **[Creating Components](./tutorials/creating-components.md)** - Component development *(coming soon)*
-- **[Implementing Features](./tutorials/implementing-features.md)** - Feature development *(coming soon)*
-- **[Customizing Themes](./tutorials/customizing-themes.md)** - Theme customization *(coming soon)*
+- **[Advanced Tutorials](./tutorials/ADVANCED_TUTORIALS.md)** - Advanced development techniques
+
+### 🏗️ Infrastructure Documentation
+- **[Infrastructure Overview](./infrastructure/README.md)** - Infrastructure and deployment
+- **[Infrastructure Guide](./infrastructure/README_INFRA.md)** - Complete infrastructure setup
 
 ### 🚀 Deployment Documentation
 - **[Deployment Overview](./deployment/README.md)** - Production deployment guides
-- **[Vercel Deployment](./deployment/vercel.md)** - Deploy to Vercel platform *(coming soon)*
-- **[Environment Configuration](./deployment/environment.md)** - Environment setup *(coming soon)*
-- **[Production Optimization](./deployment/production.md)** - Production optimization *(coming soon)*
-- **[Monitoring & Analytics](./deployment/monitoring.md)** - Production monitoring *(coming soon)*
+- **[Deployment Automation](./deployment/AUTOMATION.md)** - CI/CD and automation
 
 ## 🎯 Quick Navigation
 
 ### 👨‍💻 For Developers
 **New to the project?**
-1. Start with [Getting Started](./guides/getting-started.md)
-2. Review [System Overview](./architecture/system-overview.md)  
-3. Study [React Architecture](./architecture/react-architecture.md)
+1. Review [System Overview](./architecture/system-overview.md)
+2. Study [React Architecture](./architecture/react-architecture.md)
+3. Read [Frontend Integration Guide](./guides/FRONTEND_INTEGRATION_GUIDE.md)
 4. Try [Adding New Tasks](./tutorials/adding-tasks.md) tutorial
 
 **Building features?**
-1. Check [Component Overview](./components/README.md)
-2. Review [API Reference](./api/README.md)
-3. Follow [Development Guides](./guides/README.md)
-4. Use [Tutorials](./tutorials/README.md) for specific tasks
+1. Check [Development Overview](./development/README.md)
+2. Review [Component Overview](./components/README.md)
+3. Study [Business Logic Implementation](./development/BUSINESS_LOGIC_IMPLEMENTATION.md)
+4. Follow [API Reference](./api/README.md)
 
 ### 🚀 For Deployment
 **Ready to deploy?**
-1. Review [Deployment Overview](./deployment/README.md)
-2. Follow [Production Optimization](./deployment/production.md)
-3. Set up [Monitoring](./deployment/monitoring.md)
-4. Configure [Environment](./deployment/environment.md)
+1. Review [Infrastructure Overview](./infrastructure/README_INFRA.md)
+2. Check [Deployment Overview](./deployment/README.md)
+3. Set up [Deployment Automation](./deployment/AUTOMATION.md)
+4. Monitor your deployment
 
 ### 📚 For Learning
 **Want to understand the system?**
