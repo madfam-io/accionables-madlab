@@ -11,7 +11,9 @@ Welcome to the MADLAB project documentation. This comprehensive guide covers all
 - [Architecture Overview](./architecture/README.md) - System design and structure
 - [Component Reference](./components/README.md) - UI component documentation
 - [API Documentation](./api/README.md) - Data structures and interfaces
-- [Development Guide](./guides/development-workflow.md) - Contributing and development workflow
+- [Developer Guides](./guides/README.md) - Integration guides and best practices
+- [Development](./development/README.md) - Implementation documentation
+- [Infrastructure](./infrastructure/README.md) - Infrastructure and deployment setup
 
 ## 📚 Documentation Sections
 
@@ -34,22 +36,24 @@ Welcome to the MADLAB project documentation. This comprehensive guide covers all
 - [Translation System](./api/translations.md)
 
 ### 📖 [Developer Guides](./guides/README.md)
-- [Getting Started](./guides/getting-started.md)
-- [Development Workflow](./guides/development-workflow.md)
-- [Contributing Guidelines](./guides/contributing.md)
-- [Performance Optimization](./guides/performance.md)
+- [Frontend Integration Guide](./guides/FRONTEND_INTEGRATION_GUIDE.md)
+- [Accessibility Guide](./guides/ACCESSIBILITY.md)
+
+### 💻 [Development](./development/README.md)
+- [Business Logic Implementation](./development/BUSINESS_LOGIC_IMPLEMENTATION.md)
+- [Real Progress Implementation](./development/REAL_PROGRESS_IMPLEMENTATION.md)
+- [Testing Guide](./development/TESTING.md)
 
 ### 🎓 [Tutorials](./tutorials/README.md)
 - [Adding New Tasks](./tutorials/adding-tasks.md)
-- [Creating Components](./tutorials/creating-components.md)
-- [Implementing Features](./tutorials/implementing-features.md)
-- [Customizing Themes](./tutorials/customizing-themes.md)
+- [Advanced Tutorials](./tutorials/ADVANCED_TUTORIALS.md)
+
+### 🏗️ [Infrastructure](./infrastructure/README.md)
+- [Infrastructure Overview](./infrastructure/README_INFRA.md)
 
 ### 🚀 [Deployment](./deployment/README.md)
-- [Vercel Deployment](./deployment/vercel.md)
-- [Environment Configuration](./deployment/environment.md)
-- [Production Optimization](./deployment/production.md)
-- [Monitoring & Analytics](./deployment/monitoring.md)
+- [Deployment Guide](./deployment/README.md)
+- [Automation](./deployment/AUTOMATION.md)
 
 ## 🏆 Project Highlights
 
