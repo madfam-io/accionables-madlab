@@ -60,10 +60,18 @@ export const GanttTaskList = forwardRef<HTMLDivElement, GanttTaskListProps>(({ g
         <div key={group.id}>
           {/* Group Header */}
           {groups.length > 1 && (
-            <div 
+            <div
+              role="button"
+              tabIndex={0}
               className="flex items-center gap-2 px-3 bg-gray-100 dark:bg-gray-700 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors border-b border-gray-200 dark:border-gray-700"
               style={{ height: `${GROUP_HEADER_HEIGHT}px` }}
               onClick={() => toggleGroup(group)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleGroup(group);
+                }
+              }}
             >
               {(group.collapsed || collapsedGroups.has(group.id)) ? (
                 <ChevronRight className="w-4 h-4" />

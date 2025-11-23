@@ -53,7 +53,7 @@ function getPointerType(): PointerType {
 }
 
 function getConnectionType(): string | undefined {
-  // @ts-ignore - Navigator.connection is not in TypeScript types
+  // @ts-expect-error - Navigator.connection is not in TypeScript types
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   return connection?.effectiveType;
 }
@@ -134,10 +134,10 @@ export function useResponsive(): ResponsiveInfo {
     window.addEventListener('orientationchange', handleResize);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
-    // @ts-ignore
+
+    // @ts-expect-error - navigator.connection is not in TypeScript types
     if (navigator.connection) {
-      // @ts-ignore
+      // @ts-expect-error - navigator.connection is not in TypeScript types
       navigator.connection.addEventListener('change', handleConnectionChange);
     }
 
@@ -155,10 +155,10 @@ export function useResponsive(): ResponsiveInfo {
       window.removeEventListener('orientationchange', handleResize);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      
-      // @ts-ignore
+
+      // @ts-expect-error - navigator.connection is not in TypeScript types
       if (navigator.connection) {
-        // @ts-ignore
+        // @ts-expect-error - navigator.connection is not in TypeScript types
         navigator.connection.removeEventListener('change', handleConnectionChange);
       }
       

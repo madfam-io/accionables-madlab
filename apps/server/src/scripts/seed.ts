@@ -43,11 +43,11 @@ interface LegacyTeamMember {
 
 // Hardcoded legacy data (copied from client for seed purposes)
 const legacyTeamMembers: LegacyTeamMember[] = [
-  { name: "Aldo", role: "CEO MADFAM", roleEn: "CEO MADFAM", avatar: "👨‍💼" },
-  { name: "Nuri", role: "Oficial de Estrategia MADFAM", roleEn: "Strategy Officer MADFAM", avatar: "👩‍💼" },
-  { name: "Luis", role: "Rep. La Ciencia del Juego", roleEn: "La Ciencia del Juego Rep.", avatar: "👨‍🔬" },
-  { name: "Silvia", role: "Gurú de Marketing", roleEn: "Marketing Guru", avatar: "👩‍🎨" },
-  { name: "Caro", role: "Diseñadora y Maestra", roleEn: "Designer and Teacher", avatar: "👩‍🎓" }
+  { name: 'Aldo', role: 'CEO MADFAM', roleEn: 'CEO MADFAM', avatar: '👨‍💼' },
+  { name: 'Nuri', role: 'Oficial de Estrategia MADFAM', roleEn: 'Strategy Officer MADFAM', avatar: '👩‍💼' },
+  { name: 'Luis', role: 'Rep. La Ciencia del Juego', roleEn: 'La Ciencia del Juego Rep.', avatar: '👨‍🔬' },
+  { name: 'Silvia', role: 'Gurú de Marketing', roleEn: 'Marketing Guru', avatar: '👩‍🎨' },
+  { name: 'Caro', role: 'Diseñadora y Maestra', roleEn: 'Designer and Teacher', avatar: '👩‍🎓' },
 ];
 
 // Import all legacy tasks (we'll load these from the actual client files at runtime)
@@ -111,8 +111,8 @@ async function seed() {
           metadata: {
             role: member.role,
             roleEn: member.roleEn,
-            isTeamMember: true
-          }
+            isTeamMember: true,
+          },
         }).returning();
 
         userId = newUser.id;
@@ -155,8 +155,8 @@ async function seed() {
           targetAudience: '20-100 students per 3-hour presentation',
           sdgFocus: ['Clean Water', 'Clean Energy', 'Recycling'],
           teamSize: 5,
-          phases: 5
-        }
+          phases: 5,
+        },
       }).returning();
 
       projectId = newProject.id;
@@ -182,7 +182,7 @@ async function seed() {
         await db.insert(projectMembers).values({
           projectId,
           userId,
-          role: name === 'Aldo' ? 'owner' : 'member'
+          role: name === 'Aldo' ? 'owner' : 'member',
         });
         addedMembers++;
       }
@@ -246,7 +246,7 @@ async function seed() {
         difficulty: mapDifficulty(legacyTask.difficulty),
         phase: legacyTask.phase,
         dependencies: legacyTask.dependencies,
-        metadata
+        metadata,
       });
 
       insertedCount++;
@@ -265,7 +265,7 @@ async function seed() {
     console.log('🎉 Seed completed successfully!\n');
     console.log('Summary:');
     console.log(`  - Team Members: ${userMap.size - 1}`);
-    console.log(`  - Projects: 1`);
+    console.log('  - Projects: 1');
     console.log(`  - Tasks: ${insertedCount}`);
     console.log(`  - Total Duration: ${legacyTasks.reduce((sum, t) => sum + t.hours, 0)} hours\n`);
 

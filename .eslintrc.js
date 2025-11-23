@@ -24,7 +24,7 @@ module.exports = {
     'indent': ['error', 4],
     'quotes': ['error', 'single'],
     'semi': ['error', 'always'],
-    'comma-trailing': ['error', 'never'],
+    'comma-dangle': ['error', 'never'],
     
     // Best practices
     'eqeqeq': 'error',

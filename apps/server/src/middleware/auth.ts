@@ -19,7 +19,7 @@ export interface JWTPayload {
  */
 export async function verifyJWT(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const isDevelopment = process.env.NODE_ENV === 'development';
 

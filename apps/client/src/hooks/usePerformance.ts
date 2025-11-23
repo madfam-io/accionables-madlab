@@ -73,14 +73,14 @@ export function usePerformance(
   // Measure memory usage (if available)
   const measureMemory = useCallback(() => {
     if (!enableMonitoring) return;
-    
-    // @ts-ignore - performance.memory is not in TypeScript types
+
+    // @ts-expect-error - performance.memory is not in TypeScript types
     if (performance.memory) {
-      // @ts-ignore
+      // @ts-expect-error - performance.memory properties are not in TypeScript types
       const memoryUsage = Math.round(performance.memory.usedJSHeapSize / 1048576);
       setMetrics(prev => ({ ...prev, memoryUsage }));
-      
-      // @ts-ignore
+
+      // @ts-expect-error - performance.memory properties are not in TypeScript types
       const heapLimit = performance.memory.jsHeapSizeLimit / 1048576;
       const usage = (memoryUsage / heapLimit) * 100;
       
