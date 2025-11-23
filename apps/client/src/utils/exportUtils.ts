@@ -1,5 +1,5 @@
 import { Task } from '../data/types';
-import { teamMembers } from '../data/projectData.ts.bak';
+import { teamMembers } from '../config/constants';
 import { translations, Language } from '../data/translations';
 
 export interface ExportOptions {

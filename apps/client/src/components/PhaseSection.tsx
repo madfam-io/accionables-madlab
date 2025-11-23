@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../stores/appStore';
-import { getPhaseTitle } from '../data/projectData.ts.bak';
+import { getPhaseTitle } from '../config/constants';
 import { EnhancedTaskCard } from './EnhancedTaskCard';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Task } from '../data/types';

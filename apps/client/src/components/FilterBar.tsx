@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { translations } from '../data/translations';
-import { teamMembers } from '../data/projectData.ts.bak';
+import { teamMembers } from '../config/constants';
 import { EnhancedExportModal } from './EnhancedExportModal';
 import { FilterChips } from './FilterChips';
 import { useDebouncedCallback } from '../hooks/useDebounce';

@@ -3,8 +3,6 @@
  */
 
 import { Task } from '../data/types';
-import { useEnhancedTasks } from '../hooks/useEnhancedTasks';
-import { tasks as allTasks } from '../data/tasks';
 import { GroupingOption } from '../components/GroupingSelector';
 import { calculateOptimalTaskWeek, getPhaseWeekRange } from './taskScheduler';
 

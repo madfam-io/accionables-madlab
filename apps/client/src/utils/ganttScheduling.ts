@@ -4,7 +4,7 @@
  */
 
 import { Task } from '../data/types';
-import { GanttTask } from '../stores/appStore.refactored';
+import { GanttTask } from '../stores/appStore';
 import { getISOWeek } from './dateHelpers';
 import { getSmartTaskProgress } from './progressHelpers';
 

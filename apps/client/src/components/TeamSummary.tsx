@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { translations } from '../data/translations';
-import { teamMembers } from '../data/projectData.ts.bak';
+import { teamMembers } from '../config/constants';
 import { User, Clock, CheckSquare, Users } from 'lucide-react';
 import { Task } from '../data/types';
 
