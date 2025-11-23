@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Task } from '../data/projectData';
+import { Task } from '../data/types';
 import { useAppStore } from '../stores/appStore';
 import { translations } from '../data/translations';
 import { ProgressBar } from './ProgressBar';

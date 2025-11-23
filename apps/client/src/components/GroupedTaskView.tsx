@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { EnhancedTaskCard } from './EnhancedTaskCard';
 import { ChevronDown, ChevronUp, Layers, Calendar, Users, TrendingUp } from 'lucide-react';
+import { Task } from '../data/types';
 
-export const GroupedTaskView: React.FC = () => {
-  const { viewMode, groupedTasks, groupingOption, language } = useAppStore();
+interface GroupedTaskViewProps {
+  groupedTasks: Map<string, Task[]>;
+}
+
+export const GroupedTaskView: React.FC<GroupedTaskViewProps> = ({ groupedTasks }) => {
+  const { viewMode, groupingOption, language } = useAppStore();
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
-  
+
   const toggleGroup = (groupName: string) => {
     const newCollapsed = new Set(collapsedGroups);
     if (newCollapsed.has(groupName)) {
@@ -16,7 +21,7 @@ export const GroupedTaskView: React.FC = () => {
     }
     setCollapsedGroups(newCollapsed);
   };
-  
+
   const getGroupIcon = (groupName: string) => {
     if (groupingOption === 'phase') return <Layers className="w-4 h-4" />;
     if (groupingOption === 'week') return <Calendar className="w-4 h-4" />;
@@ -24,30 +29,30 @@ export const GroupedTaskView: React.FC = () => {
     if (groupingOption === 'difficulty') return <TrendingUp className="w-4 h-4" />;
     return null;
   };
-  
-  const getGroupStats = (tasks: any[]) => {
+
+  const getGroupStats = (tasks: Task[]) => {
     const totalHours = tasks.reduce((sum, task) => sum + task.hours, 0);
     const avgDifficulty = tasks.reduce((sum, task) => sum + task.difficulty, 0) / tasks.length;
-    
+
     return {
       taskCount: tasks.length,
       totalHours,
       avgDifficulty: avgDifficulty.toFixed(1)
     };
   };
-  
+
   // If no grouping, render tasks directly
   if (groupingOption === 'none') {
     const allTasks = groupedTasks.get('all') || [];
     return (
       <div className={`animate-fadeIn ${
-        viewMode === 'grid' 
-          ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' 
+        viewMode === 'grid'
+          ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
           : 'space-y-3'
       }`}>
         {allTasks.map((task, index) => (
-          <div 
-            key={task.id} 
+          <div
+            key={task.id}
             style={{ animationDelay: `${index * 50}ms` }}
             className="animate-fadeIn"
           >
@@ -57,14 +62,14 @@ export const GroupedTaskView: React.FC = () => {
       </div>
     );
   }
-  
+
   // Render grouped tasks
   return (
     <div className="space-y-6">
       {Array.from(groupedTasks.entries()).map(([groupName, tasks]) => {
         const isCollapsed = collapsedGroups.has(groupName);
         const stats = getGroupStats(tasks);
-        
+
         return (
           <div key={groupName} className="mb-6">
             <button
@@ -95,13 +100,13 @@ export const GroupedTaskView: React.FC = () => {
 
             {!isCollapsed && (
               <div className={`mt-4 animate-fadeIn ${
-                viewMode === 'grid' 
-                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' 
+                viewMode === 'grid'
+                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
                   : 'space-y-3'
               }`}>
                 {tasks.map((task, index) => (
-                  <div 
-                    key={task.id} 
+                  <div
+                    key={task.id}
                     style={{ animationDelay: `${index * 50}ms` }}
                     className="animate-fadeIn"
                   >

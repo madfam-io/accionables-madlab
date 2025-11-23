@@ -1,4 +1,5 @@
-import { Task, teamMembers, tasks as allTasks, getProjectStats } from '../data/projectData';
+import { Task } from '../data/types';
+import { teamMembers } from '../data/projectData.ts.bak';
 import { translations, Language } from '../data/translations';
 
 export interface ExportOptions {
@@ -41,7 +42,10 @@ export const exportTasks = (
   };
 
   const t = translations[opts.language];
-  const stats = getProjectStats();
+  const stats = {
+    totalTasks: tasks.length,
+    totalHours: tasks.reduce((sum, t) => sum + t.hours, 0),
+  };
   
   switch (opts.format) {
     case 'csv':
@@ -160,7 +164,7 @@ const downloadTXT = (tasks: Task[], options: ExportOptions, t: any, stats: any):
   lines.push(t.teamSummary);
   lines.push('-'.repeat(30));
   teamMembers.forEach(member => {
-    const memberTasks = allTasks.filter(task => task.assignee === member.name);
+    const memberTasks = tasks.filter(task => task.assignee === member.name);
     const memberHours = memberTasks.reduce((sum, task) => sum + task.hours, 0);
     lines.push(`${member.name}: ${memberTasks.length} ${t.tasks}, ${memberHours} ${t.hours}`);
   });
@@ -243,7 +247,7 @@ const generatePDFHTML = (tasks: Task[], options: ExportOptions, t: any, stats: a
   <div class="team-summary">
     <h2>${t.teamSummary}</h2>
     ${teamMembers.map(member => {
-      const memberTasks = allTasks.filter(task => task.assignee === member.name);
+      const memberTasks = tasks.filter(task => task.assignee === member.name);
       const memberHours = memberTasks.reduce((sum, task) => sum + task.hours, 0);
       return `
       <div class="team-member">

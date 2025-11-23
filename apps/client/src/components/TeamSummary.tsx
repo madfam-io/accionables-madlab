@@ -1,10 +1,15 @@
 import React, { useMemo } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { translations } from '../data/translations';
-import { teamMembers, tasks } from '../data/projectData';
+import { teamMembers } from '../data/projectData.ts.bak';
 import { User, Clock, CheckSquare, Users } from 'lucide-react';
+import { Task } from '../data/types';
 
-export const TeamSummary: React.FC = () => {
+interface TeamSummaryProps {
+  tasks: Task[];
+}
+
+export const TeamSummary: React.FC<TeamSummaryProps> = ({ tasks }) => {
   const { language } = useAppStore();
   const t = translations[language];
 
@@ -18,7 +23,7 @@ export const TeamSummary: React.FC = () => {
         hours: memberTasks.reduce((sum, task) => sum + task.hours, 0)
       };
     });
-    
+
     // Add "All" team stats
     const allTasks = tasks.filter(task => task.assignee === 'All');
     const wholeTeamStats = {
@@ -28,9 +33,9 @@ export const TeamSummary: React.FC = () => {
       tasks: allTasks.length,
       hours: allTasks.reduce((sum, task) => sum + task.hours, 0)
     };
-    
+
     return [...individualStats, wholeTeamStats];
-  }, []);
+  }, [tasks]);
 
   const getColorForMember = (name: string) => {
     const colors = {
@@ -49,7 +54,7 @@ export const TeamSummary: React.FC = () => {
       <h2 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-6">
         {t.teamSummary}
       </h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {teamMemberStats.map(member => (
           <div
@@ -69,7 +74,7 @@ export const TeamSummary: React.FC = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
@@ -78,7 +83,7 @@ export const TeamSummary: React.FC = () => {
                 </div>
                 <span className="text-xs opacity-80">{t.tasks}</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />

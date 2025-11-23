@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Header } from './components/Header';
 import { UnifiedToolbarV2 } from './components/UnifiedToolbarV2';
 import { StatsGrid } from './components/StatsGrid';
@@ -9,7 +9,9 @@ import { LoadingOverlay } from './components/LoadingOverlay';
 import { GroupedTaskView } from './components/GroupedTaskView';
 import { ScreenReaderAnnouncer } from './components/ScreenReaderAnnouncer';
 import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
-import { useAppStore } from './stores/appStore';
+import { useAppStore, filterTasks } from './stores/appStore';
+import { useTasks } from './hooks/useTasks';
+import { groupTasks } from './utils/taskGrouping';
 import './App.css';
 
 function App() {
@@ -17,10 +19,27 @@ function App() {
     theme,
     viewMode,
     groupingOption,
+    filters,
+    language,
     accessibilityPreferences,
     setViewMode,
     setAccessibilityPreference,
   } = useAppStore();
+
+  // Fetch tasks from API
+  const { data: tasks = [], isLoading, error } = useTasks();
+
+  // Apply client-side filtering
+  const filteredTasks = useMemo(
+    () => filterTasks(tasks, filters),
+    [tasks, filters]
+  );
+
+  // Apply grouping
+  const groupedTasks = useMemo(
+    () => groupTasks(filteredTasks, groupingOption, language),
+    [filteredTasks, groupingOption, language]
+  );
 
   useEffect(() => {
     // Apply theme on mount and when it changes
@@ -126,43 +145,73 @@ function App() {
       </a>
 
       <Header />
-      
-      {viewMode === 'gantt' ? (
-        /* Gantt View - Full Height */
-        <main id="main-content" className="h-[calc(100vh-theme(spacing.20))] flex flex-col">
-          <div id="toolbar" className="px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <UnifiedToolbarV2 />
-          </div>
-          <div className="flex-1">
-            <GanttChart />
-          </div>
-        </main>
-      ) : (
-        /* List/Grid View - Container Layout */
-        <main id="main-content" className="container mx-auto px-4 py-6">
-          <div id="toolbar" className="mb-6">
-            <UnifiedToolbarV2 />
-          </div>
-          
-          {/* Stats Grid */}
-          <StatsGrid />
-          
-          {/* Task Display - Either grouped or by phase */}
-          {groupingOption === 'phase' ? (
-            <div className="space-y-6">
-              {[1, 2, 3, 4, 5].map(phase => (
-                <PhaseSection key={phase} phase={phase} />
-              ))}
-            </div>
-          ) : (
-            <GroupedTaskView />
-          )}
 
-          {/* Team Summary */}
-          <TeamSummary />
-        </main>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">
+              {language === 'es' ? 'Cargando proyectos...' : 'Loading projects...'}
+            </p>
+          </div>
+        </div>
       )}
 
+      {/* Error State */}
+      {error && (
+        <div className="container mx-auto px-4 py-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <p className="text-red-800 dark:text-red-200 font-semibold">
+              {language === 'es' ? 'Error al cargar los datos' : 'Error loading data'}
+            </p>
+            <p className="text-red-600 dark:text-red-300 text-sm mt-1">
+              {error instanceof Error ? error.message : 'Unknown error'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content - Only show when data is loaded */}
+      {!isLoading && !error && (
+        <>
+          {viewMode === 'gantt' ? (
+            /* Gantt View - Full Height */
+            <main id="main-content" className="h-[calc(100vh-theme(spacing.20))] flex flex-col">
+              <div id="toolbar" className="px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <UnifiedToolbarV2 />
+              </div>
+              <div className="flex-1">
+                <GanttChart tasks={filteredTasks} />
+              </div>
+            </main>
+          ) : (
+            /* List/Grid View - Container Layout */
+            <main id="main-content" className="container mx-auto px-4 py-6">
+              <div id="toolbar" className="mb-6">
+                <UnifiedToolbarV2 />
+              </div>
+
+              {/* Stats Grid */}
+              <StatsGrid tasks={filteredTasks} />
+
+              {/* Task Display - Either grouped or by phase */}
+              {groupingOption === 'phase' ? (
+                <div className="space-y-6">
+                  {[1, 2, 3, 4, 5].map(phase => (
+                    <PhaseSection key={phase} phase={phase} tasks={filteredTasks} />
+                  ))}
+                </div>
+              ) : (
+                <GroupedTaskView groupedTasks={groupedTasks} />
+              )}
+
+              {/* Team Summary */}
+              <TeamSummary tasks={filteredTasks} />
+            </main>
+          )}
+        </>
+      )}
 
       {/* Loading Overlay */}
       <LoadingOverlay />

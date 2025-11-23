@@ -1,12 +1,16 @@
 import React, { useMemo } from 'react';
-import { useAppStore } from '../../stores/appStore';
+import { useAppStore, GanttTask } from '../../stores/appStore';
 import { GanttTaskList } from './GanttTaskList';
 import { GanttTimeline } from './GanttTimeline';
 import { GanttSyncedScroll } from './GanttSyncedScroll';
 import { formatWeekWithDates } from '../../utils/dateHelpers';
 
-export const GanttContent: React.FC = () => {
-  const { ganttTasks, ganttConfig, collapsedPhases, groupingOption } = useAppStore();
+interface GanttContentProps {
+  ganttTasks: GanttTask[];
+}
+
+export const GanttContent: React.FC<GanttContentProps> = ({ ganttTasks }) => {
+  const { ganttConfig, collapsedPhases, groupingOption } = useAppStore();
 
   // Group tasks based on global grouping option from UnifiedToolbar
   const groupedTasks = useMemo(() => {

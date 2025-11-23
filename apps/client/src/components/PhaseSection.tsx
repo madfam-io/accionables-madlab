@@ -1,18 +1,20 @@
 import React from 'react';
 import { useAppStore } from '../stores/appStore';
-import { getPhaseTitle } from '../data/projectData';
+import { getPhaseTitle } from '../data/projectData.ts.bak';
 import { EnhancedTaskCard } from './EnhancedTaskCard';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Task } from '../data/types';
 
 interface PhaseSectionProps {
   phase: number;
+  tasks: Task[];
 }
 
-export const PhaseSection: React.FC<PhaseSectionProps> = ({ phase }) => {
-  const { language, viewMode, collapsedPhases, filteredTasks, togglePhase } = useAppStore();
-  
+export const PhaseSection: React.FC<PhaseSectionProps> = ({ phase, tasks }) => {
+  const { language, viewMode, collapsedPhases, togglePhase } = useAppStore();
+
   const isCollapsed = collapsedPhases.has(phase);
-  const phaseTasks = filteredTasks.filter(task => task.phase === phase);
+  const phaseTasks = tasks.filter(task => task.phase === phase);
   const phaseTitle = getPhaseTitle(phase, language);
 
   if (phaseTasks.length === 0) return null;
@@ -40,13 +42,13 @@ export const PhaseSection: React.FC<PhaseSectionProps> = ({ phase }) => {
 
       {!isCollapsed && (
         <div className={`mt-4 animate-fadeIn ${
-          viewMode === 'grid' 
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' 
+          viewMode === 'grid'
+            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
             : 'space-y-3'
         }`}>
           {phaseTasks.map((task, index) => (
-            <div 
-              key={task.id} 
+            <div
+              key={task.id}
               style={{ animationDelay: `${index * 50}ms` }}
               className="animate-fadeIn"
             >

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { TrendingUp, Calendar, Clock, Users } from 'lucide-react';
+import { Task } from '../data/types';
 
 interface StatCardProps {
   value: number | string;
@@ -29,38 +30,42 @@ const StatCard: React.FC<StatCardProps> = ({ value, label, icon, color }) => {
   );
 };
 
-export const StatsGrid: React.FC = () => {
-  const { filteredTasks, language } = useAppStore();
-  
+interface StatsGridProps {
+  tasks: Task[];
+}
+
+export const StatsGrid: React.FC<StatsGridProps> = ({ tasks }) => {
+  const { language } = useAppStore();
+
   const stats = useMemo(() => {
-    const totalHours = filteredTasks.reduce((sum, task) => sum + task.hours, 0);
-    
+    const totalHours = tasks.reduce((sum, task) => sum + task.hours, 0);
+
     // Exclude collective assignments like "All" from team member count
     // Only count individual team members, not collective/shared assignments
-    const individualAssignees = filteredTasks
+    const individualAssignees = tasks
       .map(task => task.assignee)
       .filter(assignee => {
         // Exclude collective assignments (All, Team, Everyone, etc.)
         const collectiveTerms = ['All', 'Team', 'Everyone', 'Collective'];
-        return !collectiveTerms.some(term => 
+        return !collectiveTerms.some(term =>
           assignee.toLowerCase().includes(term.toLowerCase())
         );
       });
     const teamMembers = new Set(individualAssignees).size;
-    
+
     // Calculate project days (Aug 11 - Oct 31, 2025)
     const startDate = new Date('2025-08-11');
     const endDate = new Date('2025-10-31');
     const projectDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     return {
-      totalTasks: filteredTasks.length,
+      totalTasks: tasks.length,
       projectDays,
       totalHours,
       teamMembers
     };
-  }, [filteredTasks]);
-  
+  }, [tasks]);
+
   return (
     <div
       className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
