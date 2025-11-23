@@ -160,7 +160,7 @@ function scheduleSectionTasks(
     });
     
     // Find best week considering workload balance
-    let bestWeek = findBestWeek(
+    const bestWeek = findBestWeek(
       earliestWeek,
       weekRange.end,
       task.hours,

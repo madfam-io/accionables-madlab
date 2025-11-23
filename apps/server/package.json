@@ -14,7 +14,8 @@
     "db:studio": "drizzle-kit studio",
     "seed": "tsx src/scripts/seed.ts",
     "lint": "eslint src --ext .ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "echo \"No tests configured for server yet\" && exit 0"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",

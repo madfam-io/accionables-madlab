@@ -10,7 +10,7 @@ export const projectStatusEnum = pgEnum('project_status', [
   'active',
   'on-hold',
   'completed',
-  'archived'
+  'archived',
 ]);
 
 export const taskStatusEnum = pgEnum('task_status', [
@@ -18,14 +18,14 @@ export const taskStatusEnum = pgEnum('task_status', [
   'in-progress',
   'completed',
   'blocked',
-  'cancelled'
+  'cancelled',
 ]);
 
 export const taskDifficultyEnum = pgEnum('task_difficulty', [
   'easy',
   'medium',
   'hard',
-  'expert'
+  'expert',
 ]);
 
 // ============================================================================

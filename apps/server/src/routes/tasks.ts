@@ -330,7 +330,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
           if (update.endDate) updateData.endDate = new Date(update.endDate);
 
           return db.update(tasks).set(updateData).where(eq(tasks.id, update.id)).returning();
-        })
+        }),
       );
 
       return reply.send({

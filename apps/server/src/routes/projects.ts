@@ -48,11 +48,11 @@ export async function projectRoutes(fastify: FastifyInstance) {
                   acc[status] = count;
                   return acc;
                 },
-                {} as Record<string, number>
+                {} as Record<string, number>,
               ),
             },
           };
-        })
+        }),
       );
 
       return reply.send({
