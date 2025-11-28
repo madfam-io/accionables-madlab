@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Calendar,
   Users,
@@ -10,12 +10,31 @@ import {
   CheckCircle2,
   Moon,
   Sun,
+  Play,
+  Zap,
 } from 'lucide-react';
+import { DEMO_PROJECTS, DemoProject } from '../data/demoProjects';
+import { useAppStore } from '../stores/appStore';
 
 export function LandingPage() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const navigate = useNavigate();
+  const { setCulminatingEvent, setGanttConfig } = useAppStore();
+
+  const handleTryDemo = (project: DemoProject) => {
+    // Set the culminating event from the demo project
+    setCulminatingEvent(project.event);
+    // Configure Gantt to show convergence
+    setGanttConfig({
+      showConvergence: true,
+      startDate: new Date(),
+      endDate: new Date(project.event.date.getTime() + 7 * 24 * 60 * 60 * 1000), // event + 1 week
+    });
+    // Navigate to the app
+    navigate('/app');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,8 +211,64 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* The Problem */}
+      {/* Try It Now - Demo Projects */}
       <section className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="max-w-6xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-12">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4 ${
+                theme === 'dark' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-700'
+              }`}>
+                <Zap size={16} />
+                <span className="text-sm font-medium">No signup required</span>
+              </div>
+              <h2 className={`text-3xl md:text-4xl font-light mb-4 ${
+                theme === 'dark' ? 'text-slate-200' : 'text-slate-800'
+              }`}>
+                Try it now with a sample project
+              </h2>
+              <p className={`text-lg max-w-2xl mx-auto ${
+                theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+              }`}>
+                Experience the convergence flow instantly. Pick a scenario that resonates with you.
+              </p>
+            </div>
+
+            {/* Demo Project Cards */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {DEMO_PROJECTS.slice(0, 6).map((project) => (
+                <DemoProjectCard
+                  key={project.id}
+                  project={project}
+                  theme={theme}
+                  onTry={() => handleTryDemo(project)}
+                />
+              ))}
+            </div>
+
+            {/* Quick Access CTA */}
+            <div className="text-center mt-12">
+              <Link
+                to="/app"
+                className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+                  theme === 'dark'
+                    ? 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                    : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+                }`}
+              >
+                Or start with a blank canvas
+                <ArrowRight size={18} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* The Problem */}
+      <section className={`py-20 ${
+        theme === 'dark' ? 'bg-slate-800/30' : 'bg-stone-50'
+      }`}>
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className={`text-2xl md:text-3xl font-light mb-8 ${
@@ -332,6 +407,75 @@ function ValueCard({ theme, icon, title, description }: ValueCardProps) {
       }`}>
         {description}
       </p>
+    </div>
+  );
+}
+
+interface DemoProjectCardProps {
+  project: DemoProject;
+  theme: 'light' | 'dark';
+  onTry: () => void;
+}
+
+function DemoProjectCard({ project, theme, onTry }: DemoProjectCardProps) {
+  return (
+    <div
+      className={`group relative overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] cursor-pointer ${
+        theme === 'dark'
+          ? 'bg-slate-800/70 hover:bg-slate-800'
+          : 'bg-white hover:shadow-xl'
+      }`}
+      onClick={onTry}
+    >
+      {/* Gradient Header */}
+      <div className={`h-24 bg-gradient-to-r ${project.gradient} relative`}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-5xl opacity-90 group-hover:scale-110 transition-transform duration-300">
+            {project.icon}
+          </span>
+        </div>
+        {/* Days Badge */}
+        <div className="absolute top-3 right-3 px-2 py-1 bg-black/30 backdrop-blur-sm rounded-full text-white text-xs font-medium">
+          {project.daysUntilEvent} days
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        <h3 className={`text-lg font-semibold mb-1 ${
+          theme === 'dark' ? 'text-slate-100' : 'text-slate-800'
+        }`}>
+          {project.nameEn}
+        </h3>
+        <p className={`text-sm mb-4 line-clamp-2 ${
+          theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+        }`}>
+          {project.descriptionEn}
+        </p>
+
+        {/* Meta */}
+        <div className="flex items-center justify-between">
+          <div className={`flex items-center gap-4 text-xs ${
+            theme === 'dark' ? 'text-slate-500' : 'text-slate-500'
+          }`}>
+            <span className="flex items-center gap-1">
+              <Calendar size={12} />
+              {project.taskCount} tasks
+            </span>
+          </div>
+
+          {/* Try Button */}
+          <button
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r ${project.gradient} text-white opacity-90 group-hover:opacity-100`}
+          >
+            <Play size={14} />
+            Try it
+          </button>
+        </div>
+      </div>
+
+      {/* Hover Overlay */}
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
     </div>
   );
 }
