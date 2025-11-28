@@ -2,6 +2,7 @@ import React from 'react';
 import { useAppStore } from '../stores/appStore';
 import { translations } from '../data/translations';
 import { UserSwitcher } from './UserSwitcher';
+import { NDProfileSelector } from './NDProfileSelector';
 import { Sun, Moon, Monitor, Globe } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -29,7 +30,10 @@ export const Header: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-center gap-3">
             {/* User Switcher */}
             <UserSwitcher />
-            
+
+            {/* ND Profile Selector */}
+            <NDProfileSelector />
+
             <div className="flex items-center gap-3">
             {/* Language Toggle */}
             <button

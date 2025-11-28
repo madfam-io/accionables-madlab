@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Task } from '../data/types';
 import { GroupingOption } from '../components/GroupingSelector';
+import { NDProfile, NDPreset } from '../types/ndProfile';
+import { getProfile, createCustomProfile } from '../data/ndProfiles';
 
 export type Theme = 'auto' | 'light' | 'dark';
 export type Language = 'es' | 'en';
@@ -69,6 +71,9 @@ interface AppState {
   // Gantt view configuration
   ganttConfig: GanttConfig;
 
+  // Neurodivergency profile
+  ndProfile: NDProfile;
+
   // Actions
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
@@ -85,6 +90,8 @@ interface AppState {
   clearFilters: () => void;
   setCurrentUser: (user: string) => void;
   setGanttConfig: (config: Partial<GanttConfig>) => void;
+  setNDProfile: (preset: NDPreset) => void;
+  customizeNDProfile: (overrides: Partial<NDProfile>) => void;
 }
 
 /**
@@ -168,6 +175,7 @@ export const useAppStore = create(
         autoScheduling: true,
         showCriticalPath: false
       },
+      ndProfile: getProfile('default'),
 
       // Actions
       setTheme: (theme) => {
@@ -229,6 +237,14 @@ export const useAppStore = create(
       setGanttConfig: (config: Partial<GanttConfig>) => set((state) => ({
         ganttConfig: { ...state.ganttConfig, ...config }
       })),
+
+      setNDProfile: (preset: NDPreset) => set({
+        ndProfile: getProfile(preset)
+      }),
+
+      customizeNDProfile: (overrides: Partial<NDProfile>) => set((state) => ({
+        ndProfile: createCustomProfile(state.ndProfile.preset, overrides)
+      })),
     }),
     {
       name: 'madlab-storage',
@@ -239,6 +255,7 @@ export const useAppStore = create(
         collapsedPhases: Array.from(state.collapsedPhases) as any,
         filters: state.filters,
         ganttConfig: state.ganttConfig,
+        ndProfile: state.ndProfile,
       }) as any,
       onRehydrateStorage: () => (state) => {
         if (state && state.collapsedPhases) {
