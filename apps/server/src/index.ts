@@ -5,6 +5,7 @@ import { healthRoutes } from './routes/health.js';
 import { projectRoutes } from './routes/projects.js';
 import { taskRoutes } from './routes/tasks.js';
 import { agentRoutes } from './routes/agents.js';
+import { waitlistRoutes } from './routes/waitlist.js';
 import { closeDatabaseConnection } from './config/database.js';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -55,6 +56,7 @@ await fastify.register(healthRoutes, { prefix: '/api' });
 await fastify.register(projectRoutes, { prefix: '/api' });
 await fastify.register(taskRoutes, { prefix: '/api' });
 await fastify.register(agentRoutes, { prefix: '/api' });
+await fastify.register(waitlistRoutes, { prefix: '/api' });
 
 // Graceful shutdown
 const signals = ['SIGINT', 'SIGTERM'];

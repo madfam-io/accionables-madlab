@@ -228,9 +228,40 @@ export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
   }),
 }));
 
+/**
+ * WAITLIST - Email signups for launch notification
+ */
+export const waitlist = pgTable('waitlist', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  source: varchar('source', { length: 100 }).default('landing'), // landing, blog, referral, etc.
+  referrer: text('referrer'), // URL they came from
+
+  // Optional profile info
+  name: varchar('name', { length: 255 }),
+  ndProfile: varchar('nd_profile', { length: 50 }), // adhd, autism, dyslexia, other
+  useCase: text('use_case'), // What they want to use MADLAB for
+
+  // Tracking
+  ipCountry: varchar('ip_country', { length: 10 }),
+  userAgent: text('user_agent'),
+
+  // Status
+  verified: boolean('verified').default(false),
+  convertedToUser: boolean('converted_to_user').default(false),
+  convertedAt: timestamp('converted_at'),
+
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // ============================================================================
 // TYPE EXPORTS
 // ============================================================================
+
+export type Waitlist = typeof waitlist.$inferSelect;
+export type NewWaitlist = typeof waitlist.$inferInsert;
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
