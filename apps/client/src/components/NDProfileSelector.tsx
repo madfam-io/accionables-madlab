@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Brain, ChevronDown, Sparkles, Eye, Zap, BookOpen } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { NDPreset } from '../types/ndProfile';
-import { translations } from '../data/translations';
 
 interface ProfileOption {
   id: NDPreset;

@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppStore, TimeScale } from '../../stores/appStore';
 import { translations } from '../../data/translations';
-import { Calendar, ZoomIn, ZoomOut, BarChart3, Eye, EyeOff, Users } from 'lucide-react';
+import { Calendar, ZoomIn, ZoomOut, BarChart3, Eye, EyeOff, Users, Target, Sparkles } from 'lucide-react';
+import { EventSetterModal } from './EventSetterModal';
 
 export const GanttHeader: React.FC = () => {
   const {
     language,
     ganttConfig,
-    setGanttConfig
+    setGanttConfig,
+    culminatingEvent
   } = useAppStore();
   const t = translations[language];
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
   const handleTimeScaleChange = (timeScale: TimeScale) => {
     setGanttConfig({ timeScale });
@@ -37,7 +40,16 @@ export const GanttHeader: React.FC = () => {
     // The GanttChart component will react to ganttConfig changes automatically
   };
 
+  const toggleConvergence = () => {
+    setGanttConfig({ showConvergence: !ganttConfig.showConvergence });
+  };
+
   return (
+    <>
+      <EventSetterModal
+        isOpen={isEventModalOpen}
+        onClose={() => setIsEventModalOpen(false)}
+      />
     <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
       <div className="flex flex-wrap items-center gap-4">
         {/* Time Scale Selector */}
@@ -116,7 +128,42 @@ export const GanttHeader: React.FC = () => {
             {t.autoScheduling}
           </button>
         </div>
+
+        {/* Separator */}
+        <div className="h-6 w-px bg-gray-300 dark:bg-gray-600" />
+
+        {/* Convergence Controls */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleConvergence}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-sm transition-colors ${
+              ganttConfig.showConvergence
+                ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+            title={language === 'es' ? 'Mostrar convergencia' : 'Show convergence'}
+          >
+            <Sparkles className="w-4 h-4" />
+            {language === 'es' ? 'Convergencia' : 'Convergence'}
+          </button>
+
+          <button
+            onClick={() => setIsEventModalOpen(true)}
+            className={`flex items-center gap-1 px-3 py-1 rounded text-sm font-medium transition-colors ${
+              culminatingEvent
+                ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm hover:shadow-md'
+                : 'border-2 border-dashed border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+            }`}
+          >
+            <Target className="w-4 h-4" />
+            {culminatingEvent
+              ? (language === 'es' ? culminatingEvent.name : culminatingEvent.nameEn)
+              : (language === 'es' ? 'Definir evento' : 'Set event')
+            }
+          </button>
+        </div>
       </div>
     </div>
+    </>
   );
 };

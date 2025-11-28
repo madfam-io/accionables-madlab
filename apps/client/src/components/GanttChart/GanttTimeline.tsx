@@ -2,6 +2,7 @@ import { useMemo, forwardRef, useRef, useEffect, useImperativeHandle } from 'rea
 import { GanttTask, useAppStore } from '../../stores/appStore';
 import { GanttTimeScale } from './GanttTimeScale';
 import { GanttTaskBar } from './GanttTaskBar';
+import { EventMarker } from './EventMarker';
 
 interface TaskGroup {
   id: string;
@@ -15,7 +16,7 @@ interface GanttTimelineProps {
 }
 
 export const GanttTimeline = forwardRef<HTMLDivElement, GanttTimelineProps>(({ groups }, ref) => {
-  const { ganttConfig } = useAppStore();
+  const { ganttConfig, culminatingEvent } = useAppStore();
   const scaleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -81,6 +82,16 @@ export const GanttTimeline = forwardRef<HTMLDivElement, GanttTimelineProps>(({ g
     }
     return null;
   }, [timelineData]);
+
+  // Culminating event position
+  const eventPosition = useMemo(() => {
+    if (!culminatingEvent || !ganttConfig.showConvergence) return null;
+    const eventDate = new Date(culminatingEvent.date);
+    if (eventDate >= timelineData.startDate && eventDate <= timelineData.endDate) {
+      return timelineData.getDatePosition(eventDate);
+    }
+    return null;
+  }, [culminatingEvent, ganttConfig.showConvergence, timelineData]);
 
   // Sync horizontal scrolling between scale header and content
   useEffect(() => {
@@ -187,6 +198,61 @@ export const GanttTimeline = forwardRef<HTMLDivElement, GanttTimelineProps>(({ g
             >
               <div className="absolute -top-2 -left-2 w-4 h-4 bg-red-500 rounded-full"></div>
             </div>
+          )}
+
+          {/* Convergence Lines - Visual paths from tasks to event */}
+          {eventPosition !== null && ganttConfig.showConvergence && (
+            <svg className="absolute inset-0 pointer-events-none z-5 overflow-visible">
+              <defs>
+                <linearGradient id="convergence-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgb(99, 102, 241)" stopOpacity="0.1" />
+                  <stop offset="100%" stopColor="rgb(99, 102, 241)" stopOpacity="0.6" />
+                </linearGradient>
+              </defs>
+              {groups.flatMap((group, groupIndex) => {
+                let groupY = 0;
+                for (let i = 0; i < groupIndex; i++) {
+                  const prevGroup = groups[i];
+                  groupY += GROUP_HEADER_HEIGHT;
+                  if (!prevGroup.collapsed) {
+                    groupY += prevGroup.tasks.length * ROW_HEIGHT;
+                  }
+                }
+                return !group.collapsed ? group.tasks.map((task, taskIndex) => {
+                  const taskY = groupY + GROUP_HEADER_HEIGHT + (taskIndex * ROW_HEIGHT) + (ROW_HEIGHT / 2);
+                  const taskEndX = timelineData.getDatePosition(task.endDate);
+
+                  // Only draw convergence lines for tasks ending before the event
+                  if (taskEndX >= eventPosition) return null;
+
+                  // Bezier curve from task end to event
+                  const controlPointX = taskEndX + (eventPosition - taskEndX) * 0.7;
+                  const eventCenterY = 60; // Center of the event marker
+
+                  return (
+                    <path
+                      key={`convergence-${task.id}`}
+                      d={`M ${taskEndX} ${taskY} Q ${controlPointX} ${taskY}, ${eventPosition} ${eventCenterY}`}
+                      stroke="url(#convergence-gradient)"
+                      strokeWidth="2"
+                      fill="none"
+                      className="animate-dash-flow"
+                      strokeDasharray="8,4"
+                      opacity={task.criticalPath ? 0.8 : 0.4}
+                    />
+                  );
+                }) : [];
+              })}
+            </svg>
+          )}
+
+          {/* Culminating Event Marker */}
+          {eventPosition !== null && culminatingEvent && (
+            <EventMarker
+              event={culminatingEvent}
+              x={eventPosition}
+              totalHeight={totalHeight}
+            />
           )}
 
           {/* Task Bars */}
