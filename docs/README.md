@@ -1,168 +1,210 @@
-# MADLAB Project Documentation
+# MADLAB Documentation
 
-## 📚 Comprehensive Documentation Hub
+## Event Convergence Orchestrator for Neurodivergent Minds
 
-Welcome to the MADLAB project documentation. This comprehensive guide covers all aspects of the application, from architecture to deployment. MADLAB is a collaborative educational initiative bringing gamified science and technology learning to primary schools in Mexico.
+> **"The tool adapts to you, not the other way around."**
 
-## 📁 Documentation Structure
+MADLAB transforms how neurodivergent people plan toward big moments. Instead of traditional project management where you work forward from today, everything flows backward from your **culminating event** - a concert, product launch, wedding, or any pivotal deadline.
 
-### Quick Navigation
-- [Getting Started](#-quick-start) - Setup and run the project
-- [Architecture Overview](./architecture/README.md) - System design and structure
-- [Component Reference](./components/README.md) - UI component documentation
-- [API Documentation](./api/README.md) - Data structures and interfaces
-- [Developer Guides](./guides/README.md) - Integration guides and best practices
-- [Development](./development/README.md) - Implementation documentation
-- [Infrastructure](./infrastructure/README.md) - Infrastructure and deployment setup
+---
 
-## 📚 Documentation Sections
+## Quick Start
 
-### 🏗️ [Architecture](./architecture/README.md)
-- [System Overview](./architecture/system-overview.md)
-- [React Architecture](./architecture/react-architecture.md)
-- [State Management](./architecture/state-management.md)
-- [Data Flow](./architecture/data-flow.md)
+### For Users
+1. Visit the landing page
+2. Click a demo project (Spring Concert, App Launch, etc.)
+3. Select your ND profile (ADHD, Autism, Dyslexia, or customize)
+4. Watch your tasks converge toward your event
 
-### 🧩 [Components](./components/README.md)
-- [Component Library](./components/component-library.md)
-- [React Components API](./components/react-components.md)
-- [Custom Hooks](./components/hooks.md)
-- [Styling Guidelines](./components/styling.md)
-
-### 🔧 [API Reference](./api/README.md)
-- [Store APIs](./api/stores.md)
-- [Utility Functions](./api/utils.md)
-- [Export System](./api/export-system.md)
-- [Translation System](./api/translations.md)
-
-### 📖 [Developer Guides](./guides/README.md)
-- [Frontend Integration Guide](./guides/FRONTEND_INTEGRATION_GUIDE.md)
-- [Accessibility Guide](./guides/ACCESSIBILITY.md)
-
-### 💻 [Development](./development/README.md)
-- [Business Logic Implementation](./development/BUSINESS_LOGIC_IMPLEMENTATION.md)
-- [Real Progress Implementation](./development/REAL_PROGRESS_IMPLEMENTATION.md)
-- [Testing Guide](./development/TESTING.md)
-
-### 🎓 [Tutorials](./tutorials/README.md)
-- [Adding New Tasks](./tutorials/adding-tasks.md)
-- [Advanced Tutorials](./tutorials/ADVANCED_TUTORIALS.md)
-
-### 🏗️ [Infrastructure](./infrastructure/README.md)
-- [Infrastructure Overview](./infrastructure/README_INFRA.md)
-
-### 🚀 [Deployment](./deployment/README.md)
-- [Deployment Guide](./deployment/README.md)
-- [Automation](./deployment/AUTOMATION.md)
-
-## 🏆 Project Highlights
-
-### Mission Statement
-MADLAB is a collaborative project between MADFAM and La Ciencia Del Juego, designed to transform science education through gamification and hands-on learning experiences.
-
-### Core Values
-- **🎯 Educational Impact**: Reaching 20-100 students per session
-- **🌍 Sustainability Focus**: Aligned with UN SDGs
-- **🎮 Gamified Learning**: Making science fun and engaging
-- **🤝 Collaborative Approach**: Multi-organization partnership
-- **📱 Digital First**: Modern web technologies
-
-## 🚀 Quick Start
-
+### For Developers
 ```bash
 # Install dependencies
 npm install
 
-# Start development server
+# Start development (client + server)
+npm run dev:all
+
+# Or just the client
 npm run dev
 
 # Build for production
 npm run build
-
-# Preview production build
-npm run preview
 ```
 
-## 📊 Project Overview
+---
 
-- **Duration**: 81 days (August 11 - October 31, 2025)
-- **Team**: 5 members across MADFAM and La Ciencia Del Juego
-- **Tasks**: 109 tasks across 5 project phases
-- **Technology**: React 18 + TypeScript + Tailwind CSS + Zustand
+## Documentation Hub
 
-## 🎯 Key Features
+### Core Features
+| Feature | Description | Docs |
+|---------|-------------|------|
+| **Convergence Gantt** | Timeline where tasks flow toward your event | [convergence-gantt.md](./features/convergence-gantt.md) |
+| **ND Profile System** | Adaptive UI for different neurotypes | [nd-profiles.md](./features/nd-profiles.md) |
+| **AI Agent System** | Specialized assistants for executive function | [ai-agents.md](./features/ai-agents.md) |
+| **Demo Projects** | One-click instant demos | [demo-projects.md](./features/demo-projects.md) |
 
-### Core Functionality
-- ✅ **Multi-View Task Management**: List, Grid, and Gantt chart views
-- ✅ **Bilingual Support**: Complete Spanish/English translations
-- ✅ **Theme System**: Auto/light/dark mode with persistence
-- ✅ **Advanced Filtering**: Multi-criteria filtering system
-- ✅ **Task Grouping**: By phase, week, member, or difficulty
-- ✅ **Export Functionality**: CSV, JSON, and PDF formats
-- ✅ **Progress Tracking**: Visual indicators and analytics
-- ✅ **Responsive Design**: Mobile-first approach
-- ✅ **PWA Support**: Offline capabilities with Service Worker
-- ✅ **Performance Optimized**: Lazy loading and code splitting
+### Documentation Sections
 
-### Technical Excellence
-- 🔧 **Type Safety**: Full TypeScript implementation
-- 🎨 **Modern UI**: Tailwind CSS with custom design system
-- 📊 **State Management**: Zustand with persistence
-- ⚡ **Fast Build**: Vite for development and production
-- 🧪 **Testing Ready**: Configured for unit and integration tests
-- 📱 **Mobile Optimized**: Touch gestures and responsive layouts
+| Section | Description |
+|---------|-------------|
+| **[Features](./features/README.md)** | All product features with implementation details |
+| **[Architecture](./architecture/README.md)** | System design and patterns |
+| **[Components](./components/README.md)** | React component library |
+| **[API Reference](./api/README.md)** | Store and utility APIs |
+| **[Developer Guides](./guides/README.md)** | Integration and workflow guides |
+| **[Product Vision](./product/PRODUCT_VISION.md)** | Product strategy |
+| **[Brand](./brand/BRAND_POSITIONING.md)** | Brand guidelines |
 
-## 🤝 Contributing
+---
 
-1. Read the [Contributing Guidelines](./guides/contributing.md)
+## The Product
+
+### Core Innovation
+
+**Convergence-based planning** - Instead of time flowing forward, everything converges toward the big moment:
+
+```
+                    Tasks                              Event
+                      │                                  │
+     ─────●─────────────────────────────────────────────▶
+            ───●──────────────────────────────────────▶
+                  ────●───────────────────────────────▶
+                         ─────●──────────────────────▶
+                                  ───●──────────────▶
+                                         ──●───────▶
+                                                   🎯
+```
+
+### AI Agents
+
+Six specialized agents that fill executive function gaps:
+
+| Agent | Purpose | ND Benefit |
+|-------|---------|------------|
+| **Fragmento** | Task breakdown | Reduces "where do I start" paralysis |
+| **Timely** | Context-aware reminders | Makes time visible |
+| **Palabras** | Communication drafts | Removes writing paralysis |
+| **Calma** | Overwhelm detection | Prevents shutdown/meltdown |
+| **Enfoque** | Focus sessions | Body-doubling companion |
+| **Fiesta** | Celebrations | Dopamine hits for progress |
+
+### ND Profiles
+
+The UI adapts based on how your brain works:
+
+- **ADHD**: Reduced visual noise, visible timers, frequent dopamine hits
+- **Autism**: Predictable patterns, advance warnings, reduced surprises
+- **Dyslexia**: High contrast, larger text, visual indicators over text
+- **Custom**: Calibrate every preference to your needs
+
+---
+
+## Technology Stack
+
+### Frontend (`/apps/client`)
+- **React 18** - UI framework with hooks
+- **TypeScript** - Type-safe development
+- **Vite** - Fast build tool
+- **Zustand** - State management with persistence
+- **Tailwind CSS** - Utility-first styling
+- **React Router** - Client-side routing
+
+### Backend (`/apps/server`)
+- **Fastify** - API framework
+- **Drizzle ORM** - Database operations
+- **PostgreSQL** - Data persistence
+
+### Testing
+- **Vitest** - Unit testing
+- **Playwright** - E2E testing
+
+---
+
+## Project Structure
+
+```
+apps/
+├── client/
+│   └── src/
+│       ├── components/         # React components
+│       │   ├── Agents/         # Agent UI
+│       │   └── GanttChart/     # Convergence Gantt
+│       ├── hooks/              # Custom React hooks
+│       ├── stores/             # Zustand stores
+│       ├── types/              # TypeScript definitions
+│       ├── data/               # Static data
+│       └── pages/              # Page components
+└── server/
+    └── src/
+        ├── routes/             # API endpoints
+        └── db/                 # Database schema
+
+docs/
+├── features/                   # Feature documentation
+├── architecture/               # System design
+├── components/                 # Component reference
+├── api/                        # API documentation
+├── guides/                     # Developer guides
+├── product/                    # Product vision
+└── brand/                      # Brand guidelines
+```
+
+---
+
+## Commands
+
+```bash
+# Development
+npm run dev              # Client dev server (localhost:5173)
+npm run dev:server       # API server (localhost:3001)
+npm run dev:all          # Both concurrently
+
+# Testing
+npm test                 # Unit tests
+npm run test:e2e         # E2E tests
+
+# Building
+npm run build            # Production build
+
+# Database (Docker)
+npm run docker:up        # Start PostgreSQL
+npm run docker:down      # Stop PostgreSQL
+```
+
+---
+
+## Key Features
+
+### Implemented
+- Convergence Gantt with culminating events
+- ND Profile system with presets
+- AI Agent architecture (types and store)
+- Demo projects from landing page
+- Bilingual support (ES/EN)
+- Theme system (Auto/Light/Dark)
+- Task management with filtering
+- Multi-format export (PDF/CSV/JSON/TXT)
+- Responsive design
+
+### Coming Soon
+- Full agent behavior implementation
+- Real-time collaboration
+- Mobile app
+- Calendar integrations
+
+---
+
+## Contributing
+
+1. Read the [Frontend Integration Guide](./guides/FRONTEND_INTEGRATION_GUIDE.md)
 2. Follow the [Development Workflow](./guides/development-workflow.md)
-3. Check the [Component Library](./components/component-library.md) for existing patterns
-4. Review [Performance Guidelines](./guides/performance.md) before submitting
-
-## 📞 Support
-
-- **GitHub Issues**: Report bugs and feature requests
-- **Documentation**: Comprehensive guides for all use cases
-- **Examples**: Real-world implementation patterns
+3. Check [Component Reference](./components/COMPONENTS_REFERENCE.md) for patterns
+4. Review [Accessibility Guide](./guides/ACCESSIBILITY.md)
 
 ---
 
-## 📊 Project Statistics
+**MADLAB v3.0** | Event Convergence Orchestrator for Neurodivergent Minds
 
-- **109** Total Tasks
-- **5** Project Phases
-- **5** Team Members
-- **522.5** Total Hours
-- **81** Days Duration
-- **2** Languages Supported
+*Built for brains that work differently*
 
-## 🛠️ Technology Stack
-
-### Frontend
-- **React 18** - UI Framework
-- **TypeScript** - Type Safety
-- **Tailwind CSS** - Styling
-- **Vite** - Build Tool
-
-### State & Data
-- **Zustand** - State Management
-- **LocalStorage** - Persistence
-- **Custom Hooks** - Logic Reuse
-
-### UI Components
-- **Lucide React** - Icons
-- **Recharts** - Data Visualization
-- **Custom Components** - Tailored UI
-
-### Development
-- **ESLint** - Code Linting
-- **PostCSS** - CSS Processing
-- **Git** - Version Control
-
-## 📄 License & Credits
-
-**MADLAB v2.0** | © 2025 MADFAM & La Ciencia Del Juego
-
----
-
-*Last Updated: September 2025 | Version 2.0.0*
+*Last Updated: November 2025*
