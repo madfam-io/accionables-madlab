@@ -52,9 +52,11 @@ export interface BreakdownResponse {
         totalEstimatedHours: number;
         mock?: boolean;
     };
+    provider?: string;
+    model?: string;
     usage?: {
-        inputTokens: number;
-        outputTokens: number;
+        promptTokens: number;
+        completionTokens: number;
     };
     mock?: boolean;
 }
@@ -78,9 +80,11 @@ export interface DraftResponse {
         tone: string;
         mock?: boolean;
     };
+    provider?: string;
+    model?: string;
     usage?: {
-        inputTokens: number;
-        outputTokens: number;
+        promptTokens: number;
+        completionTokens: number;
     };
     mock?: boolean;
 }
@@ -90,6 +94,8 @@ export interface AgentStatus {
     aiEnabled: boolean;
     description: string;
 }
+
+export type AIProvider = 'ollama' | 'groq' | 'together' | 'custom' | 'mock';
 
 export interface AgentsStatusResponse {
     success: boolean;
@@ -102,9 +108,11 @@ export interface AgentsStatusResponse {
         fiesta: AgentStatus;
     };
     configuration: {
-        aiProvider: string;
+        provider: AIProvider;
         model: string;
-        apiKeyConfigured: boolean;
+        baseUrl?: string;
+        supportedProviders: AIProvider[];
+        envVars: Record<string, string>;
     };
 }
 
