@@ -207,3 +207,201 @@
 .dark .card-hover:hover {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
+
+/* ========================================
+   NEURODIVERGENCY PROFILE STYLES
+   ======================================== */
+
+/* CSS Custom Properties for ND profiles */
+:root {
+  --nd-font-scale: 1;
+  --nd-animation-duration: 300ms;
+  --nd-transition-duration: 200ms;
+  --nd-spacing-scale: 1;
+  --nd-color-saturation: 1;
+}
+
+/* Font Family - Dyslexia Friendly */
+.font-dyslexia {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Comic Neue', sans-serif;
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+  line-height: 1.8;
+}
+
+/* Font Family - Monospace */
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+/* Color Intensity - Muted (calm, low saturation) */
+.colors-muted {
+  --nd-color-saturation: 0.7;
+  filter: saturate(0.7);
+}
+
+.colors-muted.dark {
+  filter: saturate(0.7) brightness(0.95);
+}
+
+/* Color Intensity - Vibrant (dopamine-friendly) */
+.colors-vibrant {
+  --nd-color-saturation: 1.15;
+  filter: saturate(1.15);
+}
+
+/* Information Density - Minimal */
+.density-minimal {
+  --nd-spacing-scale: 1.5;
+}
+
+.density-minimal .container {
+  max-width: 900px;
+}
+
+.density-minimal p,
+.density-minimal li,
+.density-minimal span {
+  line-height: 1.8;
+}
+
+/* Information Density - Dense */
+.density-dense {
+  --nd-spacing-scale: 0.85;
+}
+
+.density-dense .container {
+  max-width: 1400px;
+}
+
+.density-dense p,
+.density-dense li,
+.density-dense span {
+  line-height: 1.4;
+}
+
+/* Motion - None */
+.motion-none,
+.motion-none *,
+.motion-none *::before,
+.motion-none *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Motion - Reduced */
+.motion-reduced *,
+.motion-reduced *::before,
+.motion-reduced *::after {
+  animation-duration: var(--nd-animation-duration) !important;
+  transition-duration: var(--nd-transition-duration) !important;
+}
+
+/* Contrast - High */
+.contrast-high {
+  filter: contrast(1.1);
+}
+
+.contrast-high button:focus,
+.contrast-high a:focus,
+.contrast-high input:focus,
+.contrast-high select:focus {
+  outline: 3px solid currentColor !important;
+  outline-offset: 3px;
+}
+
+/* Gamification Levels */
+.gamification-none .streak-indicator,
+.gamification-none .achievement-badge,
+.gamification-none .progress-celebration {
+  display: none !important;
+}
+
+.gamification-light .streak-indicator,
+.gamification-light .achievement-badge {
+  opacity: 0.7;
+}
+
+/* Celebration Styles */
+.celebrations-none .celebration-animation {
+  display: none !important;
+}
+
+.celebrations-subtle .celebration-animation {
+  animation-duration: 200ms;
+  opacity: 0.5;
+}
+
+.celebrations-enthusiastic .celebration-animation {
+  animation-duration: 600ms;
+  transform: scale(1.2);
+}
+
+/* Profile-specific overrides */
+[data-nd-profile="adhd"] {
+  /* ADHD: More visual engagement */
+  --tw-ring-opacity: 1;
+}
+
+[data-nd-profile="adhd"] .task-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
+}
+
+[data-nd-profile="autism"] {
+  /* Autism: Predictable, calm */
+  border-radius: 4px;
+}
+
+[data-nd-profile="autism"] * {
+  border-radius: inherit;
+}
+
+[data-nd-profile="autism"] .task-card {
+  border-width: 2px;
+}
+
+[data-nd-profile="dyslexia"] {
+  /* Dyslexia: Reading-optimized */
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+}
+
+[data-nd-profile="dyslexia"] button,
+[data-nd-profile="dyslexia"] .label {
+  text-transform: none;
+}
+
+/* Time blindness aids */
+.time-blindness-aid {
+  position: relative;
+}
+
+.time-blindness-aid::after {
+  content: attr(data-time-remaining);
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+/* Focus indicators for ND profiles */
+[data-nd-profile="adhd"] *:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+[data-nd-profile="autism"] *:focus-visible {
+  outline: 3px solid #6366f1;
+  outline-offset: 2px;
+}
+
+[data-nd-profile="dyslexia"] *:focus-visible {
+  outline: 3px solid #10b981;
+  outline-offset: 2px;
+}
