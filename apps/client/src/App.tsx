@@ -11,6 +11,7 @@ import { ScreenReaderAnnouncer } from './components/ScreenReaderAnnouncer';
 import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { useAppStore, filterTasks } from './stores/appStore';
 import { useTasks } from './hooks/useTasks';
+import { useNDProfile } from './hooks/useNDProfile';
 import { groupTasks } from './utils/taskGrouping';
 import './App.css';
 
@@ -25,6 +26,9 @@ function App() {
     setViewMode,
     setAccessibilityPreference,
   } = useAppStore();
+
+  // Apply ND profile settings to document
+  useNDProfile();
 
   // Fetch tasks from API
   const { data: tasks = [], isLoading, error } = useTasks();

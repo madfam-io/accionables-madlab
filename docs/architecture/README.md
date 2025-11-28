@@ -8,8 +8,6 @@ This section provides comprehensive documentation of the MADLAB application arch
 2. **[React Architecture](./react-architecture.md)** - Component structure and patterns
 3. **[State Management](./state-management.md)** - Zustand store design and data flow *(coming soon)*
 4. **[Data Flow](./data-flow.md)** - How data moves through the application *(coming soon)*
-5. **[Legacy Architecture](./legacy-architecture.md)** - Original architecture design document
-6. **[Architecture Comparison](./comparison.md)** - Current vs proposed architecture analysis
 
 ## 🏗️ Architecture Principles
 

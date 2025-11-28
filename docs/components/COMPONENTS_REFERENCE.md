@@ -782,8 +782,291 @@ describe('Component', () => {
 
 ---
 
-**Last Updated**: November 22, 2024
-**Total Components**: 30+
+## ND Profile Components
+
+### NDProfileSelector
+
+**Location**: `src/components/NDProfileSelector.tsx`
+
+Profile selector for neurodivergent preferences.
+
+```typescript
+interface NDProfileSelectorProps {
+  compact?: boolean;
+}
+
+export const NDProfileSelector: React.FC<NDProfileSelectorProps>
+```
+
+**Features**:
+- Preset profiles (ADHD, Autism, Dyslexia)
+- Custom profile option
+- Bilingual labels
+- Profile-based CSS class application
+
+**Usage**:
+```tsx
+<NDProfileSelector compact={false} />
+```
+
+---
+
+### useNDProfile Hook
+
+**Location**: `src/hooks/useNDProfile.ts`
+
+Custom hook for accessing and managing ND profile state.
+
+```typescript
+interface UseNDProfileReturn {
+  profile: NDProfile | null;
+  setProfile: (profile: NDProfile | null) => void;
+  preferences: NDPreferences;
+  cssClasses: string;
+}
+
+export const useNDProfile: () => UseNDProfileReturn
+```
+
+**Features**:
+- Access current profile
+- Get merged preferences
+- Generate CSS classes for UI adaptation
+
+**Usage**:
+```tsx
+const { profile, preferences, cssClasses } = useNDProfile();
+```
+
+---
+
+## Agent Components
+
+### AgentPanel
+
+**Location**: `src/components/Agents/AgentPanel.tsx`
+
+Sidebar panel for AI agent interactions.
+
+```typescript
+interface AgentPanelProps {
+  collapsed?: boolean;
+}
+
+export const AgentPanel: React.FC<AgentPanelProps>
+```
+
+**Features**:
+- Agent toggle switches
+- Active suggestions list
+- Focus session controls
+- Collapsible design
+
+**Usage**:
+```tsx
+<AgentPanel collapsed={false} />
+```
+
+---
+
+### AgentSuggestionCard
+
+**Location**: `src/components/Agents/AgentSuggestionCard.tsx`
+
+Individual suggestion card from an AI agent.
+
+```typescript
+interface AgentSuggestionCardProps {
+  suggestion: AgentSuggestion;
+  onDismiss: () => void;
+  onSnooze: () => void;
+  onAcknowledge: () => void;
+}
+
+export const AgentSuggestionCard: React.FC<AgentSuggestionCardProps>
+```
+
+**Features**:
+- Agent avatar and name
+- Priority indicator
+- Action buttons (dismiss, snooze, acknowledge)
+- Bilingual content display
+
+**Usage**:
+```tsx
+<AgentSuggestionCard
+  suggestion={suggestion}
+  onDismiss={handleDismiss}
+  onSnooze={handleSnooze}
+  onAcknowledge={handleAcknowledge}
+/>
+```
+
+---
+
+### FocusTimer
+
+**Location**: `src/components/Agents/FocusTimer.tsx`
+
+Pomodoro-style focus session timer.
+
+```typescript
+interface FocusTimerProps {
+  session: FocusSession;
+  onComplete: () => void;
+  onCancel: () => void;
+}
+
+export const FocusTimer: React.FC<FocusTimerProps>
+```
+
+**Features**:
+- Circular progress ring
+- Time remaining display
+- Pause/resume controls
+- Session completion callback
+
+**Usage**:
+```tsx
+<FocusTimer
+  session={focusSession}
+  onComplete={handleComplete}
+  onCancel={handleCancel}
+/>
+```
+
+---
+
+## Convergence Gantt Components
+
+### EventMarker
+
+**Location**: `src/components/GanttChart/EventMarker.tsx`
+
+Visual marker for the culminating event on the Gantt timeline.
+
+```typescript
+interface EventMarkerProps {
+  event: CulminatingEvent;
+  position: number;
+  timelineHeight: number;
+}
+
+export const EventMarker: React.FC<EventMarkerProps>
+```
+
+**Features**:
+- Event icon based on type
+- Urgency-based color coding
+- Days remaining countdown
+- Time blindness aids for ADHD profile
+- Flowing particle animation
+
+**Usage**:
+```tsx
+<EventMarker
+  event={culminatingEvent}
+  position={eventXPosition}
+  timelineHeight={chartHeight}
+/>
+```
+
+---
+
+### EventSetterModal
+
+**Location**: `src/components/GanttChart/EventSetterModal.tsx`
+
+Modal for creating/editing the culminating event.
+
+```typescript
+interface EventSetterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  existingEvent?: CulminatingEvent | null;
+}
+
+export const EventSetterModal: React.FC<EventSetterModalProps>
+```
+
+**Features**:
+- Event type selector with icons
+- Bilingual name/description fields
+- Date picker
+- Save to store
+
+**Usage**:
+```tsx
+<EventSetterModal
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  existingEvent={culminatingEvent}
+/>
+```
+
+---
+
+## Landing Page Components
+
+### LandingPage
+
+**Location**: `src/pages/LandingPage.tsx`
+
+Marketing landing page with demo project access.
+
+```typescript
+interface LandingPageProps {}
+
+export const LandingPage: React.FC<LandingPageProps>
+```
+
+**Features**:
+- Hero section with value proposition
+- Demo project grid
+- Feature highlights
+- ND profile showcase
+- Navigation to main app
+
+**Usage**:
+```tsx
+<Route path="/" element={<LandingPage />} />
+```
+
+---
+
+### DemoProjectCard
+
+**Location**: `src/components/DemoProjectCard.tsx`
+
+Card for displaying and launching demo projects.
+
+```typescript
+interface DemoProjectCardProps {
+  project: DemoProject;
+  onTry: (project: DemoProject) => void;
+}
+
+export const DemoProjectCard: React.FC<DemoProjectCardProps>
+```
+
+**Features**:
+- Project icon and name
+- Days until event indicator
+- Task count preview
+- One-click demo launch
+
+**Usage**:
+```tsx
+<DemoProjectCard
+  project={demoProject}
+  onTry={handleTryDemo}
+/>
+```
+
+---
+
+**Last Updated**: November 2025
+**Total Components**: 40+
 **Test Coverage**: 79 unit tests, 19 E2E tests
 
-*Complete, accessible, and well-documented React component library for MADLAB*
+*Complete, accessible, and well-documented React component library for MADLAB - Event Convergence Orchestrator for Neurodivergent Minds*

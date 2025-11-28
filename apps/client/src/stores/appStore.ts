@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Task } from '../data/types';
 import { GroupingOption } from '../components/GroupingSelector';
+import { NDProfile, NDPreset } from '../types/ndProfile';
+import { getProfile, createCustomProfile } from '../data/ndProfiles';
 
 export type Theme = 'auto' | 'light' | 'dark';
 export type Language = 'es' | 'en';
@@ -34,6 +36,19 @@ interface GanttConfig {
   groupBy: GroupBy;
   autoScheduling: boolean;
   showCriticalPath: boolean;
+  showConvergence: boolean;
+}
+
+export type EventType = 'concert' | 'launch' | 'exam' | 'presentation' | 'retreat' | 'deadline' | 'custom';
+
+export interface CulminatingEvent {
+  id: string;
+  name: string;
+  nameEn: string;
+  date: Date;
+  description?: string;
+  descriptionEn?: string;
+  type: EventType;
 }
 
 export interface GanttTask extends Task {
@@ -69,6 +84,12 @@ interface AppState {
   // Gantt view configuration
   ganttConfig: GanttConfig;
 
+  // Neurodivergency profile
+  ndProfile: NDProfile;
+
+  // Culminating event (the moment everything converges toward)
+  culminatingEvent: CulminatingEvent | null;
+
   // Actions
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
@@ -85,6 +106,9 @@ interface AppState {
   clearFilters: () => void;
   setCurrentUser: (user: string) => void;
   setGanttConfig: (config: Partial<GanttConfig>) => void;
+  setNDProfile: (preset: NDPreset) => void;
+  customizeNDProfile: (overrides: Partial<NDProfile>) => void;
+  setCulminatingEvent: (event: CulminatingEvent | null) => void;
 }
 
 /**
@@ -166,8 +190,11 @@ export const useAppStore = create(
         showDependencies: true,
         groupBy: 'phase' as GroupBy,
         autoScheduling: true,
-        showCriticalPath: false
+        showCriticalPath: false,
+        showConvergence: true
       },
+      ndProfile: getProfile('default'),
+      culminatingEvent: null,
 
       // Actions
       setTheme: (theme) => {
@@ -229,6 +256,18 @@ export const useAppStore = create(
       setGanttConfig: (config: Partial<GanttConfig>) => set((state) => ({
         ganttConfig: { ...state.ganttConfig, ...config }
       })),
+
+      setNDProfile: (preset: NDPreset) => set({
+        ndProfile: getProfile(preset)
+      }),
+
+      customizeNDProfile: (overrides: Partial<NDProfile>) => set((state) => ({
+        ndProfile: createCustomProfile(state.ndProfile.preset, overrides)
+      })),
+
+      setCulminatingEvent: (event: CulminatingEvent | null) => set({
+        culminatingEvent: event
+      }),
     }),
     {
       name: 'madlab-storage',
@@ -239,12 +278,27 @@ export const useAppStore = create(
         collapsedPhases: Array.from(state.collapsedPhases) as any,
         filters: state.filters,
         ganttConfig: state.ganttConfig,
+        ndProfile: state.ndProfile,
+        culminatingEvent: state.culminatingEvent,
       }) as any,
       onRehydrateStorage: () => (state) => {
         if (state && state.collapsedPhases) {
           // Convert array back to Set after rehydration
           const phases = state.collapsedPhases as any;
           state.collapsedPhases = new Set(Array.isArray(phases) ? phases : []);
+        }
+        // Rehydrate culminatingEvent date
+        if (state && state.culminatingEvent && typeof state.culminatingEvent.date === 'string') {
+          state.culminatingEvent.date = new Date(state.culminatingEvent.date);
+        }
+        // Rehydrate ganttConfig dates
+        if (state && state.ganttConfig) {
+          if (typeof state.ganttConfig.startDate === 'string') {
+            state.ganttConfig.startDate = new Date(state.ganttConfig.startDate);
+          }
+          if (typeof state.ganttConfig.endDate === 'string') {
+            state.ganttConfig.endDate = new Date(state.ganttConfig.endDate);
+          }
         }
       }
     }

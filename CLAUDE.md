@@ -15,53 +15,92 @@ MADLAB is a collaborative educational project between MADFAM and La Ciencia Del 
 
 ## Architecture
 
-### Core Files
+This is a **monorepo** using npm workspaces with two main applications:
 
-- `index.html` - Interactive bilingual project dashboard with task management
-- `README.md` - Comprehensive project documentation in Spanish
+### Frontend (`/apps/client`)
+- **Framework**: React 18 + TypeScript + Vite
+- **State Management**: Zustand with persistence
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Testing**: Vitest (unit) + Playwright (E2E)
 
-### Dashboard Features
+### Backend (`/apps/server`)
+- **Framework**: Fastify
+- **ORM**: Drizzle ORM
+- **Database**: PostgreSQL (via Docker)
 
-The `index.html` file is a self-contained single-page application featuring:
+### Key Directories
+```
+apps/
+├── client/
+│   ├── src/
+│   │   ├── components/    # React components (32 files)
+│   │   ├── hooks/         # Custom React hooks (9 files)
+│   │   ├── stores/        # Zustand state management
+│   │   ├── utils/         # Business logic utilities
+│   │   ├── data/          # Static data (tasks, translations)
+│   │   └── api/           # API client integration
+│   └── e2e/               # Playwright E2E tests
+└── server/
+    └── src/
+        ├── routes/        # API endpoints
+        └── db/            # Database schema
+docs/                      # Comprehensive documentation (36 files)
+```
+
+## Common Commands
+
+```bash
+# Development
+npm run dev              # Start client dev server (localhost:5173)
+npm run dev:server       # Start API server (localhost:3001)
+npm run dev:all          # Start both concurrently
+
+# Testing
+npm test                 # Run unit tests
+npm run test:e2e         # Run Playwright E2E tests
+
+# Building
+npm run build            # Build all workspaces
+
+# Docker (for PostgreSQL)
+npm run docker:up        # Start PostgreSQL container
+npm run docker:down      # Stop container
+```
+
+## Dashboard Features
 
 - **Bilingual Support**: Spanish/English toggle with complete translation system
 - **Theme System**: Auto/light/dark mode with localStorage persistence
 - **Responsive Design**: Mobile-first approach with touch-friendly interactions
 - **Task Management**: 109 tasks across 5 project phases with filtering and search
+- **Gantt Chart**: Visual timeline with task scheduling
+- **Export**: Multi-format (PDF/CSV/JSON/TXT)
 - **Team Visualization**: Individual task assignments and hour tracking
-
-### Technical Implementation
-
-- **Pure HTML/CSS/JavaScript**: No external dependencies
-- **CSS Custom Properties**: Consistent theming and responsive design
-- **LocalStorage**: Theme preferences persistence
-- **Mobile Optimized**: Touch-friendly UI with proper viewport handling
-
-## Data Structure
-
-The dashboard manages project data through a comprehensive JavaScript object containing:
-
-- **5 Project Phases**: Foundation, Content Development, Pilot Preparation, Pilot & Iteration, Launch Ready
-- **Task Hierarchy**: Phases → Sections → Individual Tasks
-- **Task Properties**: ID, name (bilingual), assignee, duration, difficulty (1-5), dependencies
-- **Translation System**: Complete bilingual support for all UI elements
 
 ## Team Structure
 
 - **Aldo**: CEO MADFAM, Tech Lead (116.5 hours, 24 tasks)
-- **Nuri**: Strategy Officer MADFAM (86.5 hours, 19 tasks)  
+- **Nuri**: Strategy Officer MADFAM (86.5 hours, 19 tasks)
 - **Luis**: La Ciencia del Juego Representative (102 hours, 20 tasks)
 - **Silvia**: Marketing Guru (115.5 hours, 23 tasks)
 - **Caro**: Designer and Teacher (102 hours, 22 tasks)
 
 ## Development Guidelines
 
-### When Working with the Dashboard
+### When Adding Features
 
-- **Maintain Bilingual Support**: All new content must include both Spanish and English versions
-- **Preserve Responsive Design**: Test changes on mobile and desktop viewports
-- **Follow CSS Architecture**: Use existing custom properties for consistent theming
-- **Task Data Format**: Follow the established object structure for any new tasks
+- **Maintain Bilingual Support**: Update `src/data/translations.ts` for any new UI strings
+- **Preserve Responsive Design**: Use Tailwind responsive classes (sm:, md:, lg:)
+- **Follow Component Patterns**: Check existing components in `src/components/`
+- **Update State**: Use Zustand store in `src/stores/appStore.ts`
+
+### Code Quality
+
+- TypeScript strict mode enabled
+- ESLint for linting
+- Prettier for formatting (4-space tabs, single quotes)
+- Run `npm run lint` before committing
 
 ### Accessibility Standards
 
@@ -69,14 +108,6 @@ The dashboard manages project data through a comprehensive JavaScript object con
 - Proper ARIA labels and semantic HTML
 - Keyboard navigation support
 - Color contrast compliance for both themes
-
-### Browser Support
-
-The dashboard is designed to work across modern browsers with:
-- CSS Grid and Flexbox
-- ES6+ JavaScript features
-- CSS Custom Properties
-- LocalStorage API
 
 ## Project Context
 
@@ -87,9 +118,11 @@ This is a high-stakes educational initiative with specific deliverables and time
 - Consider the collaborative nature of the team structure
 - Keep the gamified learning objectives in mind
 
-## File Modification Notes
+## Documentation
 
-- The HTML file is fully self-contained with embedded CSS and JavaScript
-- Any changes should maintain the single-file architecture
-- The translation system is complete and should be extended for new features
-- Task data is embedded in JavaScript and follows a specific schema
+Comprehensive documentation is available in `/docs/`:
+- **[INDEX.md](./docs/INDEX.md)** - Complete documentation navigation
+- **[Architecture](./docs/architecture/)** - System design and patterns
+- **[Components](./docs/components/)** - React component library
+- **[Guides](./docs/guides/)** - Developer workflow guides
+- **[Tutorials](./docs/tutorials/)** - Step-by-step learning guides
