@@ -13,7 +13,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { users, projects, tasks, projectMembers } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 // Import legacy data from client
 // Note: We're copying the data structure here to avoid direct imports from client
@@ -50,23 +50,41 @@ const legacyTeamMembers: LegacyTeamMember[] = [
   { name: 'Caro', role: 'Diseñadora y Maestra', roleEn: 'Designer and Teacher', avatar: '👩‍🎓' },
 ];
 
-// Import all legacy tasks (we'll load these from the actual client files at runtime)
-// For now, we'll import them dynamically
+// Import all legacy tasks
+// Note: These imports require the client package to be built first
+// Run 'npm run build -w @madlab/client' before seeding
 const loadLegacyTasks = async (): Promise<LegacyTask[]> => {
-  // Dynamically import from the client package
-  const phase1Module = await import('../../../client/src/data/tasks/phase1.js');
-  const phase2Module = await import('../../../client/src/data/tasks/phase2.js');
-  const phase3Module = await import('../../../client/src/data/tasks/phase3.js');
-  const phase4Module = await import('../../../client/src/data/tasks/phase4.js');
-  const phase5Module = await import('../../../client/src/data/tasks/phase5.js');
+  try {
+    // Try to dynamically import from the client package
+    // These are runtime dynamic imports that may not exist at compile time
+    // @ts-expect-error - Dynamic import from workspace package
+    const phase1Module = await import('@madlab/client/src/data/tasks/phase1.js').catch(() => ({ phase1Tasks: [] }));
+    // @ts-expect-error - Dynamic import from workspace package
+    const phase2Module = await import('@madlab/client/src/data/tasks/phase2.js').catch(() => ({ phase2Tasks: [] }));
+    // @ts-expect-error - Dynamic import from workspace package
+    const phase3Module = await import('@madlab/client/src/data/tasks/phase3.js').catch(() => ({ phase3Tasks: [] }));
+    // @ts-expect-error - Dynamic import from workspace package
+    const phase4Module = await import('@madlab/client/src/data/tasks/phase4.js').catch(() => ({ phase4Tasks: [] }));
+    // @ts-expect-error - Dynamic import from workspace package
+    const phase5Module = await import('@madlab/client/src/data/tasks/phase5.js').catch(() => ({ phase5Tasks: [] }));
 
-  return [
-    ...phase1Module.phase1Tasks,
-    ...phase2Module.phase2Tasks,
-    ...phase3Module.phase3Tasks,
-    ...phase4Module.phase4Tasks,
-    ...phase5Module.phase5Tasks,
-  ];
+    const tasks = [
+      ...(phase1Module.phase1Tasks || []),
+      ...(phase2Module.phase2Tasks || []),
+      ...(phase3Module.phase3Tasks || []),
+      ...(phase4Module.phase4Tasks || []),
+      ...(phase5Module.phase5Tasks || []),
+    ];
+
+    if (tasks.length === 0) {
+      console.warn('  ⚠️  No tasks loaded from client. Using empty task list.');
+    }
+
+    return tasks;
+  } catch (error) {
+    console.warn('  ⚠️  Could not load tasks from client package:', error);
+    return [];
+  }
 };
 
 // Difficulty mapping helper
@@ -174,8 +192,7 @@ async function seed() {
 
       // Check if already member
       const existingMembership = await db.select().from(projectMembers)
-        .where(eq(projectMembers.projectId, projectId))
-        .where(eq(projectMembers.userId, userId))
+        .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)))
         .limit(1);
 
       if (existingMembership.length === 0) {

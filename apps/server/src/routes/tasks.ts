@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { eq, and, sql, inArray } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { db } from '../config/database.js';
 import { tasks, users, projects } from '../db/schema.js';
 
@@ -37,7 +37,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
             id: users.id,
             name: users.name,
             email: users.email,
-            avatar: users.avatar,
+            avatarUrl: users.avatarUrl,
           },
         })
         .from(tasks)
@@ -80,7 +80,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
             id: users.id,
             name: users.name,
             email: users.email,
-            avatar: users.avatar,
+            avatarUrl: users.avatarUrl,
           },
           project: {
             id: projects.id,

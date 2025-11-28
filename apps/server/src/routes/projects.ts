@@ -8,7 +8,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
    * GET /api/projects
    * Get all projects with member counts and task statistics
    */
-  fastify.get('/projects', async (request, reply) => {
+  fastify.get('/projects', async (_request, reply) => {
     try {
       // Get all projects
       const allProjects = await db.select().from(projects);
@@ -100,7 +100,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
             id: users.id,
             name: users.name,
             email: users.email,
-            avatar: users.avatar,
+            avatarUrl: users.avatarUrl,
           },
         })
         .from(projectMembers)

@@ -40,7 +40,7 @@ await fastify.register(cors, {
 });
 
 // Root route
-fastify.get('/', async (request, reply) => {
+fastify.get('/', async (_request, _reply) => {
   return {
     service: 'MADLAB API',
     version: '2.0.0',
