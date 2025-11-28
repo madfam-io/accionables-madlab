@@ -8,8 +8,6 @@ Complete documentation index for the MADLAB educational project. This index prov
 - **[Architecture Overview](./architecture/README.md)** - System design and patterns
 - **[System Overview](./architecture/system-overview.md)** - High-level project architecture
 - **[React Architecture](./architecture/react-architecture.md)** - Component patterns and structure
-- **[Legacy Architecture](./architecture/legacy-architecture.md)** - Original architecture design
-- **[Architecture Comparison](./architecture/comparison.md)** - Current vs proposed analysis
 - **[State Management](./api/state-management.md)** - Zustand store design
 - **[Data Flow](./architecture/data-flow.md)** - Application data flow patterns *(coming soon)*
 
@@ -87,7 +85,6 @@ Complete documentation index for the MADLAB educational project. This index prov
 - **5 Team Members** from MADFAM and La Ciencia Del Juego
 - **81 Days** project duration (Aug 11 - Oct 31, 2025)
 - **React 18 + TypeScript** modern architecture
-- **100% Feature Parity** with original vanilla JS version
 
 ### Technology Stack
 - **Frontend**: React 18 + TypeScript + Vite
