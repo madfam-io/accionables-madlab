@@ -1,21 +1,150 @@
 import { FastifyInstance } from 'fastify';
-import Anthropic from '@anthropic-ai/sdk';
 import {
     breakdownRequestSchema,
     draftCommunicationSchema,
     validateRequest,
-    type BreakdownRequestInput,
-    type DraftCommunicationInput,
 } from '../schemas/validation.js';
 
-// Initialize Anthropic client (uses ANTHROPIC_API_KEY env var automatically)
-const getAnthropicClient = () => {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-        return null;
+/**
+ * AI Provider Configuration
+ *
+ * Supports multiple open-source model providers:
+ * - Ollama (local inference)
+ * - Groq (hosted API for Llama/Mixtral)
+ * - Together.ai (hosted API)
+ * - Custom OpenAI-compatible endpoints
+ */
+type AIProvider = 'ollama' | 'groq' | 'together' | 'custom' | 'mock';
+
+interface AIConfig {
+    provider: AIProvider;
+    baseUrl?: string;
+    apiKey?: string;
+    model: string;
+}
+
+function getAIConfig(): AIConfig {
+    const provider = (process.env.AI_PROVIDER || 'mock') as AIProvider;
+
+    switch (provider) {
+        case 'ollama':
+            return {
+                provider: 'ollama',
+                baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+                model: process.env.OLLAMA_MODEL || 'llama3.2',
+            };
+        case 'groq':
+            return {
+                provider: 'groq',
+                baseUrl: 'https://api.groq.com/openai/v1',
+                apiKey: process.env.GROQ_API_KEY,
+                model: process.env.GROQ_MODEL || 'llama-3.1-70b-versatile',
+            };
+        case 'together':
+            return {
+                provider: 'together',
+                baseUrl: 'https://api.together.xyz/v1',
+                apiKey: process.env.TOGETHER_API_KEY,
+                model: process.env.TOGETHER_MODEL || 'meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo',
+            };
+        case 'custom':
+            return {
+                provider: 'custom',
+                baseUrl: process.env.AI_BASE_URL,
+                apiKey: process.env.AI_API_KEY,
+                model: process.env.AI_MODEL || 'gpt-3.5-turbo',
+            };
+        default:
+            return { provider: 'mock', model: 'mock' };
     }
-    return new Anthropic({ apiKey });
-};
+}
+
+/**
+ * Call AI model using OpenAI-compatible API format
+ * Works with Ollama, Groq, Together.ai, and other compatible providers
+ */
+async function callAI(
+    config: AIConfig,
+    systemPrompt: string,
+    userPrompt: string,
+    maxTokens: number = 4096
+): Promise<{ content: string; usage?: { promptTokens: number; completionTokens: number } }> {
+    if (config.provider === 'mock') {
+        throw new Error('Mock provider - no AI call');
+    }
+
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+    };
+
+    if (config.apiKey) {
+        headers['Authorization'] = `Bearer ${config.apiKey}`;
+    }
+
+    const endpoint = config.provider === 'ollama'
+        ? `${config.baseUrl}/api/chat`
+        : `${config.baseUrl}/chat/completions`;
+
+    const body = config.provider === 'ollama'
+        ? {
+            model: config.model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt },
+            ],
+            stream: false,
+            options: { num_predict: maxTokens },
+        }
+        : {
+            model: config.model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt },
+            ],
+            max_tokens: maxTokens,
+            temperature: 0.7,
+        };
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`AI API error: ${response.status} - ${error}`);
+    }
+
+    // Type for OpenAI-compatible response
+    interface AIResponse {
+        message?: { content?: string };
+        choices?: Array<{ message?: { content?: string } }>;
+        usage?: { prompt_tokens?: number; completion_tokens?: number };
+        eval_count?: number;
+        prompt_eval_count?: number;
+    }
+
+    const data = await response.json() as AIResponse;
+
+    if (config.provider === 'ollama') {
+        return {
+            content: data.message?.content || '',
+            usage: data.eval_count ? {
+                promptTokens: data.prompt_eval_count || 0,
+                completionTokens: data.eval_count || 0,
+            } : undefined,
+        };
+    }
+
+    return {
+        content: data.choices?.[0]?.message?.content || '',
+        usage: data.usage ? {
+            promptTokens: data.usage.prompt_tokens || 0,
+            completionTokens: data.usage.completion_tokens || 0,
+        } : undefined,
+    };
+}
 
 /**
  * Agent System Prompts
@@ -97,10 +226,9 @@ export async function agentRoutes(fastify: FastifyInstance) {
      * POST /api/agents/breakdown
      * Fragmento agent: Break down an event into tasks
      */
-    fastify.post<{ Body: BreakdownRequestInput }>(
+    fastify.post<{ Body: unknown }>(
         '/agents/breakdown',
         async (request, reply) => {
-            // Validate request
             const validation = validateRequest(breakdownRequestSchema, request.body);
             if (!validation.success) {
                 return reply.code(400).send({
@@ -113,13 +241,13 @@ export async function agentRoutes(fastify: FastifyInstance) {
             const { eventName, eventDescription, eventDate, eventType, teamSize, constraints, preferences } =
                 validation.data;
 
-            const anthropic = getAnthropicClient();
-            if (!anthropic) {
-                // Return mock response for development without API key
+            const config = getAIConfig();
+
+            if (config.provider === 'mock') {
                 return reply.send({
                     success: true,
                     agent: 'fragmento',
-                    data: getMockBreakdownResponse(validation.data),
+                    data: getMockBreakdownResponse({ eventDate }),
                     mock: true,
                 });
             }
@@ -142,35 +270,27 @@ Requirements:
 - Detail level: ${detailLevel}
 - ${preferences?.includeTimeEstimates ? 'Include time estimates' : 'Skip time estimates'}
 
-Please generate a comprehensive task breakdown.`;
+Please generate a comprehensive task breakdown. Respond with valid JSON only.`;
 
-                const response = await anthropic.messages.create({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 4096,
-                    system: AGENT_PROMPTS.fragmento.system,
-                    messages: [{ role: 'user', content: userPrompt }],
-                });
+                const response = await callAI(
+                    config,
+                    AGENT_PROMPTS.fragmento.system,
+                    userPrompt,
+                    4096
+                );
 
-                // Extract text content from response
-                const textContent = response.content.find((block) => block.type === 'text');
-                if (!textContent || textContent.type !== 'text') {
-                    throw new Error('No text response from AI');
-                }
-
-                // Parse JSON from response
                 let parsedResponse;
                 try {
-                    // Extract JSON from potential markdown code blocks
-                    const jsonMatch = textContent.text.match(/```json\n?([\s\S]*?)\n?```/) ||
-                        textContent.text.match(/\{[\s\S]*\}/);
-                    const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : textContent.text;
+                    const jsonMatch = response.content.match(/```json\n?([\s\S]*?)\n?```/) ||
+                        response.content.match(/\{[\s\S]*\}/);
+                    const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : response.content;
                     parsedResponse = JSON.parse(jsonStr);
                 } catch {
                     fastify.log.error('Failed to parse AI response as JSON');
                     return reply.code(500).send({
                         success: false,
                         error: 'Failed to parse AI response',
-                        rawResponse: textContent.text,
+                        rawResponse: response.content,
                     });
                 }
 
@@ -178,10 +298,9 @@ Please generate a comprehensive task breakdown.`;
                     success: true,
                     agent: 'fragmento',
                     data: parsedResponse,
-                    usage: {
-                        inputTokens: response.usage.input_tokens,
-                        outputTokens: response.usage.output_tokens,
-                    },
+                    provider: config.provider,
+                    model: config.model,
+                    usage: response.usage,
                 });
             } catch (error) {
                 fastify.log.error(error);
@@ -198,7 +317,7 @@ Please generate a comprehensive task breakdown.`;
      * POST /api/agents/draft
      * Palabras agent: Draft communications
      */
-    fastify.post<{ Body: DraftCommunicationInput }>(
+    fastify.post<{ Body: unknown }>(
         '/agents/draft',
         async (request, reply) => {
             const validation = validateRequest(draftCommunicationSchema, request.body);
@@ -212,12 +331,13 @@ Please generate a comprehensive task breakdown.`;
 
             const { type, context, recipients, tone, language } = validation.data;
 
-            const anthropic = getAnthropicClient();
-            if (!anthropic) {
+            const config = getAIConfig();
+
+            if (config.provider === 'mock') {
                 return reply.send({
                     success: true,
                     agent: 'palabras',
-                    data: getMockDraftResponse(validation.data),
+                    data: getMockDraftResponse({ language, context, tone }),
                     mock: true,
                 });
             }
@@ -230,30 +350,24 @@ Recipients: ${recipients.join(', ')}
 Tone: ${tone}
 Language: ${language === 'es' ? 'Spanish' : 'English'}
 
-Please draft an appropriate message.`;
+Please draft an appropriate message. Respond with valid JSON only.`;
 
-                const response = await anthropic.messages.create({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 2048,
-                    system: AGENT_PROMPTS.palabras.system,
-                    messages: [{ role: 'user', content: userPrompt }],
-                });
-
-                const textContent = response.content.find((block) => block.type === 'text');
-                if (!textContent || textContent.type !== 'text') {
-                    throw new Error('No text response from AI');
-                }
+                const response = await callAI(
+                    config,
+                    AGENT_PROMPTS.palabras.system,
+                    userPrompt,
+                    2048
+                );
 
                 let parsedResponse;
                 try {
-                    const jsonMatch = textContent.text.match(/```json\n?([\s\S]*?)\n?```/) ||
-                        textContent.text.match(/\{[\s\S]*\}/);
-                    const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : textContent.text;
+                    const jsonMatch = response.content.match(/```json\n?([\s\S]*?)\n?```/) ||
+                        response.content.match(/\{[\s\S]*\}/);
+                    const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : response.content;
                     parsedResponse = JSON.parse(jsonStr);
                 } catch {
-                    // If not JSON, return as plain text draft
                     parsedResponse = {
-                        draft: textContent.text,
+                        draft: response.content,
                         keyPoints: [],
                         tone: tone,
                     };
@@ -263,10 +377,9 @@ Please draft an appropriate message.`;
                     success: true,
                     agent: 'palabras',
                     data: parsedResponse,
-                    usage: {
-                        inputTokens: response.usage.input_tokens,
-                        outputTokens: response.usage.output_tokens,
-                    },
+                    provider: config.provider,
+                    model: config.model,
+                    usage: response.usage,
                 });
             } catch (error) {
                 fastify.log.error(error);
@@ -284,19 +397,20 @@ Please draft an appropriate message.`;
      * Check agent availability and configuration
      */
     fastify.get('/agents/status', async (_request, reply) => {
-        const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
+        const config = getAIConfig();
+        const isAIEnabled = config.provider !== 'mock';
 
         return reply.send({
             success: true,
             agents: {
                 fragmento: {
                     available: true,
-                    aiEnabled: hasApiKey,
+                    aiEnabled: isAIEnabled,
                     description: 'Task breakdown agent',
                 },
                 palabras: {
                     available: true,
-                    aiEnabled: hasApiKey,
+                    aiEnabled: isAIEnabled,
                     description: 'Communication drafting agent',
                 },
                 timely: {
@@ -321,16 +435,26 @@ Please draft an appropriate message.`;
                 },
             },
             configuration: {
-                aiProvider: 'anthropic',
-                model: 'claude-sonnet-4-20250514',
-                apiKeyConfigured: hasApiKey,
+                provider: config.provider,
+                model: config.model,
+                baseUrl: config.provider !== 'mock' ? config.baseUrl : undefined,
+                supportedProviders: ['ollama', 'groq', 'together', 'custom'],
+                envVars: {
+                    AI_PROVIDER: 'ollama | groq | together | custom',
+                    OLLAMA_BASE_URL: 'http://localhost:11434 (default)',
+                    OLLAMA_MODEL: 'llama3.2 (default)',
+                    GROQ_API_KEY: 'your-groq-api-key',
+                    GROQ_MODEL: 'llama-3.1-70b-versatile (default)',
+                    TOGETHER_API_KEY: 'your-together-api-key',
+                    TOGETHER_MODEL: 'meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo (default)',
+                },
             },
         });
     });
 }
 
 /**
- * Mock responses for development without API key
+ * Mock responses for development without AI provider
  */
 function getMockBreakdownResponse(input: { eventDate: string; eventName?: string }) {
     const daysUntilEvent = Math.ceil(
@@ -414,7 +538,7 @@ function getMockBreakdownResponse(input: { eventDate: string; eventName?: string
             { number: 5, name: 'Ejecución', nameEn: 'Execution', description: 'El gran día' },
         ],
         warnings: [
-            'Este es un desglose de ejemplo. Con la API de Claude configurada, obtendrás un plan personalizado.',
+            'Este es un desglose de ejemplo. Configure AI_PROVIDER para obtener un plan personalizado con IA.',
         ],
         totalEstimatedHours: 24,
         mock: true,
