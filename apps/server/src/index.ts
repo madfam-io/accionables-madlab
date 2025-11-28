@@ -4,6 +4,8 @@ import helmet from '@fastify/helmet';
 import { healthRoutes } from './routes/health.js';
 import { projectRoutes } from './routes/projects.js';
 import { taskRoutes } from './routes/tasks.js';
+import { agentRoutes } from './routes/agents.js';
+import { waitlistRoutes } from './routes/waitlist.js';
 import { closeDatabaseConnection } from './config/database.js';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -53,6 +55,8 @@ fastify.get('/', async (_request, _reply) => {
 await fastify.register(healthRoutes, { prefix: '/api' });
 await fastify.register(projectRoutes, { prefix: '/api' });
 await fastify.register(taskRoutes, { prefix: '/api' });
+await fastify.register(agentRoutes, { prefix: '/api' });
+await fastify.register(waitlistRoutes, { prefix: '/api' });
 
 // Graceful shutdown
 const signals = ['SIGINT', 'SIGTERM'];
@@ -71,6 +75,7 @@ try {
   fastify.log.info(`🚀 MADLAB API server listening on ${HOST}:${PORT}`);
   fastify.log.info(`📝 Environment: ${NODE_ENV}`);
   fastify.log.info(`🔗 Health check: http://localhost:${PORT}/api/health`);
+  fastify.log.info(`🤖 AI Agents: http://localhost:${PORT}/api/agents/status`);
 } catch (err) {
   fastify.log.error(err);
   process.exit(1);

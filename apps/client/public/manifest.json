@@ -1,13 +1,14 @@
 {
-  "name": "MADLAB - Collaborative Educational Project",
+  "name": "MADLAB - Project Management for Neurodivergent Minds",
   "short_name": "MADLAB",
-  "description": "Interactive bilingual project dashboard for gamified science and technology learning",
+  "description": "An event convergence orchestrator designed for ADHD, autism, and dyslexic minds. Visual calm. AI assistance. Synchronized flow.",
   "theme_color": "#6366f1",
-  "background_color": "#ffffff",
+  "background_color": "#0f172a",
   "display": "standalone",
   "orientation": "any",
   "scope": "/",
   "start_url": "/",
+  "id": "/",
   "icons": [
     {
       "src": "/icons/icon.svg",
@@ -16,8 +17,8 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["education", "productivity"],
-  "lang": "es-MX",
+  "categories": ["productivity", "education", "lifestyle"],
+  "lang": "en-US",
   "dir": "ltr",
   "prefer_related_applications": false,
   "shortcuts": [

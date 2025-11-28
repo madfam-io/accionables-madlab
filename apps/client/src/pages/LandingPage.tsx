@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Calendar,
@@ -12,16 +12,35 @@ import {
   Sun,
   Play,
   Zap,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { DEMO_PROJECTS, DemoProject } from '../data/demoProjects';
 import { useAppStore } from '../stores/appStore';
+import { waitlistApi } from '../api/waitlist';
 
 export function LandingPage() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [waitlistCount, setWaitlistCount] = useState<string | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const navigate = useNavigate();
   const { setCulminatingEvent, setGanttConfig } = useAppStore();
+
+  // Fetch waitlist count for social proof
+  useEffect(() => {
+    waitlistApi.getCount()
+      .then((response) => {
+        if (response.success && response.count > 0) {
+          setWaitlistCount(response.display);
+        }
+      })
+      .catch(() => {
+        // Silently fail - social proof is optional
+      });
+  }, []);
 
   const handleTryDemo = (project: DemoProject) => {
     // Set the culminating event from the demo project
@@ -36,11 +55,29 @@ export function LandingPage() {
     navigate('/app');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Integrate with email service (Resend, ConvertKit, etc.)
-    console.log('Waitlist signup:', email);
-    setSubmitted(true);
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const response = await waitlistApi.signup({ email });
+      if (response.success) {
+        setSubmitted(true);
+        // Refresh count after signup
+        waitlistApi.getCount().then((countResponse) => {
+          if (countResponse.success && countResponse.count > 0) {
+            setWaitlistCount(countResponse.display);
+          }
+        });
+      } else {
+        setError(response.message || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      setError('Unable to join waitlist. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleTheme = () => {
@@ -110,24 +147,47 @@ export function LandingPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   required
+                  disabled={isLoading}
                   className={`flex-1 px-4 py-3 rounded-xl border-0 focus:ring-2 focus:ring-indigo-500 transition-all ${
                     theme === 'dark'
                       ? 'bg-slate-700/50 text-slate-100 placeholder-slate-500'
                       : 'bg-white text-slate-800 placeholder-slate-400'
-                  }`}
+                  } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
                 />
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-2 hover:gap-3"
+                  disabled={isLoading}
+                  className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
+                    isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:gap-3'
+                  }`}
                 >
-                  Join Waitlist
-                  <ArrowRight size={18} />
+                  {isLoading ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Joining...
+                    </>
+                  ) : (
+                    <>
+                      Join Waitlist
+                      <ArrowRight size={18} />
+                    </>
+                  )}
                 </button>
               </div>
+              {error && (
+                <div className="flex items-center justify-center gap-2 mt-3 text-red-400 text-sm">
+                  <AlertCircle size={16} />
+                  {error}
+                </div>
+              )}
               <p className={`text-sm mt-4 ${
                 theme === 'dark' ? 'text-slate-500' : 'text-slate-500'
               }`}>
-                No spam. Just updates when we launch.
+                {waitlistCount ? (
+                  <>Join {waitlistCount} others on the list.</>
+                ) : (
+                  <>No spam. Just updates when we launch.</>
+                )}
               </p>
             </form>
           ) : (
@@ -141,6 +201,13 @@ export function LandingPage() {
               }`}>
                 We'll reach out when MADLAB is ready for you.
               </p>
+              {waitlistCount && (
+                <p className={`text-xs mt-3 ${
+                  theme === 'dark' ? 'text-slate-500' : 'text-slate-500'
+                }`}>
+                  You're joining {waitlistCount} other early adopters.
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -324,19 +391,36 @@ export function LandingPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
                     required
+                    disabled={isLoading}
                     className={`flex-1 px-4 py-3 rounded-xl border-0 focus:ring-2 focus:ring-indigo-500 transition-all ${
                       theme === 'dark'
                         ? 'bg-slate-700/50 text-slate-100 placeholder-slate-500'
                         : 'bg-stone-50 text-slate-800 placeholder-slate-400'
-                    }`}
+                    } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
                   />
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+                    disabled={isLoading}
+                    className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
+                      isLoading ? 'opacity-60 cursor-not-allowed' : ''
+                    }`}
                   >
-                    Join Waitlist
+                    {isLoading ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        Joining...
+                      </>
+                    ) : (
+                      'Join Waitlist'
+                    )}
                   </button>
                 </div>
+                {error && (
+                  <div className="flex items-center justify-center gap-2 mt-3 text-red-400 text-sm">
+                    <AlertCircle size={16} />
+                    {error}
+                  </div>
+                )}
               </form>
             )}
 
